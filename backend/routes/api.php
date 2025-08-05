@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\ScheduleController;
+use App\Http\Controllers\Api\DocumentCollaborationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -81,6 +82,37 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('{schedule}', [ScheduleController::class, 'destroy']);
         Route::put('{schedule}/toggle-status', [ScheduleController::class, 'toggleStatus']);
         Route::post('{schedule}/execute-now', [ScheduleController::class, 'executeNow']);
+    });
+
+    // Collaboration documentaire
+    Route::prefix('documents')->group(function () {
+        // Gestion des versions
+        Route::get('/{reportId}/current', [DocumentCollaborationController::class, 'getCurrentVersion']);
+        Route::get('/{reportId}/versions', [DocumentCollaborationController::class, 'getVersionHistory']);
+        Route::post('/{reportId}/versions', [DocumentCollaborationController::class, 'createVersion']);
+        
+        // Édition de contenu
+        Route::put('/versions/{versionId}/content', [DocumentCollaborationController::class, 'updateContent']);
+        Route::post('/versions/{versionId}/lock', [DocumentCollaborationController::class, 'lockDocument']);
+        Route::delete('/versions/{versionId}/lock', [DocumentCollaborationController::class, 'unlockDocument']);
+        
+        // Gestion des collaborateurs
+        Route::post('/versions/{versionId}/collaborators', [DocumentCollaborationController::class, 'addCollaborator']);
+        Route::put('/versions/{versionId}/collaborators/{userId}', [DocumentCollaborationController::class, 'updateCollaboratorPermissions']);
+        Route::delete('/versions/{versionId}/collaborators/{userId}', [DocumentCollaborationController::class, 'removeCollaborator']);
+        
+        // Commentaires
+        Route::get('/versions/{versionId}/comments', [DocumentCollaborationController::class, 'getComments']);
+        Route::post('/versions/{versionId}/comments', [DocumentCollaborationController::class, 'addComment']);
+        Route::put('/comments/{commentId}/resolve', [DocumentCollaborationController::class, 'resolveComment']);
+        
+        // Workflow d'approbation
+        Route::post('/versions/{versionId}/submit-approval', [DocumentCollaborationController::class, 'submitForApproval']);
+        Route::post('/versions/{versionId}/approve', [DocumentCollaborationController::class, 'approveDocument']);
+        Route::post('/versions/{versionId}/reject', [DocumentCollaborationController::class, 'rejectDocument']);
+        
+        // Historique et traçabilité
+        Route::get('/versions/{versionId}/changes', [DocumentCollaborationController::class, 'getChangeHistory']);
     });
 
     // Gestion des utilisateurs (pour les admins)

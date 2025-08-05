@@ -118,6 +118,39 @@ export const scheduleAPI = {
   getTimezones: () => api.get('/schedules/timezones'),
 }
 
+// API pour la collaboration documentaire
+export const documentCollaborationAPI = {
+  // Gestion des versions
+  getCurrentVersion: (reportId) => api.get(`/documents/${reportId}/current`),
+  getVersionHistory: (reportId) => api.get(`/documents/${reportId}/versions`),
+  createVersion: (reportId, data) => api.post(`/documents/${reportId}/versions`, data),
+  
+  // Édition de contenu
+  updateContent: (data) => api.put(`/documents/versions/${data.versionId}/content`, data),
+  lockDocument: (data) => api.post(`/documents/versions/${data.versionId}/lock`, data),
+  unlockDocument: (versionId) => api.delete(`/documents/versions/${versionId}/lock`),
+  
+  // Gestion des collaborateurs
+  addCollaborator: (data) => api.post(`/documents/versions/${data.versionId}/collaborators`, data),
+  updateCollaboratorPermissions: (versionId, userId, data) => 
+    api.put(`/documents/versions/${versionId}/collaborators/${userId}`, data),
+  removeCollaborator: (versionId, userId) => 
+    api.delete(`/documents/versions/${versionId}/collaborators/${userId}`),
+  
+  // Commentaires
+  getComments: (versionId) => api.get(`/documents/versions/${versionId}/comments`),
+  addComment: (data) => api.post(`/documents/versions/${data.versionId}/comments`, data),
+  resolveComment: (commentId, data) => api.put(`/documents/comments/${commentId}/resolve`, data),
+  
+  // Workflow d'approbation
+  submitForApproval: (versionId) => api.post(`/documents/versions/${versionId}/submit-approval`),
+  approveDocument: (data) => api.post(`/documents/versions/${data.versionId}/approve`, data),
+  rejectDocument: (data) => api.post(`/documents/versions/${data.versionId}/reject`, data),
+  
+  // Historique et traçabilité
+  getChangeHistory: (versionId) => api.get(`/documents/versions/${versionId}/changes`),
+}
+
 // Services pour les métadonnées
 export const metaAPI = {
   getCategories: () => api.get('/meta/categories'),
