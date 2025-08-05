@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\ScheduleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -56,6 +58,29 @@ Route::middleware('auth:sanctum')->group(function () {
         // Export et téléchargement
         Route::get('{report}/export/{format}', [ReportController::class, 'export']);
         Route::get('executions/{execution}/download', [ReportController::class, 'downloadExecution']);
+    });
+
+    // Gestion des notifications
+    Route::prefix('notifications')->group(function () {
+        Route::get('/', [NotificationController::class, 'index']);
+        Route::get('/unread-count', [NotificationController::class, 'unreadCount']);
+        Route::post('/mark-as-read', [NotificationController::class, 'markAsRead']);
+        Route::post('/mark-all-as-read', [NotificationController::class, 'markAllAsRead']);
+        Route::post('/test', [NotificationController::class, 'createTest']);
+    });
+
+    // Gestion des planifications
+    Route::prefix('schedules')->group(function () {
+        Route::get('/', [ScheduleController::class, 'index']);
+        Route::post('/', [ScheduleController::class, 'store']);
+        Route::get('/due', [ScheduleController::class, 'getDue']);
+        Route::get('/frequencies', [ScheduleController::class, 'getFrequencies']);
+        Route::get('/timezones', [ScheduleController::class, 'getTimezones']);
+        Route::get('{schedule}', [ScheduleController::class, 'show']);
+        Route::put('{schedule}', [ScheduleController::class, 'update']);
+        Route::delete('{schedule}', [ScheduleController::class, 'destroy']);
+        Route::put('{schedule}/toggle-status', [ScheduleController::class, 'toggleStatus']);
+        Route::post('{schedule}/execute-now', [ScheduleController::class, 'executeNow']);
     });
 
     // Gestion des utilisateurs (pour les admins)

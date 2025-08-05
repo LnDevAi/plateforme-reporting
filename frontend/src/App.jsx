@@ -14,6 +14,10 @@ import ReportEdit from './pages/Reports/ReportEdit'
 import ReportExecution from './pages/Reports/ReportExecution'
 import UsersList from './pages/Users/UsersList'
 import ProfilePage from './pages/Profile/ProfilePage'
+import SchedulesList from './pages/Schedules/SchedulesList'
+import ScheduleCreate from './pages/Schedules/ScheduleCreate'
+import ScheduleDetail from './pages/Schedules/ScheduleDetail'
+import NotificationsPage from './pages/Notifications/NotificationsPage'
 
 const { Content } = Layout
 
@@ -59,8 +63,16 @@ function AppRoutes() {
         <Route path="reports/:id/edit" element={<ReportEdit />} />
         <Route path="reports/:id/execute" element={<ReportExecution />} />
         
+        {/* Gestion des planifications */}
+        <Route path="schedules" element={<SchedulesList />} />
+        <Route path="schedules/create" element={<ScheduleCreate />} />
+        <Route path="schedules/:id" element={<ScheduleDetail />} />
+        
         {/* Gestion des utilisateurs (admin seulement) */}
         <Route path="users" element={<UsersList />} />
+        
+        {/* Notifications */}
+        <Route path="notifications" element={<NotificationsPage />} />
         
         {/* Profil utilisateur */}
         <Route path="profile" element={<ProfilePage />} />

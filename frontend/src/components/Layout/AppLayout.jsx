@@ -1,0 +1,298 @@
+import React, { useState } from 'react'
+import { Outlet, useNavigate, useLocation } from 'react-router-dom'
+import { 
+  Layout, 
+  Menu, 
+  Button, 
+  Dropdown, 
+  Avatar, 
+  Typography,
+  Space,
+  notification
+} from 'antd'
+import {
+  DashboardOutlined,
+  FileTextOutlined,
+  UserOutlined,
+  LogoutOutlined,
+  SettingOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+  PlusOutlined,
+  BarChartOutlined,
+  TeamOutlined,
+  ClockCircleOutlined
+} from '@ant-design/icons'
+import { useAuth } from '../../hooks/useAuth'
+import NotificationCenter from '../Notifications/NotificationCenter'
+
+const { Header, Sider, Content } = Layout
+const { Title } = Typography
+
+function AppLayout() {
+  const [collapsed, setCollapsed] = useState(false)
+  const { user, logout, isAdmin } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  // Gérer la déconnexion
+  const handleLogout = async () => {
+    try {
+      await logout()
+      navigate('/login')
+      notification.success({
+        message: 'Déconnexion réussie',
+        description: 'Vous avez été déconnecté avec succès.',
+      })
+    } catch (error) {
+      notification.error({
+        message: 'Erreur de déconnexion',
+        description: 'Une erreur est survenue lors de la déconnexion.',
+      })
+    }
+  }
+
+  // Menu utilisateur
+  const userMenuItems = [
+    {
+      key: 'profile',
+      icon: <UserOutlined />,
+      label: 'Profil',
+      onClick: () => navigate('/profile'),
+    },
+    {
+      key: 'settings',
+      icon: <SettingOutlined />,
+      label: 'Paramètres',
+    },
+    {
+      type: 'divider',
+    },
+    {
+      key: 'logout',
+      icon: <LogoutOutlined />,
+      label: 'Déconnexion',
+      onClick: handleLogout,
+    },
+  ]
+
+  // Éléments du menu principal
+  const menuItems = [
+    {
+      key: '/dashboard',
+      icon: <DashboardOutlined />,
+      label: 'Tableau de bord',
+    },
+    {
+      key: '/reports',
+      icon: <FileTextOutlined />,
+      label: 'Rapports',
+      children: [
+        {
+          key: '/reports',
+          icon: <FileTextOutlined />,
+          label: 'Liste des rapports',
+        },
+        {
+          key: '/reports/create',
+          icon: <PlusOutlined />,
+          label: 'Nouveau rapport',
+        },
+      ],
+    },
+    {
+      key: '/schedules',
+      icon: <ClockCircleOutlined />,
+      label: 'Planifications',
+      children: [
+        {
+          key: '/schedules',
+          icon: <ClockCircleOutlined />,
+          label: 'Liste des planifications',
+        },
+        {
+          key: '/schedules/create',
+          icon: <PlusOutlined />,
+          label: 'Nouvelle planification',
+        },
+      ],
+    },
+    {
+      key: '/analytics',
+      icon: <BarChartOutlined />,
+      label: 'Analytiques',
+    },
+  ]
+
+  // Ajouter le menu utilisateurs pour les admins
+  if (isAdmin()) {
+    menuItems.push({
+      key: '/users',
+      icon: <TeamOutlined />,
+      label: 'Utilisateurs',
+    })
+  }
+
+  // Gérer la sélection du menu
+  const handleMenuClick = ({ key }) => {
+    navigate(key)
+  }
+
+  // Déterminer l'élément sélectionné du menu
+  const getSelectedKeys = () => {
+    const path = location.pathname
+    
+    // Gestion spéciale pour les sous-routes
+    if (path.startsWith('/reports/')) {
+      if (path === '/reports/create') {
+        return ['/reports/create']
+      }
+      return ['/reports']
+    }
+    
+    if (path.startsWith('/schedules/')) {
+      if (path === '/schedules/create') {
+        return ['/schedules/create']
+      }
+      return ['/schedules']
+    }
+    
+    return [path]
+  }
+
+  // Déterminer les éléments ouverts du menu
+  const getOpenKeys = () => {
+    const path = location.pathname
+    
+    if (path.startsWith('/reports')) {
+      return ['/reports']
+    }
+    
+    if (path.startsWith('/schedules')) {
+      return ['/schedules']
+    }
+    
+    return []
+  }
+
+  return (
+    <Layout style={{ minHeight: '100vh' }}>
+      {/* Barre latérale */}
+      <Sider 
+        trigger={null} 
+        collapsible 
+        collapsed={collapsed}
+        width={250}
+        className="app-sidebar"
+        style={{
+          overflow: 'auto',
+          height: '100vh',
+          position: 'fixed',
+          left: 0,
+          top: 0,
+          bottom: 0,
+        }}
+      >
+        {/* Logo */}
+        <div style={{ 
+          height: '64px', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          borderBottom: '1px solid #f0f0f0'
+        }}>
+          {!collapsed ? (
+            <Title level={4} style={{ margin: 0, color: '#1890ff' }}>
+              Reporting
+            </Title>
+          ) : (
+            <Title level={4} style={{ margin: 0, color: '#1890ff' }}>
+              R
+            </Title>
+          )}
+        </div>
+
+        {/* Menu de navigation */}
+        <Menu
+          theme="light"
+          mode="inline"
+          selectedKeys={getSelectedKeys()}
+          defaultOpenKeys={getOpenKeys()}
+          items={menuItems}
+          onClick={handleMenuClick}
+          style={{ borderRight: 0 }}
+        />
+      </Sider>
+
+      {/* Contenu principal */}
+      <Layout style={{ marginLeft: collapsed ? 80 : 250, transition: 'margin-left 0.2s' }}>
+        {/* En-tête */}
+        <Header className="app-header" style={{ 
+          position: 'fixed',
+          top: 0,
+          right: 0,
+          left: collapsed ? 80 : 250,
+          zIndex: 1000,
+          transition: 'left 0.2s'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            {/* Bouton de pliage du menu */}
+            <Button
+              type="text"
+              icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+              onClick={() => setCollapsed(!collapsed)}
+              style={{ fontSize: '16px' }}
+            />
+
+            {/* Titre de la page */}
+            <Title level={4} style={{ margin: 0, flex: 1 }}>
+              {location.pathname === '/dashboard' && 'Tableau de bord'}
+              {location.pathname === '/reports' && 'Rapports'}
+              {location.pathname === '/reports/create' && 'Nouveau rapport'}
+              {location.pathname === '/schedules' && 'Planifications'}
+              {location.pathname === '/schedules/create' && 'Nouvelle planification'}
+              {location.pathname === '/users' && 'Gestion des utilisateurs'}
+              {location.pathname === '/profile' && 'Profil utilisateur'}
+            </Title>
+          </div>
+
+          {/* Actions utilisateur */}
+          <Space size="middle">
+            {/* Centre de notifications */}
+            <NotificationCenter />
+
+            {/* Menu utilisateur */}
+            <Dropdown
+              menu={{ items: userMenuItems }}
+              placement="bottomRight"
+              arrow
+            >
+              <Space style={{ cursor: 'pointer' }}>
+                <Avatar 
+                  size="small" 
+                  icon={<UserOutlined />} 
+                  src={user?.avatar}
+                />
+                <span>{user?.name}</span>
+              </Space>
+            </Dropdown>
+          </Space>
+        </Header>
+
+        {/* Contenu de la page */}
+        <Content 
+          className="app-content"
+          style={{ 
+            marginTop: '64px',
+            padding: '24px',
+            overflow: 'auto'
+          }}
+        >
+          <Outlet />
+        </Content>
+      </Layout>
+    </Layout>
+  )
+}
+
+export default AppLayout

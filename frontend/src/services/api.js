@@ -95,6 +95,29 @@ export const usersAPI = {
   toggleStatus: (id) => api.put(`/users/${id}/toggle-status`),
 }
 
+// Services pour les notifications
+export const notificationAPI = {
+  getAll: (params = {}) => api.get('/notifications', { params }),
+  getUnreadCount: () => api.get('/notifications/unread-count'),
+  markAsRead: (data) => api.post('/notifications/mark-as-read', data),
+  markAllAsRead: () => api.post('/notifications/mark-all-as-read'),
+  createTest: (data) => api.post('/notifications/test', data),
+}
+
+// Services pour la planification
+export const scheduleAPI = {
+  getAll: (params = {}) => api.get('/schedules', { params }),
+  getById: (id) => api.get(`/schedules/${id}`),
+  create: (data) => api.post('/schedules', data),
+  update: (id, data) => api.put(`/schedules/${id}`, data),
+  delete: (id) => api.delete(`/schedules/${id}`),
+  toggleStatus: (id) => api.put(`/schedules/${id}/toggle-status`),
+  executeNow: (id) => api.post(`/schedules/${id}/execute-now`),
+  getDue: () => api.get('/schedules/due'),
+  getFrequencies: () => api.get('/schedules/frequencies'),
+  getTimezones: () => api.get('/schedules/timezones'),
+}
+
 // Services pour les métadonnées
 export const metaAPI = {
   getCategories: () => api.get('/meta/categories'),
