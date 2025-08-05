@@ -18,6 +18,7 @@ import SchedulesList from './pages/Schedules/SchedulesList'
 import ScheduleCreate from './pages/Schedules/ScheduleCreate'
 import ScheduleDetail from './pages/Schedules/ScheduleDetail'
 import NotificationsPage from './pages/Notifications/NotificationsPage'
+import EpeReportWizard from './pages/Reports/EpeReportWizard'
 
 const { Content } = Layout
 
@@ -59,6 +60,7 @@ function AppRoutes() {
         {/* Gestion des rapports */}
         <Route path="reports" element={<ReportsList />} />
         <Route path="reports/create" element={<ReportCreate />} />
+        <Route path="reports/create-epe" element={<EpeReportWizard />} />
         <Route path="reports/:id" element={<ReportDetail />} />
         <Route path="reports/:id/edit" element={<ReportEdit />} />
         <Route path="reports/:id/execute" element={<ReportExecution />} />
