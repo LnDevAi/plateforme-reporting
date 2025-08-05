@@ -298,6 +298,60 @@ export const sessionAPI = {
     api.post(`/sessions/templates/${templateId}/create`, data),
 }
 
+// API pour les entités/structures
+export const entityAPI = {
+  // CRUD entités
+  getEntities: (params) => api.get('/entities', { params }),
+  getEntity: (entityId) => api.get(`/entities/${entityId}`),
+  createEntity: (data) => api.post('/entities', data),
+  updateEntity: (entityId, data) => api.put(`/entities/${entityId}`, data),
+  deleteEntity: (entityId) => api.delete(`/entities/${entityId}`),
+  
+  // Types et métadonnées
+  getStructureTypes: () => api.get('/entities/types'),
+  getSectors: () => api.get('/entities/sectors'),
+  
+  // KPI et statistiques spécifiques entité
+  getEntityKpis: (entityId) => api.get(`/entities/${entityId}/kpis`),
+  getEntityReports: (entityId, params) => api.get(`/entities/${entityId}/reports`, { params }),
+  getEntitySessions: (entityId, params) => api.get(`/entities/${entityId}/sessions`, { params }),
+  
+  // Validation et conformité
+  validateEntity: (entityId) => api.post(`/entities/${entityId}/validate`),
+  getComplianceStatus: (entityId) => api.get(`/entities/${entityId}/compliance`),
+  getRequiredReports: (entityId) => api.get(`/entities/${entityId}/required-reports`),
+  
+  // Import/Export
+  exportEntities: (format = 'excel') => 
+    api.get(`/entities/export?format=${format}`, { responseType: 'blob' }),
+  importEntities: (formData) =>
+    api.post('/entities/import', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    }),
+}
+
+// API pour les ministères
+export const ministryAPI = {
+  // CRUD ministères
+  getMinistries: (params) => api.get('/ministries', { params }),
+  getMinistry: (ministryId) => api.get(`/ministries/${ministryId}`),
+  createMinistry: (data) => api.post('/ministries', data),
+  updateMinistry: (ministryId, data) => api.put(`/ministries/${ministryId}`, data),
+  deleteMinistry: (ministryId) => api.delete(`/ministries/${ministryId}`),
+  
+  // Relations de tutelle
+  getTutelageEntities: (ministryId, type = 'all') => 
+    api.get(`/ministries/${ministryId}/entities?tutelage_type=${type}`),
+  assignTutelage: (ministryId, entityId, data) =>
+    api.post(`/ministries/${ministryId}/entities/${entityId}/tutelage`, data),
+  removeTutelage: (ministryId, entityId, type) =>
+    api.delete(`/ministries/${ministryId}/entities/${entityId}/tutelage?type=${type}`),
+  
+  // KPI ministériels
+  getMinistryKpis: (ministryId) => api.get(`/ministries/${ministryId}/kpis`),
+  getSupervisionDashboard: (ministryId) => api.get(`/ministries/${ministryId}/dashboard`),
+}
+
 // Services pour les métadonnées
 export const metaAPI = {
   getCategories: () => api.get('/meta/categories'),

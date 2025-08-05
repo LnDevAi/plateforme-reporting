@@ -33,6 +33,19 @@ class StateEntity extends Model
         'metadata',
     ];
 
+    /**
+     * Types de structures publiques
+     */
+    const TYPE_SOCIETE_ETAT = 'societe_etat';
+    const TYPE_ETABLISSEMENT_PUBLIC = 'etablissement_public';
+    const TYPE_AUTRES = 'autres';
+
+    const STRUCTURE_TYPES = [
+        self::TYPE_SOCIETE_ETAT => 'Société d\'État',
+        self::TYPE_ETABLISSEMENT_PUBLIC => 'Établissement Public',
+        self::TYPE_AUTRES => 'Autres',
+    ];
+
     protected $casts = [
         'metadata' => 'array',
         'establishment_date' => 'date',
@@ -664,5 +677,188 @@ class StateEntity extends Model
                 'Conformité UEMOA exemplaire'
             ]
         ];
+    }
+
+    /**
+     * Obtenir les exigences spécifiques selon le type de structure
+     */
+    public function getStructureSpecificRequirements()
+    {
+        $requirements = [
+            self::TYPE_SOCIETE_ETAT => [
+                'governance' => [
+                    'Conseil d\'Administration obligatoire',
+                    'Assemblée Générale annuelle',
+                    'Commissaires aux comptes certifiés',
+                    'Audit interne structuré',
+                    'Comité d\'audit fonctionnel',
+                ],
+                'reporting' => [
+                    'États financiers SYSCOHADA',
+                    'Rapport de gestion détaillé',
+                    'Comptes sociaux annuels',
+                    'Rapport d\'activités',
+                    'Bilan social RH',
+                ],
+                'compliance' => [
+                    'Code des sociétés commerciales',
+                    'Directives UEMOA applicables',
+                    'Règles de gouvernance d\'entreprise',
+                    'Transparence financière renforcée',
+                ],
+                'deadlines' => [
+                    'AG dans les 6 mois après clôture',
+                    'Dépôt comptes au RCCM',
+                    'Transmission ministères de tutelle',
+                    'Publication extraits presse officielle',
+                ]
+            ],
+            
+            self::TYPE_ETABLISSEMENT_PUBLIC => [
+                'governance' => [
+                    'Conseil d\'Administration ou de Surveillance',
+                    'Direction Générale',
+                    'Agent comptable public',
+                    'Contrôle financier de l\'État',
+                    'Assemblée Générale si applicable',
+                ],
+                'reporting' => [
+                    'Compte administratif annuel',
+                    'Compte de gestion Agent Comptable',
+                    'Budget et comptes prévisionnels',
+                    'Rapport d\'activités détaillé',
+                    'Inventaire patrimoine et matières',
+                ],
+                'compliance' => [
+                    'Loi portant statut établissement',
+                    'Code des marchés publics',
+                    'Règlement financier public',
+                    'Comptabilité des matières obligatoire',
+                ],
+                'deadlines' => [
+                    'Budget voté avant exercice',
+                    'Compte administratif dans 4 mois',
+                    'Rapport CA dans 6 mois',
+                    'Inventaire annuel obligatoire',
+                ]
+            ],
+            
+            self::TYPE_AUTRES => [
+                'governance' => [
+                    'Organes selon statuts particuliers',
+                    'Direction adaptée à la mission',
+                    'Contrôle selon nature juridique',
+                    'Supervision ministérielle',
+                ],
+                'reporting' => [
+                    'Rapports selon mission spécifique',
+                    'Comptes selon nature juridique',
+                    'Rapport d\'activités',
+                    'Documents règlementaires requis',
+                ],
+                'compliance' => [
+                    'Textes fondateurs spécifiques',
+                    'Règlementation sectorielle',
+                    'Normes applicables à l\'activité',
+                    'Obligations légales particulières',
+                ],
+                'deadlines' => [
+                    'Selon calendrier spécifique',
+                    'Conformément aux statuts',
+                    'Respect obligations sectorielles',
+                    'Délais règlementaires propres',
+                ]
+            ]
+        ];
+
+        return $requirements[$this->type] ?? $requirements[self::TYPE_AUTRES];
+    }
+
+    /**
+     * Obtenir le libellé du type de structure
+     */
+    public function getTypeLabel()
+    {
+        return self::STRUCTURE_TYPES[$this->type] ?? $this->type;
+    }
+
+    /**
+     * Vérifier si la structure est une société d'État
+     */
+    public function isSocieteEtat()
+    {
+        return $this->type === self::TYPE_SOCIETE_ETAT;
+    }
+
+    /**
+     * Vérifier si la structure est un établissement public
+     */
+    public function isEtablissementPublic()
+    {
+        return $this->type === self::TYPE_ETABLISSEMENT_PUBLIC;
+    }
+
+    /**
+     * Obtenir les sessions obligatoires selon le type
+     */
+    public function getRequiredSessionTypes()
+    {
+        $sessions = [
+            self::TYPE_SOCIETE_ETAT => [
+                'conseil_administration' => [
+                    'frequency' => 'quarterly',
+                    'mandatory' => true,
+                    'description' => 'CA trimestriel obligatoire'
+                ],
+                'assemblee_generale' => [
+                    'frequency' => 'annual',
+                    'mandatory' => true,
+                    'description' => 'AG annuelle dans les 6 mois'
+                ],
+                'session_budgetaire' => [
+                    'frequency' => 'annual',
+                    'mandatory' => true,
+                    'description' => 'Session budget et investissements'
+                ],
+                'comite_audit' => [
+                    'frequency' => 'biannual',
+                    'mandatory' => true,
+                    'description' => 'Comité d\'audit semestriel'
+                ]
+            ],
+            
+            self::TYPE_ETABLISSEMENT_PUBLIC => [
+                'conseil_administration' => [
+                    'frequency' => 'quarterly',
+                    'mandatory' => true,
+                    'description' => 'CA de surveillance trimestriel'
+                ],
+                'session_budgetaire' => [
+                    'frequency' => 'annual',
+                    'mandatory' => true,
+                    'description' => 'Session budget avant exercice'
+                ],
+                'assemblee_generale' => [
+                    'frequency' => 'annual',
+                    'mandatory' => false,
+                    'description' => 'Si prévu par les statuts'
+                ]
+            ],
+            
+            self::TYPE_AUTRES => [
+                'reunion_direction' => [
+                    'frequency' => 'monthly',
+                    'mandatory' => true,
+                    'description' => 'Réunions selon statuts'
+                ],
+                'session_budgetaire' => [
+                    'frequency' => 'annual',
+                    'mandatory' => true,
+                    'description' => 'Budget annuel'
+                ]
+            ]
+        ];
+
+        return $sessions[$this->type] ?? $sessions[self::TYPE_AUTRES];
     }
 }
