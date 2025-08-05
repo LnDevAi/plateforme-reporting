@@ -391,4 +391,25 @@ export const formatApiError = (error) => {
   return error.message || 'Une erreur est survenue'
 }
 
+// Document Template API
+export const documentTemplateAPI = {
+  // Récupérer les templates
+  getTemplates: (params = {}) => api.get('/document-templates', { params }),
+  getTemplate: (templateKey) => api.get(`/document-templates/${templateKey}`),
+  getCategories: () => api.get('/document-templates/categories'),
+  getStatistics: () => api.get('/document-templates/statistics'),
+  getTemplatesForEntity: (entityId) => api.get(`/state-entities/${entityId}/templates`),
+
+  // Génération de documents
+  generateDocument: (data) => api.post('/document-templates/generate', data),
+  generateCustomDocument: (data) => api.post('/document-templates/generate-custom', data),
+  previewDocument: (data) => api.post('/document-templates/preview', data),
+
+  // Validation
+  validateTemplateData: (data) => api.post('/document-templates/validate', data),
+
+  // Téléchargement
+  downloadDocument: (path) => api.get('/documents/download', { params: { path } }),
+}
+
 export default api

@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\ScheduleController;
 use App\Http\Controllers\Api\DocumentCollaborationController;
 use App\Http\Controllers\Api\KpiController;
+use App\Http\Controllers\DocumentTemplateController;
 
 /*
 |--------------------------------------------------------------------------
@@ -182,6 +183,31 @@ Route::middleware('auth:sanctum')->group(function () {
             ]);
         });
     });
+
+    // Document Templates - Routes pour la gestion des modèles EPE
+    Route::prefix('document-templates')->group(function () {
+        // Liste et catégories
+        Route::get('/', [DocumentTemplateController::class, 'index']);
+        Route::get('/categories', [DocumentTemplateController::class, 'categories']);
+        Route::get('/statistics', [DocumentTemplateController::class, 'statistics']);
+        
+        // Templates spécifiques
+        Route::get('/{templateKey}', [DocumentTemplateController::class, 'show']);
+        
+        // Génération de documents
+        Route::post('/generate', [DocumentTemplateController::class, 'generate']);
+        Route::post('/generate-custom', [DocumentTemplateController::class, 'generateCustom']);
+        Route::post('/preview', [DocumentTemplateController::class, 'preview']);
+        
+        // Validation
+        Route::post('/validate', [DocumentTemplateController::class, 'validate']);
+    });
+
+    // Templates pour entités spécifiques
+    Route::get('state-entities/{entity}/templates', [DocumentTemplateController::class, 'forEntity']);
+
+    // Téléchargement de documents générés
+    Route::get('documents/download', [DocumentTemplateController::class, 'download'])->name('documents.download');
 });
 
 // Route de test
