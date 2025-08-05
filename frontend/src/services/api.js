@@ -194,6 +194,110 @@ export const templateAPI = {
     api.post('/templates/preview', { templateType, data }),
 }
 
+// API pour les sessions en ligne
+export const sessionAPI = {
+  // Gestion des sessions
+  getSessions: (params) => api.get('/sessions', { params }),
+  getSession: (sessionId) => api.get(`/sessions/${sessionId}`),
+  createSession: (data) => api.post('/sessions', data),
+  updateSession: (sessionId, data) => api.put(`/sessions/${sessionId}`, data),
+  deleteSession: (sessionId) => api.delete(`/sessions/${sessionId}`),
+  
+  // Contrôle des sessions
+  startSession: (sessionId) => api.post(`/sessions/${sessionId}/start`),
+  completeSession: (sessionId) => api.post(`/sessions/${sessionId}/complete`),
+  cancelSession: (sessionId, data) => api.post(`/sessions/${sessionId}/cancel`, data),
+  postponeSession: (sessionId, data) => api.post(`/sessions/${sessionId}/postpone`, data),
+  
+  // Gestion des participants
+  getParticipants: (sessionId) => api.get(`/sessions/${sessionId}/participants`),
+  addParticipant: (sessionId, data) => api.post(`/sessions/${sessionId}/participants`, data),
+  updateParticipant: (sessionId, participantId, data) => 
+    api.put(`/sessions/${sessionId}/participants/${participantId}`, data),
+  removeParticipant: (sessionId, participantId) => 
+    api.delete(`/sessions/${sessionId}/participants/${participantId}`),
+  
+  // Participation en session
+  joinSession: (data) => api.post(`/sessions/${data.sessionId}/join`, data),
+  leaveSession: (sessionId) => api.post(`/sessions/${sessionId}/leave`),
+  markPresent: (sessionId, participantId) => 
+    api.post(`/sessions/${sessionId}/participants/${participantId}/present`),
+  markAbsent: (sessionId, participantId, data) => 
+    api.post(`/sessions/${sessionId}/participants/${participantId}/absent`, data),
+  
+  // Système de vote
+  getVotes: (sessionId) => api.get(`/sessions/${sessionId}/votes`),
+  createVote: (sessionId, data) => api.post(`/sessions/${sessionId}/votes`, data),
+  startVote: (voteId) => api.post(`/votes/${voteId}/start`),
+  closeVote: (voteId, data) => api.post(`/votes/${voteId}/close`, data),
+  castVote: (data) => api.post(`/votes/${data.voteId}/cast`, data),
+  getVoteResults: (voteId) => api.get(`/votes/${voteId}/results`),
+  verifyVoteIntegrity: (voteId) => api.get(`/votes/${voteId}/verify`),
+  
+  // Chat et interventions
+  getChatMessages: (sessionId) => api.get(`/sessions/${sessionId}/chat`),
+  sendChatMessage: (data) => api.post(`/sessions/${data.sessionId}/chat`, data),
+  getInterventions: (sessionId) => api.get(`/sessions/${sessionId}/interventions`),
+  addIntervention: (sessionId, data) => api.post(`/sessions/${sessionId}/interventions`, data),
+  
+  // Documents de session
+  getSessionDocuments: (sessionId) => api.get(`/sessions/${sessionId}/documents`),
+  uploadSessionDocument: (sessionId, formData) => 
+    api.post(`/sessions/${sessionId}/documents`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    }),
+  downloadSessionDocument: (sessionId, documentId) => 
+    api.get(`/sessions/${sessionId}/documents/${documentId}`, { responseType: 'blob' }),
+  
+  // Ordre du jour
+  getAgendaItems: (sessionId) => api.get(`/sessions/${sessionId}/agenda`),
+  addAgendaItem: (sessionId, data) => api.post(`/sessions/${sessionId}/agenda`, data),
+  updateAgendaItem: (sessionId, itemId, data) => 
+    api.put(`/sessions/${sessionId}/agenda/${itemId}`, data),
+  deleteAgendaItem: (sessionId, itemId) => 
+    api.delete(`/sessions/${sessionId}/agenda/${itemId}`),
+  markAgendaItemCompleted: (sessionId, itemId) => 
+    api.post(`/sessions/${sessionId}/agenda/${itemId}/complete`),
+  
+  // Procès-verbaux
+  getSessionMinutes: (sessionId) => api.get(`/sessions/${sessionId}/minutes`),
+  generateMinutes: (sessionId) => api.post(`/sessions/${sessionId}/minutes/generate`),
+  approveMinutes: (sessionId, minutesId) => 
+    api.post(`/sessions/${sessionId}/minutes/${minutesId}/approve`),
+  exportMinutes: (sessionId, format = 'pdf') => 
+    api.get(`/sessions/${sessionId}/minutes/export?format=${format}`, { responseType: 'blob' }),
+  
+  // Enregistrement et diffusion
+  startRecording: (sessionId) => api.post(`/sessions/${sessionId}/recording/start`),
+  stopRecording: (sessionId) => api.post(`/sessions/${sessionId}/recording/stop`),
+  getRecording: (sessionId) => api.get(`/sessions/${sessionId}/recording`),
+  downloadRecording: (sessionId) => 
+    api.get(`/sessions/${sessionId}/recording/download`, { responseType: 'blob' }),
+  
+  // Statistiques et métriques
+  getSessionMetrics: (sessionId) => api.get(`/sessions/${sessionId}/metrics`),
+  getParticipationStats: (sessionId) => api.get(`/sessions/${sessionId}/stats/participation`),
+  getComplianceStatus: (sessionId) => api.get(`/sessions/${sessionId}/compliance`),
+  
+  // Invitations et notifications
+  sendInvitations: (sessionId) => api.post(`/sessions/${sessionId}/invitations/send`),
+  sendReminders: (sessionId) => api.post(`/sessions/${sessionId}/reminders/send`),
+  respondToInvitation: (sessionId, response, data) => 
+    api.post(`/sessions/${sessionId}/invitation/respond`, { response, ...data }),
+  
+  // Délégation de pouvoirs
+  delegateVotingRights: (sessionId, participantId, data) => 
+    api.post(`/sessions/${sessionId}/participants/${participantId}/delegate`, data),
+  revokeDelegation: (sessionId, participantId) => 
+    api.delete(`/sessions/${sessionId}/participants/${participantId}/delegate`),
+  
+  // Templates et types de sessions
+  getSessionTypes: () => api.get('/sessions/types'),
+  getSessionTemplates: (type) => api.get(`/sessions/templates?type=${type}`),
+  createFromTemplate: (templateId, data) => 
+    api.post(`/sessions/templates/${templateId}/create`, data),
+}
+
 // Services pour les métadonnées
 export const metaAPI = {
   getCategories: () => api.get('/meta/categories'),
