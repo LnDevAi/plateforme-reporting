@@ -151,6 +151,49 @@ export const documentCollaborationAPI = {
   getChangeHistory: (versionId) => api.get(`/documents/versions/${versionId}/changes`),
 }
 
+// API pour les KPI multi-niveaux
+export const kpiAPI = {
+  // KPI globaux (super-administrateurs/ministères)
+  getGlobalKpis: (params) => api.get('/kpis/global', { params }),
+  
+  // KPI par entité/structure
+  getEntityKpis: (entityId, params) => api.get(`/kpis/entities/${entityId}`, { params }),
+  
+  // KPI par document
+  getDocumentKpis: (documentId, params) => api.get(`/kpis/documents/${documentId}`, { params }),
+  
+  // KPI par ministère
+  getMinistryKpis: (ministryId, params) => api.get(`/kpis/ministries/${ministryId}`, { params }),
+  
+  // Tableau de bord utilisateur
+  getUserDashboardKpis: () => api.get('/kpis/dashboard'),
+  
+  // Export de rapports KPI
+  exportKpiReport: (data) => api.post('/kpis/export', data),
+}
+
+// API pour les templates et génération de documents
+export const templateAPI = {
+  // Générer un document selon un template
+  generateDocument: (templateType, data, format = 'pdf') => 
+    api.post('/templates/generate', { templateType, data, format }),
+  
+  // Créer un document avec template pré-rempli
+  createFromTemplate: (templateType, reportId, entityId, parameters = {}) =>
+    api.post('/templates/create', { templateType, reportId, entityId, parameters }),
+  
+  // Télécharger un document dans un format spécifique
+  downloadDocument: (documentVersionId, format = 'pdf') =>
+    api.get(`/templates/download/${documentVersionId}?format=${format}`, { responseType: 'blob' }),
+  
+  // Obtenir la liste des templates disponibles
+  getAvailableTemplates: () => api.get('/templates/available'),
+  
+  // Prévisualiser un template
+  previewTemplate: (templateType, data) =>
+    api.post('/templates/preview', { templateType, data }),
+}
+
 // Services pour les métadonnées
 export const metaAPI = {
   getCategories: () => api.get('/meta/categories'),

@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\ScheduleController;
 use App\Http\Controllers\Api\DocumentCollaborationController;
+use App\Http\Controllers\Api\KpiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -113,6 +114,27 @@ Route::middleware('auth:sanctum')->group(function () {
         
         // Historique et traçabilité
         Route::get('/versions/{versionId}/changes', [DocumentCollaborationController::class, 'getChangeHistory']);
+    });
+
+    // KPI et analytics multi-niveaux
+    Route::prefix('kpis')->group(function () {
+        // KPI globaux (super-administrateurs/ministères)
+        Route::get('/global', [KpiController::class, 'getGlobalKpis']);
+        
+        // KPI par entité/structure
+        Route::get('/entities/{entityId}', [KpiController::class, 'getEntityKpis']);
+        
+        // KPI par document
+        Route::get('/documents/{documentId}', [KpiController::class, 'getDocumentKpis']);
+        
+        // KPI par ministère
+        Route::get('/ministries/{ministryId}', [KpiController::class, 'getMinistryKpis']);
+        
+        // Tableau de bord utilisateur
+        Route::get('/dashboard', [KpiController::class, 'getUserDashboardKpis']);
+        
+        // Export de rapports KPI
+        Route::post('/export', [KpiController::class, 'exportKpiReport']);
     });
 
     // Gestion des utilisateurs (pour les admins)
