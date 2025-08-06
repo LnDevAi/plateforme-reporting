@@ -377,7 +377,7 @@ class SubscriptionPlan extends Model
                 'max_reports_monthly' => 10,
                 'max_documents_monthly' => 20,
                 'max_storage_gb' => 5,
-                'max_ai_requests_monthly' => 50,
+                'max_ai_requests_monthly' => 100,
                 'features' => [
                     'basic_reporting',
                     'document_generation',
@@ -420,7 +420,7 @@ class SubscriptionPlan extends Model
                 'max_reports_monthly' => 50,
                 'max_documents_monthly' => 100,
                 'max_storage_gb' => 25,
-                'max_ai_requests_monthly' => 200,
+                'max_ai_requests_monthly' => 1000,
                 'features' => [
                     'basic_reporting',
                     'advanced_analytics',
@@ -475,7 +475,7 @@ class SubscriptionPlan extends Model
                 'max_reports_monthly' => 200,
                 'max_documents_monthly' => 500,
                 'max_storage_gb' => 100,
-                'max_ai_requests_monthly' => 1000,
+                'max_ai_requests_monthly' => 2000,
                 'features' => [
                     'basic_reporting',
                     'advanced_analytics',
