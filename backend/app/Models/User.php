@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class User extends Authenticatable
 {
@@ -23,6 +24,11 @@ class User extends Authenticatable
         'role',
         'department',
         'is_active',
+        'country_id',
+        'phone',
+        'organization',
+        'position',
+        'preferred_language',
     ];
 
     /**
@@ -76,5 +82,37 @@ class User extends Authenticatable
     public function canCreateReports()
     {
         return in_array($this->role, ['admin', 'manager', 'analyst']);
+    }
+
+    /**
+     * Relation avec le pays
+     */
+    public function country(): BelongsTo
+    {
+        return $this->belongsTo(Country::class);
+    }
+
+    /**
+     * Obtient la langue préférée de l'utilisateur ou celle de son pays
+     */
+    public function getPreferredLanguage(): string
+    {
+        return $this->preferred_language ?? $this->country?->getPrimaryBusinessLanguage() ?? 'fr';
+    }
+
+    /**
+     * Vérifie si l'utilisateur peut accéder aux features UEMOA
+     */
+    public function canAccessUemoaFeatures(): bool
+    {
+        return $this->country?->is_uemoa_member ?? false;
+    }
+
+    /**
+     * Vérifie si l'utilisateur peut accéder aux features OHADA
+     */
+    public function canAccessOhadaFeatures(): bool
+    {
+        return $this->country?->is_ohada_member ?? false;
     }
 }

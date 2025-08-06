@@ -31,6 +31,7 @@ class StateEntity extends Model
         'annual_revenue',
         'is_active',
         'metadata',
+        'country_id',
     ];
 
     /**
@@ -72,6 +73,14 @@ class StateEntity extends Model
     public function financialMinistry()
     {
         return $this->belongsTo(Ministry::class, 'financial_ministry_id');
+    }
+
+    /**
+     * Relation avec le pays
+     */
+    public function country()
+    {
+        return $this->belongsTo(Country::class);
     }
 
     /**
