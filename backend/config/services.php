@@ -31,50 +31,28 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | OpenAI Configuration for AI Writing Assistant
-    |--------------------------------------------------------------------------
-    |
-    | Configuration pour l'assistant IA de rédaction de documents EPE.
-    | Nécessite une clé API OpenAI valide pour fonctionner.
-    |
-    */
+    // Configuration des services IA
     'openai' => [
         'api_key' => env('OPENAI_API_KEY'),
-        'base_url' => env('OPENAI_BASE_URL', 'https://api.openai.com/v1'),
-        'model' => env('OPENAI_MODEL', 'gpt-4'),
-        'temperature' => env('OPENAI_TEMPERATURE', 0.7),
+        'organization' => env('OPENAI_ORGANIZATION'),
+        'model' => env('OPENAI_MODEL', 'gpt-4-turbo-preview'),
         'max_tokens' => env('OPENAI_MAX_TOKENS', 2000),
-        'timeout' => env('OPENAI_TIMEOUT', 60),
-        
-        // Configuration spécifique aux documents EPE
-        'epe_specialization' => [
-            'system_role' => 'Expert en documentation administrative et financière pour les entreprises publiques du Burkina Faso',
-            'default_framework' => 'SYSCOHADA révisé 2019, directives UEMOA',
-            'default_language' => 'français',
-            'compliance_focus' => ['SYSCOHADA', 'UEMOA', 'Code des marchés publics', 'Gouvernance publique'],
-        ],
+        'temperature' => env('OPENAI_TEMPERATURE', 0.7),
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | Alternative AI Providers
-    |--------------------------------------------------------------------------
-    |
-    | Configuration pour d'autres fournisseurs d'IA en fallback
-    |
-    */
-    'anthropic' => [
-        'api_key' => env('ANTHROPIC_API_KEY'),
-        'model' => env('ANTHROPIC_MODEL', 'claude-3-sonnet-20240229'),
-        'enabled' => env('ANTHROPIC_ENABLED', false),
+    'claude' => [
+        'api_key' => env('CLAUDE_API_KEY'),
+        'model' => env('CLAUDE_MODEL', 'claude-3-sonnet-20240229'),
+        'max_tokens' => env('CLAUDE_MAX_TOKENS', 2000),
+        'api_version' => env('CLAUDE_API_VERSION', '2023-06-01'),
     ],
 
-    'google_ai' => [
-        'api_key' => env('GOOGLE_AI_API_KEY'),
-        'model' => env('GOOGLE_AI_MODEL', 'gemini-pro'),
-        'enabled' => env('GOOGLE_AI_ENABLED', false),
+    'ai' => [
+        'default_provider' => env('AI_DEFAULT_PROVIDER', 'openai'),
+        'fallback_enabled' => env('AI_FALLBACK_ENABLED', true),
+        'cache_responses' => env('AI_CACHE_RESPONSES', false),
+        'rate_limit_per_minute' => env('AI_RATE_LIMIT_PER_MINUTE', 60),
+        'conversation_timeout_hours' => env('AI_CONVERSATION_TIMEOUT_HOURS', 24),
     ],
 
 ];

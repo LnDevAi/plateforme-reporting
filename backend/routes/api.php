@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\DocumentCollaborationController;
 use App\Http\Controllers\Api\KpiController;
 use App\Http\Controllers\DocumentTemplateController;
 use App\Http\Controllers\AIWritingAssistantController;
+use App\Http\Controllers\AIAssistantController;
 
 /*
 |--------------------------------------------------------------------------
@@ -227,6 +228,28 @@ Route::middleware('auth:sanctum')->group(function () {
         // Configuration et test
         Route::get('/contexts', [AIWritingAssistantController::class, 'getDocumentContexts']);
         Route::get('/test-connectivity', [AIWritingAssistantController::class, 'testAIConnectivity']);
+    });
+
+    // Routes pour l'assistant IA conversationnel
+    Route::middleware(['auth:sanctum'])->prefix('ai')->group(function () {
+        // Conversation principale
+        Route::post('/chat', [AIAssistantController::class, 'chat']);
+        
+        // Gestion des conversations
+        Route::get('/conversations/{conversationId}', [AIAssistantController::class, 'getConversationHistory']);
+        
+        // Suggestions et aide
+        Route::get('/suggestions', [AIAssistantController::class, 'getSuggestions']);
+        Route::get('/advice', [AIAssistantController::class, 'getAdvice']);
+        
+        // Recherche dans la base de connaissances
+        Route::post('/search', [AIAssistantController::class, 'searchKnowledge']);
+        
+        // Statistiques et utilisation
+        Route::get('/usage-stats', [AIAssistantController::class, 'getUsageStats']);
+        
+        // Évaluation des réponses
+        Route::post('/rate', [AIAssistantController::class, 'rateResponse']);
     });
 });
 
