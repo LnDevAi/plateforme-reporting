@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\KpiController;
 use App\Http\Controllers\DocumentTemplateController;
 use App\Http\Controllers\AIWritingAssistantController;
 use App\Http\Controllers\AIAssistantController;
+use App\Http\Controllers\ELearningController;
 
 /*
 |--------------------------------------------------------------------------
@@ -250,6 +251,26 @@ Route::middleware('auth:sanctum')->group(function () {
         
         // Évaluation des réponses
         Route::post('/rate', [AIAssistantController::class, 'rateResponse']);
+    });
+
+    // Routes pour l'e-learning basé sur vos formations
+    Route::middleware(['auth:sanctum'])->prefix('elearning')->group(function () {
+        // Tableau de bord des formations
+        Route::get('/dashboard', [ELearningController::class, 'dashboard']);
+        
+        // Gestion des cours
+        Route::get('/courses', [ELearningController::class, 'index']);
+        Route::get('/courses/{course}', [ELearningController::class, 'show']);
+        Route::post('/courses/{course}/enroll', [ELearningController::class, 'enroll']);
+        Route::get('/courses/{course}/start', [ELearningController::class, 'startCourse']);
+        
+        // Gestion des leçons
+        Route::get('/courses/{course}/modules/{module}/lessons/{lesson}', [ELearningController::class, 'getLesson']);
+        Route::post('/courses/{course}/modules/{module}/lessons/{lesson}/complete', [ELearningController::class, 'completeLesson']);
+        
+        // Certificats
+        Route::get('/certificates', [ELearningController::class, 'certificates']);
+        Route::get('/certificates/{certificate}/download', [ELearningController::class, 'downloadCertificate']);
     });
 });
 
