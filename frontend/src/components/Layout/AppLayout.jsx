@@ -21,7 +21,8 @@ import {
   PlusOutlined,
   BarChartOutlined,
   TeamOutlined,
-  ClockCircleOutlined
+  ClockCircleOutlined,
+  ThunderboltOutlined
 } from '@ant-design/icons'
 import { useAuth } from '../../hooks/useAuth'
 import NotificationCenter from '../Notifications/NotificationCenter'
@@ -121,6 +122,11 @@ function AppLayout() {
       key: '/analytics',
       icon: <BarChartOutlined />,
       label: 'Analytiques',
+    },
+    {
+      key: '/ai-assistant',
+      icon: <ThunderboltOutlined />,
+      label: 'Assistant IA',
     },
   ]
 

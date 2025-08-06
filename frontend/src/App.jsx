@@ -19,6 +19,7 @@ import ScheduleCreate from './pages/Schedules/ScheduleCreate'
 import ScheduleDetail from './pages/Schedules/ScheduleDetail'
 import NotificationsPage from './pages/Notifications/NotificationsPage'
 import EpeReportWizard from './pages/Reports/EpeReportWizard'
+import AIAssistantPage from './pages/AIAssistant/AIAssistantPage'
 
 const { Content } = Layout
 
@@ -75,6 +76,9 @@ function AppRoutes() {
         
         {/* Notifications */}
         <Route path="notifications" element={<NotificationsPage />} />
+        
+        {/* Assistant IA */}
+        <Route path="ai-assistant" element={<AIAssistantPage />} />
         
         {/* Profil utilisateur */}
         <Route path="profile" element={<ProfilePage />} />
