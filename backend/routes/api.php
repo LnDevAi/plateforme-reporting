@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\ScheduleController;
 use App\Http\Controllers\Api\DocumentCollaborationController;
 use App\Http\Controllers\Api\KpiController;
 use App\Http\Controllers\DocumentTemplateController;
+use App\Http\Controllers\AIWritingAssistantController;
 
 /*
 |--------------------------------------------------------------------------
@@ -208,6 +209,25 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Téléchargement de documents générés
     Route::get('documents/download', [DocumentTemplateController::class, 'download'])->name('documents.download');
+
+    // AI Writing Assistant - Assistant IA pour la rédaction
+    Route::prefix('ai-assistant')->group(function () {
+        // Génération de contenu
+        Route::post('/generate-content', [AIWritingAssistantController::class, 'generateContent']);
+        Route::post('/improve-content', [AIWritingAssistantController::class, 'improveContent']);
+        Route::post('/adaptive-content', [AIWritingAssistantController::class, 'generateAdaptiveContent']);
+        
+        // Suggestions et aide
+        Route::post('/suggestions', [AIWritingAssistantController::class, 'getSuggestions']);
+        Route::post('/executive-summary', [AIWritingAssistantController::class, 'generateExecutiveSummary']);
+        
+        // Analyse et conformité
+        Route::post('/analyze-compliance', [AIWritingAssistantController::class, 'analyzeCompliance']);
+        
+        // Configuration et test
+        Route::get('/contexts', [AIWritingAssistantController::class, 'getDocumentContexts']);
+        Route::get('/test-connectivity', [AIWritingAssistantController::class, 'testAIConnectivity']);
+    });
 });
 
 // Route de test

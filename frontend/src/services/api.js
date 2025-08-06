@@ -412,4 +412,23 @@ export const documentTemplateAPI = {
   downloadDocument: (path) => api.get('/documents/download', { params: { path } }),
 }
 
+// AI Writing Assistant API
+export const aiWritingAssistantAPI = {
+  // Génération de contenu
+  generateContent: (data) => api.post('/ai-assistant/generate-content', data),
+  improveContent: (data) => api.post('/ai-assistant/improve-content', data),
+  generateAdaptiveContent: (data) => api.post('/ai-assistant/adaptive-content', data),
+
+  // Suggestions et aide
+  getSuggestions: (data) => api.post('/ai-assistant/suggestions', data),
+  generateExecutiveSummary: (data) => api.post('/ai-assistant/executive-summary', data),
+
+  // Analyse et conformité
+  analyzeCompliance: (data) => api.post('/ai-assistant/analyze-compliance', data),
+
+  // Configuration et test
+  getContexts: () => api.get('/ai-assistant/contexts'),
+  testConnectivity: () => api.get('/ai-assistant/test-connectivity'),
+}
+
 export default api

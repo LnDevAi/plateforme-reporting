@@ -40,6 +40,7 @@ import {
 } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { documentTemplateAPI } from '../../services/api';
+import AIWritingAssistant from '../../components/AIWritingAssistant/AIWritingAssistant';
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -60,6 +61,8 @@ const DocumentTemplates = () => {
   const [previewModalVisible, setPreviewModalVisible] = useState(false);
   const [previewContent, setPreviewContent] = useState('');
   const [generatingDocument, setGeneratingDocument] = useState(false);
+  const [aiAssistantVisible, setAiAssistantVisible] = useState(false);
+  const [currentDocumentContent, setCurrentDocumentContent] = useState('');
 
   // Requêtes API
   const { data: templatesData, isLoading: templatesLoading } = useQuery({
@@ -209,6 +212,15 @@ const DocumentTemplates = () => {
               }}
             />
           </Tooltip>,
+          <Tooltip title="Assistant IA">
+            <RobotOutlined 
+              onClick={() => {
+                setSelectedTemplate({ key: templateKey, ...template });
+                setAiAssistantVisible(true);
+              }}
+              style={{ color: '#52c41a' }}
+            />
+          </Tooltip>,
         ]}
       >
         <Card.Meta
@@ -296,6 +308,17 @@ const DocumentTemplates = () => {
               onClick={() => setCustomModalVisible(true)}
             >
               Document Personnalisé
+            </Button>
+            <Button 
+              icon={<RobotOutlined />}
+              onClick={() => setAiAssistantVisible(true)}
+              style={{ 
+                backgroundColor: '#52c41a', 
+                borderColor: '#52c41a',
+                color: 'white'
+              }}
+            >
+              Assistant IA
             </Button>
             <Button icon={<SettingOutlined />}>
               Paramètres
@@ -531,15 +554,29 @@ const DocumentTemplates = () => {
             </Select>
           </Form.Item>
 
-          <Form.Item
-            name="data"
-            label="Données supplémentaires (JSON)"
-          >
-            <TextArea 
-              rows={4} 
-              placeholder='{"key": "value"}' 
-            />
-          </Form.Item>
+                      <Form.Item
+              name="data"
+              label="Données supplémentaires (JSON)"
+            >
+              <TextArea 
+                rows={4} 
+                placeholder='{"key": "value"}' 
+                value={currentDocumentContent}
+                onChange={(e) => setCurrentDocumentContent(e.target.value)}
+              />
+            </Form.Item>
+
+            <Form.Item>
+              <Button 
+                type="dashed" 
+                icon={<RobotOutlined />}
+                onClick={() => setAiAssistantVisible(true)}
+                block
+                style={{ borderColor: '#52c41a', color: '#52c41a' }}
+              >
+                🤖 Obtenir de l'aide IA pour ce document
+              </Button>
+            </Form.Item>
         </Form>
       </Modal>
 
@@ -625,6 +662,21 @@ const DocumentTemplates = () => {
           dangerouslySetInnerHTML={{ __html: previewContent }}
         />
       </Modal>
+
+      {/* Assistant IA de Rédaction */}
+      <AIWritingAssistant
+        templateKey={selectedTemplate?.key}
+        entityId={form.getFieldValue('entity_id')}
+        exercice={form.getFieldValue('exercice')}
+        visible={aiAssistantVisible}
+        onClose={() => setAiAssistantVisible(false)}
+        onContentGenerated={(content) => {
+          setCurrentDocumentContent(content);
+          form.setFieldsValue({ data: content });
+        }}
+        currentContent={currentDocumentContent}
+        sectionType="general"
+      />
     </div>
   );
 };
