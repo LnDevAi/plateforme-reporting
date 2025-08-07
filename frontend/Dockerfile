@@ -1,31 +1,50 @@
-FROM node:18-alpine
+# ===== STAGE 1: Build =====
+FROM node:18-alpine AS build
 
-# Définir le répertoire de travail
 WORKDIR /app
 
-# Copier les fichiers de dépendances
+# Copy package files
 COPY package*.json ./
 
-# Installer les dépendances
-RUN npm install
+# Install dependencies
+RUN npm ci --only=production && npm cache clean --force
 
-# Copier le code source
+# Copy source code
 COPY . .
 
-# Construire l'application pour la production
+# Build the application
 RUN npm run build
 
-# Utiliser nginx pour servir les fichiers statiques
-FROM nginx:alpine
+# ===== STAGE 2: Production =====
+FROM nginx:1.25-alpine AS production
 
-# Copier les fichiers buildés
-COPY --from=0 /app/dist /usr/share/nginx/html
+# Install curl for health checks
+RUN apk add --no-cache curl
 
-# Copier la configuration nginx personnalisée
-COPY nginx.conf /etc/nginx/nginx.conf
+# Copy built application
+COPY --from=build /app/dist /usr/share/nginx/html
 
-# Exposer le port
-EXPOSE 3000
+# Copy Nginx configuration
+COPY docker/nginx.conf /etc/nginx/nginx.conf
+COPY docker/default.conf /etc/nginx/conf.d/default.conf
 
-# Commande de démarrage
+# Create nginx user and set permissions
+RUN addgroup -g 1000 nginx-app && \
+    adduser -D -s /bin/sh -u 1000 -G nginx-app nginx-app && \
+    chown -R nginx-app:nginx-app /usr/share/nginx/html && \
+    chown -R nginx-app:nginx-app /var/cache/nginx && \
+    chown -R nginx-app:nginx-app /var/log/nginx && \
+    chown -R nginx-app:nginx-app /etc/nginx/conf.d
+
+# Switch to non-root user
+USER nginx-app
+
+# Expose port
+EXPOSE 80
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost/ || exit 1
+
+# Start Nginx
 CMD ["nginx", "-g", "daemon off;"]

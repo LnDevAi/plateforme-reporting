@@ -13,6 +13,9 @@ use App\Http\Controllers\DocumentTemplateController;
 use App\Http\Controllers\AIWritingAssistantController;
 use App\Http\Controllers\AIAssistantController;
 use App\Http\Controllers\ELearningController;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Cache;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,6 +27,43 @@ use App\Http\Controllers\ELearningController;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
+
+// Health check endpoint pour monitoring
+Route::get('/health', function () {
+    try {
+        // Vérifier la connexion DB
+        DB::connection()->getPdo();
+        
+        // Vérifier Redis si configuré
+        $redisStatus = 'not_configured';
+        try {
+            if (config('database.redis.default.host')) {
+                Redis::ping();
+                $redisStatus = 'connected';
+            }
+        } catch (Exception $e) {
+            $redisStatus = 'error';
+        }
+        
+        return response()->json([
+            'status' => 'healthy',
+            'timestamp' => now()->toISOString(),
+            'version' => config('app.version', '1.0.0'),
+            'environment' => config('app.env'),
+            'services' => [
+                'database' => 'connected',
+                'redis' => $redisStatus,
+                'cache' => Cache::store()->getStore() ? 'connected' : 'error'
+            ]
+        ]);
+    } catch (Exception $e) {
+        return response()->json([
+            'status' => 'unhealthy',
+            'timestamp' => now()->toISOString(),
+            'error' => $e->getMessage()
+        ], 503);
+    }
+});
 
 // Routes publiques (authentification)
 Route::prefix('auth')->group(function () {

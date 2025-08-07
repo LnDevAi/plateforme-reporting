@@ -1,56 +1,89 @@
-FROM php:8.2-fpm
+# ===== STAGE 1: Dependencies =====
+FROM composer:2.6 AS vendor
 
-# Installer les dépendances système
-RUN apt-get update && apt-get install -y \
-    git \
+WORKDIR /app
+
+COPY composer.json composer.lock ./
+RUN composer install \
+    --no-dev \
+    --no-scripts \
+    --no-autoloader \
+    --no-progress \
+    --prefer-dist
+
+COPY . .
+RUN composer dump-autoload --optimize --classmap-authoritative
+
+# ===== STAGE 2: Production =====
+FROM php:8.1-fpm-alpine AS production
+
+# Install system dependencies
+RUN apk add --no-cache \
+    bash \
     curl \
+    freetype-dev \
+    libjpeg-turbo-dev \
     libpng-dev \
-    libonig-dev \
-    libxml2-dev \
+    libzip-dev \
+    oniguruma-dev \
+    postgresql-dev \
     zip \
     unzip \
-    libzip-dev \
-    default-mysql-client \
+    nginx \
     supervisor \
-    nginx
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) \
+        bcmath \
+        exif \
+        gd \
+        intl \
+        mbstring \
+        opcache \
+        pdo \
+        pdo_mysql \
+        pdo_pgsql \
+        zip
 
-# Nettoyer le cache
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Installer les extensions PHP
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
-
-# Installer Redis extension
+# Install Redis extension
 RUN pecl install redis && docker-php-ext-enable redis
 
-# Installer Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Configure PHP for production
+COPY docker/php/php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
+COPY docker/php/php.ini /usr/local/etc/php/php.ini
 
-# Définir le répertoire de travail
+# Configure Nginx
+COPY docker/nginx/nginx.conf /etc/nginx/nginx.conf
+COPY docker/nginx/default.conf /etc/nginx/http.d/default.conf
+
+# Configure Supervisor
+COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Create application user
+RUN addgroup -g 1000 www && \
+    adduser -D -s /bin/sh -u 1000 -G www www
+
+# Set working directory
 WORKDIR /var/www/html
 
-# Copier les fichiers de l'application
-COPY . .
+# Copy application
+COPY --chown=www:www . .
+COPY --from=vendor --chown=www:www /app/vendor ./vendor
 
-# Installer les dépendances PHP
-RUN composer install --optimize-autoloader --no-dev
-
-# Définir les permissions
-RUN chown -R www-data:www-data /var/www/html \
+# Set permissions
+RUN chown -R www:www /var/www/html \
     && chmod -R 755 /var/www/html/storage \
     && chmod -R 755 /var/www/html/bootstrap/cache
 
-# Configuration Supervisor pour Laravel
-COPY docker/supervisor.conf /etc/supervisor/conf.d/laravel.conf
+# Create required directories
+RUN mkdir -p /var/log/supervisor \
+    && mkdir -p /run/nginx
 
-# Configuration Nginx pour Laravel
-COPY docker/nginx.conf /etc/nginx/sites-available/default
+# Expose port
+EXPOSE 80
 
-# Exposer le port
-EXPOSE 8000
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost/api/health || exit 1
 
-# Script de démarrage
-COPY docker/start.sh /usr/local/bin/start.sh
-RUN chmod +x /usr/local/bin/start.sh
-
-CMD ["/usr/local/bin/start.sh"]
+# Start supervisor
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
