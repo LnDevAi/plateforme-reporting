@@ -1,0 +1,17 @@
+{
+  "name": "plateforme-epe",
+  "version": "1.0.0",
+  "description": "Plateforme de Reporting pour EPE - Frontend React + Backend Laravel",
+  "private": true,
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "preview": "cd frontend && npm run preview"
+  },
+  "keywords": ["epe", "reporting", "uemoa", "ohada", "governance"],
+  "author": "Plateforme EPE Team",
+  "license": "MIT"
+}
