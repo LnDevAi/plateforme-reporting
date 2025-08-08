@@ -1,0 +1,125 @@
+# ====================================
+# GITIGNORE POUR DÉPLOIEMENT AWS - EPE
+# ====================================
+
+# ===== DEPENDENCIES =====
+node_modules/
+vendor/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ===== ENVIRONMENT FILES =====
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.example
+
+# ===== BUILD OUTPUTS =====
+/frontend/dist/
+/frontend/build/
+/backend/public/hot
+/backend/public/storage
+/backend/storage/*.key
+
+# ===== CACHE & TEMP FILES =====
+.cache/
+.temp/
+.tmp/
+*.tmp
+*.temp
+coverage/
+.nyc_output/
+
+# ===== IDE & EDITOR FILES =====
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ===== LARAVEL SPECIFIC =====
+/backend/storage/logs/*.log
+/backend/storage/framework/cache/*
+/backend/storage/framework/sessions/*
+/backend/storage/framework/views/*
+/backend/bootstrap/cache/*.php
+
+# ===== TEST FILES & TOOLS =====
+/e2e-tests/
+/tests/
+*.test.js
+*.spec.js
+test-results/
+playwright-report/
+jest.config.js
+phpunit.xml
+.phpunit.result.cache
+
+# ===== DOCUMENTATION & GUIDES =====
+GUIDE-*.md
+RESOLUTION-*.md
+VERIFICATION-*.md
+TESTS-*.md
+QUESTIONS-*.md
+DEMARRAGE-*.md
+CONFIGURATION-*.md
+ELEARNING-*.md
+*-SUMMARY.md
+
+# ===== SCRIPTS DE DÉVELOPPEMENT =====
+run-tests.sh
+start-servers.sh
+stop-servers.sh
+test-ai-assistant.js
+deploy-elearning-modules.sh
+docker-compose.test.yml
+
+# ===== CI/CD FILES (garder seulement pour GitHub) =====
+# .github/ - GARDÉ pour GitHub Actions
+
+# ===== DOCKER DEVELOPMENT =====
+docker-compose.override.yml
+docker-compose.local.yml
+
+# ===== DEPLOYMENT TEMP FILES =====
+*.zip
+*.tar.gz
+*.tgz
+deployment-temp/
+aws-temp/
+
+# ===== SECURITY & SECRETS =====
+*.pem
+*.key
+*.crt
+secrets/
+.secrets
+keys/
+
+# ===== DATABASE =====
+*.sqlite
+*.db
+database.sql
+*.dump
+
+# ===== LOGS =====
+logs/
+*.log
+laravel.log
+npm-debug.log*
+storage/logs/
+
+# ===== OS GENERATED =====
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

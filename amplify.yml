@@ -1,0 +1,123 @@
+version: 1
+env:
+  variables:
+    # Configuration générale
+    APP_NAME: "Plateforme EPE"
+    APP_ENV: production
+    APP_DEBUG: false
+    
+    # Base de données
+    DB_CONNECTION: mysql
+    
+    # Redis
+    REDIS_HOST: localhost
+    REDIS_PASSWORD: null
+    REDIS_PORT: 6379
+    
+    # Mail
+    MAIL_MAILER: smtp
+    MAIL_FROM_NAME: "Plateforme EPE"
+    
+    # Services IA (à configurer)
+    AI_DEFAULT_PROVIDER: openai
+    AI_FALLBACK_ENABLED: true
+    
+applications:
+  - appRoot: frontend
+    env:
+      variables:
+        # Configuration React
+        VITE_API_BASE_URL: $API_BASE_URL
+        VITE_APP_NAME: "Plateforme EPE"
+    buildSpec: |
+      version: 1
+      
+      phases:
+        preBuild:
+          commands:
+            - echo "🚀 Début du build Frontend EPE..."
+            - node --version
+            - npm --version
+            - npm ci --production=false
+        
+        build:
+          commands:
+            - echo "🏗️ Build de production..."
+            - npm run build
+            - echo "✅ Build Frontend terminé"
+        
+        postBuild:
+          commands:
+            - echo "📦 Optimisation des assets..."
+            - ls -la dist/
+      
+      artifacts:
+        files:
+          - '**/*'
+        baseDirectory: dist
+      
+      cache:
+        paths:
+          - node_modules/**/*
+  
+  - appRoot: backend
+    env:
+      variables:
+        # Variables Laravel
+        APP_URL: $APP_URL
+        DB_HOST: $DB_HOST
+        DB_PORT: $DB_PORT
+        DB_DATABASE: $DB_DATABASE
+        DB_USERNAME: $DB_USERNAME
+        DB_PASSWORD: $DB_PASSWORD
+    buildSpec: |
+      version: 1
+      
+      phases:
+        preBuild:
+          commands:
+            - echo "🚀 Début du build Backend EPE..."
+            - php --version
+            - composer --version
+            - composer install --no-dev --optimize-autoloader
+            - cp .env.production .env
+        
+        build:
+          commands:
+            - echo "🔑 Génération clé application..."
+            - php artisan key:generate --force
+            - echo "🗄️ Préparation base de données..."
+            - php artisan config:cache
+            - php artisan route:cache
+            - php artisan view:cache
+            - echo "✅ Build Backend terminé"
+        
+        postBuild:
+          commands:
+            - echo "📦 Optimisation Laravel..."
+            - php artisan storage:link
+            - ls -la public/
+      
+      artifacts:
+        files:
+          - '**/*'
+        excludePaths:
+          - node_modules/**/*
+          - tests/**/*
+          - storage/logs/**/*
+      
+      cache:
+        paths:
+          - vendor/**/*
+
+# Configuration pour monorepo
+monorepo:
+  enabled: true
+  diff_includes:
+    - frontend/**
+    - backend/**
+  applications:
+    - name: frontend
+      path: frontend
+    - name: backend  
+      path: backend
