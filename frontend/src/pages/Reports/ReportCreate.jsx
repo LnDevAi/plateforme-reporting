@@ -23,7 +23,7 @@ import {
   SettingOutlined,
   FileTextOutlined
 } from '@ant-design/icons'
-import { useMutation, useQuery, useQueryClient } from 'react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import AceEditor from 'react-ace'
 import 'ace-builds/src-noconflict/mode-sql'

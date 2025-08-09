@@ -25,7 +25,7 @@ import {
   BankOutlined,
   SafetyOutlined
 } from '@ant-design/icons'
-import { useQuery } from 'react-query'
+import { useQuery } from '@tanstack/react-query'
 import { dashboardAPI } from '../../services/api'
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 

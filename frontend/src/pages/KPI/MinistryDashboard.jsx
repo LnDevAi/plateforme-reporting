@@ -35,7 +35,7 @@ import {
   ArrowDownOutlined,
   MinusOutlined
 } from '@ant-design/icons'
-import { useQuery } from 'react-query'
+import { useQuery } from '@tanstack/react-query'
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, Area, AreaChart } from 'recharts'
 import { kpiAPI } from '../../services/api'
 import { useAuth } from '../../hooks/useAuth'

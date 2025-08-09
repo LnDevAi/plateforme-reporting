@@ -26,7 +26,7 @@ import {
   ExclamationCircleOutlined
 } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
-import { useMutation, useQuery } from 'react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { reportsAPI, metaAPI } from '../../services/api'
 import dayjs from 'dayjs'
 

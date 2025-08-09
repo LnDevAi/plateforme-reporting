@@ -35,7 +35,7 @@ import {
   TeamOutlined,
   FileTextOutlined,
 } from '@ant-design/icons'
-import { useMutation, useQuery } from 'react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { entityAPI, ministryAPI } from '../../services/api'
 import { useNavigate } from 'react-router-dom'
 

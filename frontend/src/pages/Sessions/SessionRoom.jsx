@@ -57,7 +57,7 @@ import {
   SoundOutlined,
 } from '@ant-design/icons'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useQuery, useMutation, useQueryClient } from 'react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { sessionAPI } from '../../services/api'
 import { useAuth } from '../../hooks/useAuth'
 import './SessionRoom.css'

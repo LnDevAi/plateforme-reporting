@@ -1,6 +1,6 @@
 import React from 'react'
 import { Card, Typography, List, Button, Empty, Tag, Space } from 'antd'
-import { useQuery, useMutation, useQueryClient } from 'react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { notificationAPI } from '../../services/api'
 import { useAuth } from '../../hooks/useAuth'
 import dayjs from 'dayjs'

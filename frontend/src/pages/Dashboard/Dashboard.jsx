@@ -25,7 +25,7 @@ import {
   PlayCircleOutlined,
   WarningOutlined
 } from '@ant-design/icons'
-import { useQuery } from 'react-query'
+import { useQuery } from '@tanstack/react-query'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts'
 import { dashboardAPI } from '../../services/api'
 import { useAuth } from '../../hooks/useAuth'

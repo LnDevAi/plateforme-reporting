@@ -42,7 +42,7 @@ import {
   WarningOutlined
 } from '@ant-design/icons'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useMutation, useQuery, useQueryClient } from 'react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { documentCollaborationAPI } from '../../services/api'
 import { useAuth } from '../../hooks/useAuth'
 import ReactQuill from 'react-quill'
