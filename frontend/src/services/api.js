@@ -526,6 +526,69 @@ export const documentsAPI = {
     }
     return api.get('/documents/execution')
   },
+  // --- DEMO detail editors (localStorage persistence) ---
+  getElaborationItem: async (type, id) => {
+    if (DEMO_MODE) {
+      await delay(100)
+      const key = `elab_${type}_${id}`
+      const stored = localStorage.getItem(key)
+      if (stored) return { success: true, data: JSON.parse(stored) }
+      // default skeletons
+      if (type === 'budget') {
+        const data = {
+          id, title: `Budget ${id}`, status: 'Brouillon',
+          hypotheses: '',
+          lines: [ { chapter: 'Fonctionnement', item: 'Fournitures', amount: 100000 }, { chapter: 'Investissement', item: 'Matériel', amount: 250000 } ],
+          summary: { total: 350000, notes: '' },
+        }
+        localStorage.setItem(key, JSON.stringify(data))
+        return { success: true, data }
+      }
+      if (type === 'programme') {
+        const data = {
+          id, title: `Programme ${id}`, status: 'Brouillon',
+          goals: '',
+          activities: [ { activity: 'Formation des équipes', period: 'T1', budget: 50000 }, { activity: 'Campagne terrain', period: 'T2', budget: 120000 } ],
+          indicators: [ { name: 'Bénéficiaires', target: 1000 } ],
+        }
+        localStorage.setItem(key, JSON.stringify(data))
+        return { success: true, data }
+      }
+      return { success: false, message: 'Type inconnu' }
+    }
+    return api.get(`/documents/elaboration/${type}/${id}`)
+  },
+  saveElaborationItem: async (type, id, payload) => {
+    if (DEMO_MODE) {
+      await delay(100)
+      const key = `elab_${type}_${id}`
+      localStorage.setItem(key, JSON.stringify(payload))
+      return { success: true }
+    }
+    return api.put(`/documents/elaboration/${type}/${id}`, payload)
+  },
+  submitElaborationItem: async (type, id) => {
+    if (DEMO_MODE) {
+      await delay(100)
+      const key = `elab_${type}_${id}`
+      const data = JSON.parse(localStorage.getItem(key) || '{}')
+      data.status = 'Soumis'
+      localStorage.setItem(key, JSON.stringify(data))
+      return { success: true }
+    }
+    return api.post(`/documents/elaboration/${type}/${id}/submit`)
+  },
+  validateElaborationItem: async (type, id) => {
+    if (DEMO_MODE) {
+      await delay(100)
+      const key = `elab_${type}_${id}`
+      const data = JSON.parse(localStorage.getItem(key) || '{}')
+      data.status = 'Validé'
+      localStorage.setItem(key, JSON.stringify(data))
+      return { success: true }
+    }
+    return api.post(`/documents/elaboration/${type}/${id}/validate`)
+  },
 }
 
 // API pour la collaboration documentaire

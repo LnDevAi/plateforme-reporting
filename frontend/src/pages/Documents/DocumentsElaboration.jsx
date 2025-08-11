@@ -2,12 +2,18 @@ import React, { useEffect, useState } from 'react'
 import { Card, Button, Table, Tag, Space } from 'antd'
 import { useQuery } from '@tanstack/react-query'
 import { documentsAPI } from '../../services/api'
+import { useNavigate } from 'react-router-dom'
 
-function SectionCard({ title, items, onCreate }) {
+function SectionCard({ title, items, onCreate, onOpen }) {
   const columns = [
     { title: 'Titre', dataIndex: 'title', key: 'title' },
     { title: 'Statut', dataIndex: 'status', key: 'status', render: (s)=> <Tag color={s==='Validé'?'green':s==='Soumis'?'blue':'orange'}>{s}</Tag> },
     { title: 'Mise à jour', dataIndex: 'updated_at', key: 'updated_at' },
+    { title: 'Actions', key: 'actions', render: (_, record) => (
+      <Space>
+        <Button onClick={()=>onOpen?.(record)}>Ouvrir</Button>
+      </Space>
+    )}
   ]
   return (
     <Card title={title} extra={<Button onClick={onCreate}>Créer un brouillon</Button>} style={{ marginBottom: 16 }}>
@@ -17,6 +23,7 @@ function SectionCard({ title, items, onCreate }) {
 }
 
 function DocumentsElaboration() {
+  const navigate = useNavigate()
   const { data, isLoading } = useQuery(['documents-elaboration'], documentsAPI.getElaboration)
   const [sections, setSections] = useState([])
 
@@ -34,6 +41,11 @@ function DocumentsElaboration() {
     } : s))
   }
 
+  const openEditor = (sectionKey, record) => {
+    if (sectionKey === 'budget_prevision') navigate(`/reports/elaboration/budget/${record.id}`)
+    else if (sectionKey === 'programme_activites') navigate(`/reports/elaboration/programme/${record.id}`)
+  }
+
   return (
     <Space direction="vertical" style={{ width: '100%' }}>
       {isLoading && <Card>Chargement...</Card>}
@@ -43,6 +55,7 @@ function DocumentsElaboration() {
           title={section.title}
           items={section.items}
           onCreate={() => handleCreateDraft(section.key)}
+          onOpen={(record)=>openEditor(section.key, record)}
         />
       ))}
     </Space>

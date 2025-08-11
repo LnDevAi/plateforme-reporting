@@ -21,6 +21,8 @@ import ValidationWorkflow from './pages/Workflow/ValidationWorkflow'
 import AttachmentsManager from './pages/Attachments/AttachmentsManager'
 import DocumentsElaboration from './pages/Documents/DocumentsElaboration'
 import DocumentsExecution from './pages/Documents/DocumentsExecution'
+import BudgetEditor from './pages/Documents/BudgetEditor'
+import ActivitiesProgramEditor from './pages/Documents/ActivitiesProgramEditor'
 
 const { Content } = Layout
 
@@ -73,6 +75,8 @@ function AppRoutes() {
         {/* Renamed: Documents -> Rapports */}
         <Route path="reports/elaboration" element={<DocumentsElaboration />} />
         <Route path="reports/execution" element={<DocumentsExecution />} />
+        <Route path="reports/elaboration/budget/:id" element={<BudgetEditor />} />
+        <Route path="reports/elaboration/programme/:id" element={<ActivitiesProgramEditor />} />
         
         {/* Gestion des utilisateurs (admin seulement) */}
         <Route path="users" element={<UsersList />} />
