@@ -53,69 +53,363 @@ api.interceptors.response.use(
   }
 )
 
+// ----- DEMO MODE MOCKS -----
+const DEMO_MODE = (import.meta.env.VITE_DEMO_MODE === 'true') || !import.meta.env.VITE_API_URL
+
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+const demoUser = {
+  id: 1,
+  name: 'Admin Démo',
+  email: 'demo@plateforme-epe.com',
+  role: 'admin',
+}
+
+const demoReports = Array.from({ length: 8 }).map((_, i) => ({
+  id: i + 1,
+  name: `Rapport Démo ${i + 1}`,
+  category: ['Finance', 'RH', 'Ventes', 'Opérations'][i % 4],
+  created_at: new Date(Date.now() - i * 86400000).toISOString(),
+  updated_at: new Date().toISOString(),
+  status: 'active',
+}))
+
+const demoExecutions = Array.from({ length: 10 }).map((_, i) => ({
+  id: i + 1,
+  report: { id: (i % 5) + 1, name: `Rapport Démo ${(i % 5) + 1}` },
+  executor: { id: 1, name: 'Admin Démo' },
+  status: ['completed', 'failed', 'running'][i % 3],
+  execution_time: Math.floor(Math.random() * 15) + 5,
+  created_at: new Date(Date.now() - i * 3600000).toISOString(),
+}))
+
 // Services d'authentification
 export const authAPI = {
-  login: (credentials) => api.post('/auth/login', credentials),
-  register: (userData) => api.post('/auth/register', userData),
-  logout: () => api.post('/auth/logout'),
-  getUser: () => api.get('/auth/user'),
+  login: async (credentials) => {
+    if (DEMO_MODE) {
+      await delay(300)
+      return { success: true, data: { user: demoUser, token: 'demo-token' } }
+    }
+    return api.post('/auth/login', credentials)
+  },
+  register: async (userData) => {
+    if (DEMO_MODE) {
+      await delay(300)
+      return { success: true, data: { user: demoUser, token: 'demo-token' } }
+    }
+    return api.post('/auth/register', userData)
+  },
+  logout: async () => {
+    if (DEMO_MODE) {
+      await delay(200)
+      return { success: true }
+    }
+    return api.post('/auth/logout')
+  },
+  getUser: async () => {
+    if (DEMO_MODE) {
+      await delay(200)
+      return { success: true, data: demoUser }
+    }
+    return api.get('/auth/user')
+  },
 }
 
 // Services pour les rapports
 export const reportsAPI = {
-  getAll: (params = {}) => api.get('/reports', { params }),
-  getById: (id) => api.get(`/reports/${id}`),
-  create: (data) => api.post('/reports', data),
-  update: (id, data) => api.put(`/reports/${id}`, data),
-  delete: (id) => api.delete(`/reports/${id}`),
-  execute: (id, params = {}) => api.post(`/reports/${id}/execute`, params),
-  getExecutions: (id, params = {}) => api.get(`/reports/${id}/executions`, { params }),
-  getStatistics: (id) => api.get(`/reports/${id}/statistics`),
-  export: (id, format) => api.get(`/reports/${id}/export/${format}`, { responseType: 'blob' }),
+  getAll: async (params = {}) => {
+    if (DEMO_MODE) {
+      await delay(200)
+      return { success: true, data: demoReports }
+    }
+    return api.get('/reports', { params })
+  },
+  getById: async (id) => {
+    if (DEMO_MODE) {
+      await delay(200)
+      return { success: true, data: demoReports.find(r => r.id === Number(id)) || demoReports[0] }
+    }
+    return api.get(`/reports/${id}`)
+  },
+  create: async (data) => {
+    if (DEMO_MODE) {
+      await delay(200)
+      return { success: true, data: { ...data, id: demoReports.length + 1 } }
+    }
+    return api.post('/reports', data)
+  },
+  update: async (id, data) => {
+    if (DEMO_MODE) {
+      await delay(200)
+      return { success: true, data: { ...data, id } }
+    }
+    return api.put(`/reports/${id}`, data)
+  },
+  delete: async (id) => {
+    if (DEMO_MODE) {
+      await delay(200)
+      return { success: true }
+    }
+    return api.delete(`/reports/${id}`)
+  },
+  execute: async (id, params = {}) => {
+    if (DEMO_MODE) {
+      await delay(300)
+      return { success: true, data: { rows: [{ id: 1, value: 'Résultat démo' }], columns: ['id','value'] } }
+    }
+    return api.post(`/reports/${id}/execute`, params)
+  },
+  getExecutions: async (id, params = {}) => {
+    if (DEMO_MODE) {
+      await delay(200)
+      return { success: true, data: demoExecutions }
+    }
+    return api.get(`/reports/${id}/executions`, { params })
+  },
+  getStatistics: async (id) => {
+    if (DEMO_MODE) {
+      await delay(200)
+      return { success: true, data: { total_executions: 42, avg_time: 8.3 } }
+    }
+    return api.get(`/reports/${id}/statistics`)
+  },
+  export: async (id, format) => {
+    if (DEMO_MODE) {
+      await delay(200)
+      return { success: true, data: new Blob([`Demo export ${format}`]) }
+    }
+    return api.get(`/reports/${id}/export/${format}`, { responseType: 'blob' })
+  },
 }
 
 // Services pour le tableau de bord
 export const dashboardAPI = {
-  getStats: () => api.get('/dashboard/stats'),
-  getRecentExecutions: (params = {}) => api.get('/dashboard/recent-executions', { params }),
-  getPopularReports: (params = {}) => api.get('/dashboard/popular-reports', { params }),
-  getExecutionCharts: (params = {}) => api.get('/dashboard/execution-charts', { params }),
-  getPerformanceMetrics: () => api.get('/dashboard/performance-metrics'),
-  getUserActivity: (params = {}) => api.get('/dashboard/user-activity', { params }),
-  getAlerts: () => api.get('/dashboard/alerts'),
+  getStats: async () => {
+    if (DEMO_MODE) {
+      await delay(200)
+      return { success: true, data: {
+        total_reports: demoReports.length,
+        active_reports: demoReports.length - 1,
+        executions_today: 12,
+        total_executions: 256,
+        users_count: 5,
+        failed_executions: 1,
+      } }
+    }
+    return api.get('/dashboard/stats')
+  },
+  getRecentExecutions: async (params = {}) => {
+    if (DEMO_MODE) {
+      await delay(200)
+      return { success: true, data: demoExecutions }
+    }
+    return api.get('/dashboard/recent-executions', { params })
+  },
+  getPopularReports: async (params = {}) => {
+    if (DEMO_MODE) {
+      await delay(200)
+      return { success: true, data: demoReports.slice(0, 5) }
+    }
+    return api.get('/dashboard/popular-reports', { params })
+  },
+  getExecutionCharts: async (params = {}) => {
+    if (DEMO_MODE) {
+      await delay(200)
+      const now = Date.now()
+      const data = Array.from({ length: 7 }).map((_, i) => ({
+        date: new Date(now - (6 - i) * 86400000).toLocaleDateString('fr-FR'),
+        executions: Math.floor(Math.random() * 20) + 5,
+      }))
+      return { success: true, data }
+    }
+    return api.get('/dashboard/execution-charts', { params })
+  },
+  getPerformanceMetrics: async () => {
+    if (DEMO_MODE) {
+      await delay(200)
+      return { success: true, data: { p95: 1200, p99: 1800 } }
+    }
+    return api.get('/dashboard/performance-metrics')
+  },
+  getUserActivity: async (params = {}) => {
+    if (DEMO_MODE) {
+      await delay(200)
+      return { success: true, data: [] }
+    }
+    return api.get('/dashboard/user-activity', { params })
+  },
+  getAlerts: async () => {
+    if (DEMO_MODE) {
+      await delay(150)
+      return { success: true, data: [
+        { title: 'Nouvelle version', message: 'Version 1.0 déployée en démo', type: 'info' },
+      ] }
+    }
+    return api.get('/dashboard/alerts')
+  },
 }
 
 // Services pour les utilisateurs
 export const usersAPI = {
-  getAll: (params = {}) => api.get('/users', { params }),
-  getById: (id) => api.get(`/users/${id}`),
-  create: (data) => api.post('/users', data),
-  update: (id, data) => api.put(`/users/${id}`, data),
-  delete: (id) => api.delete(`/users/${id}`),
-  toggleStatus: (id) => api.put(`/users/${id}/toggle-status`),
+  getAll: async (params = {}) => {
+    if (DEMO_MODE) {
+      await delay(150)
+      return { success: true, data: [demoUser] }
+    }
+    return api.get('/users', { params })
+  },
+  getById: async (id) => {
+    if (DEMO_MODE) {
+      await delay(150)
+      return { success: true, data: demoUser }
+    }
+    return api.get(`/users/${id}`)
+  },
+  create: async (data) => {
+    if (DEMO_MODE) {
+      await delay(150)
+      return { success: true, data: { ...data, id: 2 } }
+    }
+    return api.post('/users', data)
+  },
+  update: async (id, data) => {
+    if (DEMO_MODE) {
+      await delay(150)
+      return { success: true, data: { ...demoUser, ...data } }
+    }
+    return api.put(`/users/${id}`, data)
+  },
+  delete: async (id) => {
+    if (DEMO_MODE) {
+      await delay(150)
+      return { success: true }
+    }
+    return api.delete(`/users/${id}`)
+  },
+  toggleStatus: async (id) => {
+    if (DEMO_MODE) {
+      await delay(100)
+      return { success: true }
+    }
+    return api.put(`/users/${id}/toggle-status`)
+  },
 }
 
 // Services pour les notifications
 export const notificationAPI = {
-  getAll: (params = {}) => api.get('/notifications', { params }),
-  getUnreadCount: () => api.get('/notifications/unread-count'),
-  markAsRead: (data) => api.post('/notifications/mark-as-read', data),
-  markAllAsRead: () => api.post('/notifications/mark-all-as-read'),
-  createTest: (data) => api.post('/notifications/test', data),
+  getAll: async (params = {}) => {
+    if (DEMO_MODE) {
+      await delay(100)
+      return { success: true, data: [
+        { id: 1, title: 'Bienvenue', message: 'Mode démo activé', read: false },
+      ] }
+    }
+    return api.get('/notifications', { params })
+  },
+  getUnreadCount: async () => {
+    if (DEMO_MODE) {
+      await delay(80)
+      return { success: true, data: 1 }
+    }
+    return api.get('/notifications/unread-count')
+  },
+  markAsRead: async (data) => {
+    if (DEMO_MODE) {
+      await delay(80)
+      return { success: true }
+    }
+    return api.post('/notifications/mark-as-read', data)
+  },
+  markAllAsRead: async () => {
+    if (DEMO_MODE) {
+      await delay(80)
+      return { success: true }
+    }
+    return api.post('/notifications/mark-all-as-read')
+  },
+  createTest: async (data) => {
+    if (DEMO_MODE) {
+      await delay(80)
+      return { success: true }
+    }
+    return api.post('/notifications/test', data)
+  },
 }
 
 // Services pour la planification
 export const scheduleAPI = {
-  getAll: (params = {}) => api.get('/schedules', { params }),
-  getById: (id) => api.get(`/schedules/${id}`),
-  create: (data) => api.post('/schedules', data),
-  update: (id, data) => api.put(`/schedules/${id}`, data),
-  delete: (id) => api.delete(`/schedules/${id}`),
-  toggleStatus: (id) => api.put(`/schedules/${id}/toggle-status`),
-  executeNow: (id) => api.post(`/schedules/${id}/execute-now`),
-  getDue: () => api.get('/schedules/due'),
-  getFrequencies: () => api.get('/schedules/frequencies'),
-  getTimezones: () => api.get('/schedules/timezones'),
+  getAll: async (params = {}) => {
+    if (DEMO_MODE) {
+      await delay(100)
+      return { success: true, data: [] }
+    }
+    return api.get('/schedules', { params })
+  },
+  getById: async (id) => {
+    if (DEMO_MODE) {
+      await delay(100)
+      return { success: true, data: null }
+    }
+    return api.get(`/schedules/${id}`)
+  },
+  create: async (data) => {
+    if (DEMO_MODE) {
+      await delay(100)
+      return { success: true, data: { ...data, id: 1 } }
+    }
+    return api.post('/schedules', data)
+  },
+  update: async (id, data) => {
+    if (DEMO_MODE) {
+      await delay(100)
+      return { success: true, data: { ...data, id } }
+    }
+    return api.put(`/schedules/${id}`, data)
+  },
+  delete: async (id) => {
+    if (DEMO_MODE) {
+      await delay(100)
+      return { success: true }
+    }
+    return api.delete(`/schedules/${id}`)
+  },
+  toggleStatus: async (id) => {
+    if (DEMO_MODE) {
+      await delay(100)
+      return { success: true }
+    }
+    return api.put(`/schedules/${id}/toggle-status`)
+  },
+  executeNow: async (id) => {
+    if (DEMO_MODE) {
+      await delay(150)
+      return { success: true }
+    }
+    return api.post(`/schedules/${id}/execute-now`)
+  },
+  getDue: async () => {
+    if (DEMO_MODE) {
+      await delay(100)
+      return { success: true, data: [] }
+    }
+    return api.get('/schedules/due')
+  },
+  getFrequencies: async () => {
+    if (DEMO_MODE) {
+      await delay(80)
+      return { success: true, data: ['daily','weekly','monthly'] }
+    }
+    return api.get('/schedules/frequencies')
+  },
+  getTimezones: async () => {
+    if (DEMO_MODE) {
+      await delay(80)
+      return { success: true, data: ['UTC','Europe/Paris'] }
+    }
+    return api.get('/schedules/timezones')
+  },
 }
 
 // API pour la collaboration documentaire

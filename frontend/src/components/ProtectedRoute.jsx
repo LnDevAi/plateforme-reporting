@@ -7,6 +7,12 @@ function ProtectedRoute({ children, requiredPermission = null }) {
   const { user, loading, hasPermission } = useAuth()
   const location = useLocation()
 
+  // Demo mode: allow access without auth
+  const DEMO_MODE = (import.meta.env.VITE_DEMO_MODE === 'true') || !import.meta.env.VITE_API_URL
+  if (DEMO_MODE) {
+    return children
+  }
+
   // Afficher un spinner pendant le chargement
   if (loading) {
     return (

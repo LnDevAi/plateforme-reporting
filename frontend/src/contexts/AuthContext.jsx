@@ -67,11 +67,28 @@ const AuthContext = createContext()
 export default function AuthProvider({ children }) {
   const [state, dispatch] = useReducer(authReducer, initialState)
 
+  // Démo mode: activé si VITE_DEMO_MODE=true ou si aucune URL d'API n'est définie
+  const DEMO_MODE = (import.meta.env.VITE_DEMO_MODE === 'true') || !import.meta.env.VITE_API_URL
+  const demoUser = {
+    id: 1,
+    name: 'Admin Démo',
+    email: 'demo@plateforme-epe.com',
+    role: 'admin',
+  }
+
   // Charger l'utilisateur depuis le localStorage au démarrage
   useEffect(() => {
     const initAuth = async () => {
       try {
         dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: true })
+
+        // Bypass complet en mode démo
+        if (DEMO_MODE) {
+          localStorage.setItem('auth_token', 'demo-token')
+          localStorage.setItem('user', JSON.stringify(demoUser))
+          dispatch({ type: AUTH_ACTIONS.SET_USER, payload: demoUser })
+          return
+        }
         
         const token = localStorage.getItem('auth_token')
         if (!token) {
@@ -107,6 +124,14 @@ export default function AuthProvider({ children }) {
       dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: true })
       dispatch({ type: AUTH_ACTIONS.CLEAR_ERROR })
 
+      // Bypass login en mode démo: accepter toute combinaison
+      if (DEMO_MODE) {
+        localStorage.setItem('auth_token', 'demo-token')
+        localStorage.setItem('user', JSON.stringify(demoUser))
+        dispatch({ type: AUTH_ACTIONS.SET_USER, payload: demoUser })
+        return { success: true }
+      }
+
       const response = await authAPI.login(credentials)
       
       if (response.success) {
@@ -135,6 +160,14 @@ export default function AuthProvider({ children }) {
       dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: true })
       dispatch({ type: AUTH_ACTIONS.CLEAR_ERROR })
 
+      // En mode démo, simuler une inscription réussie et connecter l'utilisateur
+      if (DEMO_MODE) {
+        localStorage.setItem('auth_token', 'demo-token')
+        localStorage.setItem('user', JSON.stringify(demoUser))
+        dispatch({ type: AUTH_ACTIONS.SET_USER, payload: demoUser })
+        return { success: true }
+      }
+
       const response = await authAPI.register(userData)
       
       if (response.success) {
@@ -160,8 +193,10 @@ export default function AuthProvider({ children }) {
 
   const logout = async () => {
     try {
-      // Appeler l'API pour déconnecter côté serveur
-      await authAPI.logout()
+      // Appeler l'API pour déconnecter côté serveur (ignoré en mode démo)
+      if (!DEMO_MODE) {
+        await authAPI.logout()
+      }
     } catch (error) {
       // Ignorer les erreurs de déconnexion côté serveur
       console.warn('Erreur lors de la déconnexion côté serveur:', error)
