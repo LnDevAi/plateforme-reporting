@@ -25,6 +25,8 @@ import ProjectCreate from './pages/Projects/ProjectCreate'
 import TemplatesList from './pages/Templates/TemplatesList'
 import ValidationWorkflow from './pages/Workflow/ValidationWorkflow'
 import AttachmentsManager from './pages/Attachments/AttachmentsManager'
+import DocumentsElaboration from './pages/Documents/DocumentsElaboration'
+import DocumentsExecution from './pages/Documents/DocumentsExecution'
 
 const { Content } = Layout
 
@@ -82,6 +84,8 @@ function AppRoutes() {
         <Route path="templates" element={<TemplatesList />} />
         <Route path="workflow" element={<ValidationWorkflow />} />
         <Route path="attachments" element={<AttachmentsManager />} />
+        <Route path="documents/elaboration" element={<DocumentsElaboration />} />
+        <Route path="documents/execution" element={<DocumentsExecution />} />
         
         {/* Gestion des utilisateurs (admin seulement) */}
         <Route path="users" element={<UsersList />} />

@@ -490,6 +490,44 @@ export const attachmentsAPI = {
   },
 }
 
+// === Documents (Elaboration / Exécution) ===
+export const documentsAPI = {
+  getElaboration: async () => {
+    if (DEMO_MODE) {
+      await delay(120)
+      return { success: true, data: [
+        { key: 'budget_prevision', title: 'Budget prévisionnel', items: [ { id: 1, title: 'Budget 2025', status: 'Brouillon', updated_at: '2025-01-15 10:30' } ] },
+        { key: 'programme_activites', title: 'Programme d’Activités', items: [ { id: 2, title: 'PA 2025', status: 'Soumis', updated_at: '2025-02-02 09:15' } ] },
+        { key: 'ppm', title: 'Plan de Passation des Marchés (PPM)', items: [ { id: 3, title: 'PPM 2025', status: 'Validé', updated_at: '2025-02-20 14:00' } ] },
+        { key: 'autres_elab', title: 'Autres documents', items: [] },
+        { key: 'avis_audit', title: 'Avis du Comité d’audit', items: [] },
+        { key: 'avis_commissaire', title: 'Avis du Commissaire aux Comptes', items: [] },
+        { key: 'rapport_ca_budget', title: 'Rapport du CA sur la session budgétaire', items: [] },
+      ]}
+    }
+    return api.get('/documents/elaboration')
+  },
+  getExecution: async () => {
+    if (DEMO_MODE) {
+      await delay(120)
+      return { success: true, data: [
+        { key: 'budget_execution', title: 'Rapport d’exécution du Budget', items: [ { id: 11, title: 'Exécution Budget 2025 S1', status: 'Soumis', updated_at: '2025-07-10 11:00' } ] },
+        { key: 'rapport_activites', title: 'Rapport d’activités', items: [ { id: 12, title: 'Rapport semestriel 2025', status: 'Brouillon', updated_at: '2025-07-18 08:45' } ] },
+        { key: 'ppm_execution', title: 'Rapport d’exécution du PPM', items: [] },
+        { key: 'etats_financiers', title: 'États financiers', items: [] },
+        { key: 'bilan_social', title: 'Bilan social', items: [] },
+        { key: 'rapport_gestion', title: 'Rapport de gestion', items: [] },
+        { key: 'comites_audit', title: 'Rapports des comités d’audit', items: [] },
+        { key: 'commissaire_comptes', title: 'Rapports du Commissaire aux comptes', items: [] },
+        { key: 'sejour_pca', title: 'Rapports du séjour du PCA', items: [] },
+        { key: 'rapport_ca_comptes', title: 'Rapport du CA sur la session d’arrêt des comptes', items: [] },
+        { key: 'autres_exec', title: 'Autres documents', items: [] },
+      ]}
+    }
+    return api.get('/documents/execution')
+  },
+}
+
 // API pour la collaboration documentaire
 export const documentCollaborationAPI = {
   // Gestion des versions

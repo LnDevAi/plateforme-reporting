@@ -26,7 +26,8 @@ import {
   ApartmentOutlined,
   FileDoneOutlined,
   ClusterOutlined,
-  PaperClipOutlined
+  PaperClipOutlined,
+  FolderOpenOutlined
 } from '@ant-design/icons'
 import { useAuth } from '../../hooks/useAuth'
 import NotificationCenter from '../Notifications/NotificationCenter'
@@ -98,6 +99,15 @@ function AppLayout() {
       ]
     },
     {
+      key: '/documents',
+      icon: <FolderOpenOutlined />,
+      label: 'Documents',
+      children: [
+        { key: '/documents/elaboration', icon: <FileDoneOutlined />, label: 'Élaboration' },
+        { key: '/documents/execution', icon: <ClusterOutlined />, label: 'Exécution' },
+      ]
+    },
+    {
       key: '/reports',
       icon: <FileTextOutlined />,
       label: 'Rapports',
@@ -159,6 +169,11 @@ function AppLayout() {
   // Déterminer l'élément sélectionné du menu
   const getSelectedKeys = () => {
     const path = location.pathname
+    if (path.startsWith('/documents/')) {
+      if (path === '/documents/elaboration') return ['/documents/elaboration']
+      if (path === '/documents/execution') return ['/documents/execution']
+      return ['/documents']
+    }
     if (path.startsWith('/reports/')) {
       if (path === '/reports/create') return ['/reports/create']
       return ['/reports']
@@ -177,6 +192,7 @@ function AppLayout() {
   // Déterminer les éléments ouverts du menu
   const getOpenKeys = () => {
     const path = location.pathname
+    if (path.startsWith('/documents')) return ['/documents']
     if (path.startsWith('/reports')) return ['/reports']
     if (path.startsWith('/schedules')) return ['/schedules']
     if (path.startsWith('/projects')) return ['/projects']
@@ -257,6 +273,8 @@ function AppLayout() {
               {location.pathname === '/dashboard' && 'Tableau de bord'}
               {location.pathname === '/projects' && 'Projets / Entités'}
               {location.pathname === '/projects/create' && 'Nouveau projet'}
+              {location.pathname === '/documents/elaboration' && 'Documents - Élaboration'}
+              {location.pathname === '/documents/execution' && 'Documents - Exécution'}
               {location.pathname === '/templates' && 'Modèles de rapports'}
               {location.pathname === '/workflow' && 'Workflow de validation'}
               {location.pathname === '/attachments' && 'Pièces justificatives'}
