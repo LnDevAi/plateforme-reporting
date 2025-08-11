@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Form, Input, Button, Card, Typography, Alert, Row, Col, Divider } from 'antd'
 import { UserOutlined, LockOutlined, LoginOutlined } from '@ant-design/icons'
 import { useAuth } from '../../hooks/useAuth'
@@ -14,6 +14,19 @@ function LoginPage() {
 
   // Obtenir l'URL de redirection après connexion
   const from = location.state?.from?.pathname || '/dashboard'
+
+  // Demo mode: auto-login and redirect
+  const DEMO_MODE = (import.meta.env.VITE_DEMO_MODE === 'true') || !import.meta.env.VITE_API_URL
+  useEffect(() => {
+    if (DEMO_MODE) {
+      setLoading(true)
+      clearError()
+      login({ email: 'demo@plateforme-epe.com', password: 'demo' })
+        .then(() => navigate(from, { replace: true }))
+        .finally(() => setLoading(false))
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [DEMO_MODE])
 
   // Gérer la soumission du formulaire
   const handleSubmit = async (values) => {
@@ -61,7 +74,7 @@ function LoginPage() {
                 Plateforme de Reporting
               </Title>
               <Text type="secondary">
-                Connectez-vous pour accéder à vos rapports
+                {DEMO_MODE ? 'Mode démo activé: redirection en cours...' : 'Connectez-vous pour accéder à vos rapports'}
               </Text>
             </div>
 
@@ -79,63 +92,65 @@ function LoginPage() {
             )}
 
             {/* Formulaire de connexion */}
-            <Form
-              name="login"
-              onFinish={handleSubmit}
-              layout="vertical"
-              size="large"
-              autoComplete="off"
-            >
-              <Form.Item
-                name="email"
-                label="Adresse email"
-                rules={[
-                  {
-                    required: true,
-                    message: 'Veuillez saisir votre adresse email',
-                  },
-                  {
-                    type: 'email',
-                    message: 'Veuillez saisir une adresse email valide',
-                  },
-                ]}
+            {!DEMO_MODE && (
+              <Form
+                name="login"
+                onFinish={handleSubmit}
+                layout="vertical"
+                size="large"
+                autoComplete="off"
               >
-                <Input
-                  prefix={<UserOutlined />}
-                  placeholder="votre.email@exemple.com"
-                  autoComplete="email"
-                />
-              </Form.Item>
-
-              <Form.Item
-                name="password"
-                label="Mot de passe"
-                rules={[
-                  {
-                    required: true,
-                    message: 'Veuillez saisir votre mot de passe',
-                  },
-                ]}
-              >
-                <Input.Password
-                  prefix={<LockOutlined />}
-                  placeholder="Votre mot de passe"
-                  autoComplete="current-password"
-                />
-              </Form.Item>
-
-              <Form.Item style={{ marginBottom: '16px' }}>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  loading={loading}
-                  icon={<LoginOutlined />}
-                  style={{ width: '100%', height: '48px' }}
+                <Form.Item
+                  name="email"
+                  label="Adresse email"
+                  rules={[
+                    {
+                      required: true,
+                      message: 'Veuillez saisir votre adresse email',
+                    },
+                    {
+                      type: 'email',
+                      message: 'Veuillez saisir une adresse email valide',
+                    },
+                  ]}
                 >
-                  Se connecter
-                </Button>
-              </Form.Item>
-            </Form>
+                  <Input
+                    prefix={<UserOutlined />}
+                    placeholder="votre.email@exemple.com"
+                    autoComplete="email"
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  name="password"
+                  label="Mot de passe"
+                  rules={[
+                    {
+                      required: true,
+                      message: 'Veuillez saisir votre mot de passe',
+                    },
+                  ]}
+                >
+                  <Input.Password
+                    prefix={<LockOutlined />}
+                    placeholder="Votre mot de passe"
+                    autoComplete="current-password"
+                  />
+                </Form.Item>
+
+                <Form.Item style={{ marginBottom: '16px' }}>
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    loading={loading}
+                    icon={<LoginOutlined />}
+                    style={{ width: '100%', height: '48px' }}
+                  >
+                    Se connecter
+                  </Button>
+                </Form.Item>
+              </Form>
+            )}
 
             <Divider />
 
