@@ -41,141 +41,64 @@ function AppLayout() {
   const navigate = useNavigate()
   const location = useLocation()
 
-  // Gérer la déconnexion
   const handleLogout = async () => {
     try {
       await logout()
       navigate('/login')
-      notification.success({
-        message: 'Déconnexion réussie',
-        description: 'Vous avez été déconnecté avec succès.',
-      })
+      notification.success({ message: 'Déconnexion réussie', description: 'Vous avez été déconnecté avec succès.' })
     } catch (error) {
-      notification.error({
-        message: 'Erreur de déconnexion',
-        description: 'Une erreur est survenue lors de la déconnexion.',
-      })
+      notification.error({ message: 'Erreur de déconnexion', description: 'Une erreur est survenue lors de la déconnexion.' })
     }
   }
 
-  // Menu utilisateur
   const userMenuItems = [
-    {
-      key: 'profile',
-      icon: <UserOutlined />,
-      label: 'Profil',
-      onClick: () => navigate('/profile'),
-    },
-    {
-      key: 'settings',
-      icon: <SettingOutlined />,
-      label: 'Paramètres',
-    },
-    {
-      type: 'divider',
-    },
-    {
-      key: 'logout',
-      icon: <LogoutOutlined />,
-      label: 'Déconnexion',
-      onClick: handleLogout,
-    },
+    { key: 'profile', icon: <UserOutlined />, label: 'Profil', onClick: () => navigate('/profile') },
+    { key: 'settings', icon: <SettingOutlined />, label: 'Paramètres' },
+    { type: 'divider' },
+    { key: 'logout', icon: <LogoutOutlined />, label: 'Déconnexion', onClick: handleLogout },
   ]
 
-  // Éléments du menu principal
   const menuItems = [
+    { key: '/dashboard', icon: <DashboardOutlined />, label: 'Tableau de bord' },
     {
-      key: '/dashboard',
-      icon: <DashboardOutlined />,
-      label: 'Tableau de bord',
-    },
-    {
-      key: '/projects',
-      icon: <ApartmentOutlined />,
-      label: 'Projets / Entités',
+      key: '/projects', icon: <ApartmentOutlined />, label: 'Projets / Entités',
       children: [
         { key: '/projects', icon: <ApartmentOutlined />, label: 'Liste des projets' },
         { key: '/projects/create', icon: <PlusOutlined />, label: 'Nouveau projet' },
       ]
     },
     {
-      key: '/documents',
-      icon: <FolderOpenOutlined />,
-      label: 'Documents',
+      key: '/reports', icon: <FolderOpenOutlined />, label: 'Rapports',
       children: [
-        { key: '/documents/elaboration', icon: <FileDoneOutlined />, label: 'Élaboration' },
-        { key: '/documents/execution', icon: <ClusterOutlined />, label: 'Exécution' },
+        { key: '/reports/elaboration', icon: <FileDoneOutlined />, label: 'Élaboration' },
+        { key: '/reports/execution', icon: <ClusterOutlined />, label: 'Exécution' },
       ]
     },
+    { key: '/templates', icon: <FileDoneOutlined />, label: 'Modèles de rapports' },
+    { key: '/workflow', icon: <ClusterOutlined />, label: 'Workflow de validation' },
+    { key: '/attachments', icon: <PaperClipOutlined />, label: 'Pièces justificatives' },
     {
-      key: '/reports',
-      icon: <FileTextOutlined />,
-      label: 'Rapports',
-      children: [
-        { key: '/reports', icon: <FileTextOutlined />, label: 'Liste des rapports' },
-        { key: '/reports/create', icon: <PlusOutlined />, label: 'Nouveau rapport' },
-      ],
-    },
-    {
-      key: '/templates',
-      icon: <FileDoneOutlined />,
-      label: 'Modèles de rapports',
-    },
-    {
-      key: '/workflow',
-      icon: <ClusterOutlined />,
-      label: 'Workflow de validation',
-    },
-    {
-      key: '/attachments',
-      icon: <PaperClipOutlined />,
-      label: 'Pièces justificatives',
-    },
-    {
-      key: '/schedules',
-      icon: <ClockCircleOutlined />,
-      label: 'Planifications',
+      key: '/schedules', icon: <ClockCircleOutlined />, label: 'Planifications',
       children: [
         { key: '/schedules', icon: <ClockCircleOutlined />, label: 'Liste des planifications' },
         { key: '/schedules/create', icon: <PlusOutlined />, label: 'Nouvelle planification' },
-      ],
+      ]
     },
-    {
-      key: '/analytics',
-      icon: <BarChartOutlined />,
-      label: 'Analytiques',
-    },
-    {
-      key: '/ai-assistant',
-      icon: <ThunderboltOutlined />,
-      label: 'Assistant IA',
-    },
+    { key: '/analytics', icon: <BarChartOutlined />, label: 'Analytiques' },
+    { key: '/ai-assistant', icon: <ThunderboltOutlined />, label: 'Assistant IA' },
   ]
 
-  // Ajouter le menu utilisateurs pour les admins
   if (isAdmin()) {
-    menuItems.push({
-      key: '/users',
-      icon: <TeamOutlined />,
-      label: 'Utilisateurs',
-    })
+    menuItems.push({ key: '/users', icon: <TeamOutlined />, label: 'Utilisateurs' })
   }
 
-  // Gérer la sélection du menu
-  const handleMenuClick = ({ key }) => {
-    navigate(key)
-  }
+  const handleMenuClick = ({ key }) => { navigate(key) }
 
-  // Déterminer l'élément sélectionné du menu
   const getSelectedKeys = () => {
     const path = location.pathname
-    if (path.startsWith('/documents/')) {
-      if (path === '/documents/elaboration') return ['/documents/elaboration']
-      if (path === '/documents/execution') return ['/documents/execution']
-      return ['/documents']
-    }
     if (path.startsWith('/reports/')) {
-      if (path === '/reports/create') return ['/reports/create']
+      if (path === '/reports/elaboration') return ['/reports/elaboration']
+      if (path === '/reports/execution') return ['/reports/execution']
       return ['/reports']
     }
     if (path.startsWith('/schedules/')) {
@@ -189,10 +112,8 @@ function AppLayout() {
     return [path]
   }
 
-  // Déterminer les éléments ouverts du menu
   const getOpenKeys = () => {
     const path = location.pathname
-    if (path.startsWith('/documents')) return ['/documents']
     if (path.startsWith('/reports')) return ['/reports']
     if (path.startsWith('/schedules')) return ['/schedules']
     if (path.startsWith('/projects')) return ['/projects']
@@ -201,85 +122,26 @@ function AppLayout() {
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      {/* Barre latérale */}
-      <Sider 
-        trigger={null} 
-        collapsible 
-        collapsed={collapsed}
-        width={250}
-        className="app-sidebar"
-        style={{
-          overflow: 'auto',
-          height: '100vh',
-          position: 'fixed',
-          left: 0,
-          top: 0,
-          bottom: 0,
-        }}
-      >
-        {/* Logo */}
-        <div style={{ 
-          height: '64px', 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center',
-          borderBottom: '1px solid #f0f0f0'
-        }}>
-          {!collapsed ? (
-            <Title level={4} style={{ margin: 0, color: '#1890ff' }}>
-              Reporting
-            </Title>
-          ) : (
-            <Title level={4} style={{ margin: 0, color: '#1890ff' }}>
-              R
-            </Title>
-          )}
+      <Sider trigger={null} collapsible collapsed={collapsed} width={250} className="app-sidebar" style={{ overflow: 'auto', height: '100vh', position: 'fixed', left: 0, top: 0, bottom: 0 }}>
+        <div style={{ height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid #f0f0f0' }}>
+          {!collapsed ? (<Title level={4} style={{ margin: 0, color: '#1890ff' }}>Reporting</Title>) : (<Title level={4} style={{ margin: 0, color: '#1890ff' }}>R</Title>)}
         </div>
-
-        {/* Menu de navigation */}
-        <Menu
-          theme="light"
-          mode="inline"
-          selectedKeys={getSelectedKeys()}
-          defaultOpenKeys={getOpenKeys()}
-          items={menuItems}
-          onClick={handleMenuClick}
-          style={{ borderRight: 0 }}
-        />
+        <Menu theme="light" mode="inline" selectedKeys={getSelectedKeys()} defaultOpenKeys={getOpenKeys()} items={menuItems} onClick={handleMenuClick} style={{ borderRight: 0 }} />
       </Sider>
 
-      {/* Contenu principal */}
       <Layout style={{ marginLeft: collapsed ? 80 : 250, transition: 'margin-left 0.2s' }}>
-        {/* En-tête */}
-        <Header className="app-header" style={{ 
-          position: 'fixed',
-          top: 0,
-          right: 0,
-          left: collapsed ? 80 : 250,
-          zIndex: 1000,
-          transition: 'left 0.2s'
-        }}>
+        <Header className="app-header" style={{ position: 'fixed', top: 0, right: 0, left: collapsed ? 80 : 250, zIndex: 1000, transition: 'left 0.2s' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            {/* Bouton de pliage du menu */}
-            <Button
-              type="text"
-              icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-              onClick={() => setCollapsed(!collapsed)}
-              style={{ fontSize: '16px' }}
-            />
-
-            {/* Titre de la page */}
+            <Button type="text" icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />} onClick={() => setCollapsed(!collapsed)} style={{ fontSize: '16px' }} />
             <Title level={4} style={{ margin: 0, flex: 1 }}>
               {location.pathname === '/dashboard' && 'Tableau de bord'}
               {location.pathname === '/projects' && 'Projets / Entités'}
               {location.pathname === '/projects/create' && 'Nouveau projet'}
-              {location.pathname === '/documents/elaboration' && 'Documents - Élaboration'}
-              {location.pathname === '/documents/execution' && 'Documents - Exécution'}
+              {location.pathname === '/reports/elaboration' && 'Rapports - Élaboration'}
+              {location.pathname === '/reports/execution' && 'Rapports - Exécution'}
               {location.pathname === '/templates' && 'Modèles de rapports'}
               {location.pathname === '/workflow' && 'Workflow de validation'}
               {location.pathname === '/attachments' && 'Pièces justificatives'}
-              {location.pathname === '/reports' && 'Rapports'}
-              {location.pathname === '/reports/create' && 'Nouveau rapport'}
               {location.pathname === '/schedules' && 'Planifications'}
               {location.pathname === '/schedules/create' && 'Nouvelle planification'}
               {location.pathname === '/users' && 'Gestion des utilisateurs'}
@@ -287,30 +149,17 @@ function AppLayout() {
             </Title>
           </div>
 
-          {/* Actions utilisateur */}
           <Space size="middle">
-            {/* Centre de notifications */}
             <NotificationCenter />
-
-            {/* Menu utilisateur */}
-            <Dropdown
-              menu={{ items: userMenuItems }}
-              placement="bottomRight"
-              arrow
-            >
+            <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" arrow>
               <Space style={{ cursor: 'pointer' }}>
-                <Avatar 
-                  size="small" 
-                  icon={<UserOutlined />} 
-                  src={user?.avatar}
-                />
+                <Avatar size="small" icon={<UserOutlined />} src={user?.avatar} />
                 <span>{user?.name}</span>
               </Space>
             </Dropdown>
           </Space>
         </Header>
 
-        {/* Contenu */}
         <Content style={{ marginTop: 64, padding: 24 }}>
           <div style={{ minHeight: 'calc(100vh - 64px)', background: 'transparent' }}>
             <Outlet />
