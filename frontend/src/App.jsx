@@ -20,6 +20,11 @@ import ScheduleDetail from './pages/Schedules/ScheduleDetail'
 import NotificationsPage from './pages/Notifications/NotificationsPage'
 import EpeReportWizard from './pages/Reports/EpeReportWizard'
 import AIAssistantPage from './pages/AIAssistant/AIAssistantPage'
+import ProjectsList from './pages/Projects/ProjectsList'
+import ProjectCreate from './pages/Projects/ProjectCreate'
+import TemplatesList from './pages/Templates/TemplatesList'
+import ValidationWorkflow from './pages/Workflow/ValidationWorkflow'
+import AttachmentsManager from './pages/Attachments/AttachmentsManager'
 
 const { Content } = Layout
 
@@ -70,6 +75,13 @@ function AppRoutes() {
         <Route path="schedules" element={<SchedulesList />} />
         <Route path="schedules/create" element={<ScheduleCreate />} />
         <Route path="schedules/:id" element={<ScheduleDetail />} />
+        
+        {/* Nouvelles sections */}
+        <Route path="projects" element={<ProjectsList />} />
+        <Route path="projects/create" element={<ProjectCreate />} />
+        <Route path="templates" element={<TemplatesList />} />
+        <Route path="workflow" element={<ValidationWorkflow />} />
+        <Route path="attachments" element={<AttachmentsManager />} />
         
         {/* Gestion des utilisateurs (admin seulement) */}
         <Route path="users" element={<UsersList />} />

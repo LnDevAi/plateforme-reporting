@@ -22,7 +22,11 @@ import {
   BarChartOutlined,
   TeamOutlined,
   ClockCircleOutlined,
-  ThunderboltOutlined
+  ThunderboltOutlined,
+  ApartmentOutlined,
+  FileDoneOutlined,
+  ClusterOutlined,
+  PaperClipOutlined
 } from '@ant-design/icons'
 import { useAuth } from '../../hooks/useAuth'
 import NotificationCenter from '../Notifications/NotificationCenter'
@@ -85,37 +89,45 @@ function AppLayout() {
       label: 'Tableau de bord',
     },
     {
+      key: '/projects',
+      icon: <ApartmentOutlined />,
+      label: 'Projets / Entités',
+      children: [
+        { key: '/projects', icon: <ApartmentOutlined />, label: 'Liste des projets' },
+        { key: '/projects/create', icon: <PlusOutlined />, label: 'Nouveau projet' },
+      ]
+    },
+    {
       key: '/reports',
       icon: <FileTextOutlined />,
       label: 'Rapports',
       children: [
-        {
-          key: '/reports',
-          icon: <FileTextOutlined />,
-          label: 'Liste des rapports',
-        },
-        {
-          key: '/reports/create',
-          icon: <PlusOutlined />,
-          label: 'Nouveau rapport',
-        },
+        { key: '/reports', icon: <FileTextOutlined />, label: 'Liste des rapports' },
+        { key: '/reports/create', icon: <PlusOutlined />, label: 'Nouveau rapport' },
       ],
+    },
+    {
+      key: '/templates',
+      icon: <FileDoneOutlined />,
+      label: 'Modèles de rapports',
+    },
+    {
+      key: '/workflow',
+      icon: <ClusterOutlined />,
+      label: 'Workflow de validation',
+    },
+    {
+      key: '/attachments',
+      icon: <PaperClipOutlined />,
+      label: 'Pièces justificatives',
     },
     {
       key: '/schedules',
       icon: <ClockCircleOutlined />,
       label: 'Planifications',
       children: [
-        {
-          key: '/schedules',
-          icon: <ClockCircleOutlined />,
-          label: 'Liste des planifications',
-        },
-        {
-          key: '/schedules/create',
-          icon: <PlusOutlined />,
-          label: 'Nouvelle planification',
-        },
+        { key: '/schedules', icon: <ClockCircleOutlined />, label: 'Liste des planifications' },
+        { key: '/schedules/create', icon: <PlusOutlined />, label: 'Nouvelle planification' },
       ],
     },
     {
@@ -147,37 +159,27 @@ function AppLayout() {
   // Déterminer l'élément sélectionné du menu
   const getSelectedKeys = () => {
     const path = location.pathname
-    
-    // Gestion spéciale pour les sous-routes
     if (path.startsWith('/reports/')) {
-      if (path === '/reports/create') {
-        return ['/reports/create']
-      }
+      if (path === '/reports/create') return ['/reports/create']
       return ['/reports']
     }
-    
     if (path.startsWith('/schedules/')) {
-      if (path === '/schedules/create') {
-        return ['/schedules/create']
-      }
+      if (path === '/schedules/create') return ['/schedules/create']
       return ['/schedules']
     }
-    
+    if (path.startsWith('/projects/')) {
+      if (path === '/projects/create') return ['/projects/create']
+      return ['/projects']
+    }
     return [path]
   }
 
   // Déterminer les éléments ouverts du menu
   const getOpenKeys = () => {
     const path = location.pathname
-    
-    if (path.startsWith('/reports')) {
-      return ['/reports']
-    }
-    
-    if (path.startsWith('/schedules')) {
-      return ['/schedules']
-    }
-    
+    if (path.startsWith('/reports')) return ['/reports']
+    if (path.startsWith('/schedules')) return ['/schedules']
+    if (path.startsWith('/projects')) return ['/projects']
     return []
   }
 
@@ -253,6 +255,11 @@ function AppLayout() {
             {/* Titre de la page */}
             <Title level={4} style={{ margin: 0, flex: 1 }}>
               {location.pathname === '/dashboard' && 'Tableau de bord'}
+              {location.pathname === '/projects' && 'Projets / Entités'}
+              {location.pathname === '/projects/create' && 'Nouveau projet'}
+              {location.pathname === '/templates' && 'Modèles de rapports'}
+              {location.pathname === '/workflow' && 'Workflow de validation'}
+              {location.pathname === '/attachments' && 'Pièces justificatives'}
               {location.pathname === '/reports' && 'Rapports'}
               {location.pathname === '/reports/create' && 'Nouveau rapport'}
               {location.pathname === '/schedules' && 'Planifications'}
@@ -285,16 +292,11 @@ function AppLayout() {
           </Space>
         </Header>
 
-        {/* Contenu de la page */}
-        <Content 
-          className="app-content"
-          style={{ 
-            marginTop: '64px',
-            padding: '24px',
-            overflow: 'auto'
-          }}
-        >
-          <Outlet />
+        {/* Contenu */}
+        <Content style={{ marginTop: 64, padding: 24 }}>
+          <div style={{ minHeight: 'calc(100vh - 64px)', background: 'transparent' }}>
+            <Outlet />
+          </div>
         </Content>
       </Layout>
     </Layout>

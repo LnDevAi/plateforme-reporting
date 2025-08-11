@@ -412,6 +412,84 @@ export const scheduleAPI = {
   },
 }
 
+// === Projets / Entités ===
+export const projectsAPI = {
+  getAll: async () => {
+    if (DEMO_MODE) {
+      await delay(150)
+      return { success: true, data: [
+        { id: 1, name: 'Programme Santé 2025', owner: { id: 1, name: 'Alice' }, objectives: ['Réduction mortalité','Couverture vaccinale'], team: [{id:2,name:'Bob'},{id:3,name:'Carla'}] },
+        { id: 2, name: 'Réforme Éducation', owner: { id: 4, name: 'David' }, objectives: ['Qualité enseignement'], team: [{id:5,name:'Emma'}] },
+      ]}
+    }
+    return api.get('/projects')
+  },
+  create: async (data) => {
+    if (DEMO_MODE) {
+      await delay(150)
+      return { success: true, data: { id: Math.floor(Math.random()*1000), ...data } }
+    }
+    return api.post('/projects', data)
+  },
+}
+
+// === Modèles de rapports ===
+export const templatesAPI = {
+  getAll: async () => {
+    if (DEMO_MODE) {
+      await delay(120)
+      return { success: true, data: [
+        { id: 1, name: 'Rapport d’activités', type: 'Activités', sections: ['Contexte','Réalisation','Difficultés','Perspectives'] },
+        { id: 2, name: 'Rapport budgétaire', type: 'Budget', sections: ['Prévisions','Exécution','Écarts','Justifications'] },
+        { id: 3, name: 'Passation des marchés', type: 'PM', sections: ['Procédures','Contrats','Délais','Conformité'] },
+        { id: 4, name: 'Bilan social / RH', type: 'Social', sections: ['Effectifs','Recrutements','Formation','Climat social'] },
+      ]}
+    }
+    return api.get('/templates')
+  },
+}
+
+// === Workflow de validation ===
+export const workflowAPI = {
+  get: async () => {
+    if (DEMO_MODE) {
+      await delay(100)
+      return { success: true, data: { steps: [ { role: 'Éditeur', note: 'Prépare le rapport' }, { role: 'Manager', note: 'Valide niveau 1' }, { role: 'Validateur', note: 'Approbation finale' } ] } }
+    }
+    return api.get('/workflow')
+  },
+  update: async (wf) => {
+    if (DEMO_MODE) {
+      await delay(100)
+      return { success: true }
+    }
+    return api.put('/workflow', wf)
+  },
+}
+
+// === Pièces justificatives ===
+export const attachmentsAPI = {
+  list: async () => {
+    if (DEMO_MODE) {
+      await delay(120)
+      return { success: true, data: [
+        { id: 1, name: 'facture_001.pdf', type: 'PDF', status: 'validé' },
+        { id: 2, name: 'bordereau.xlsx', type: 'Excel', status: 'en attente' },
+      ] }
+    }
+    return api.get('/attachments')
+  },
+  upload: async (file) => {
+    if (DEMO_MODE) {
+      await delay(200)
+      return { success: true, data: { id: Math.floor(Math.random()*1000), name: file.name, type: 'Fichier', status: 'en attente' } }
+    }
+    const form = new FormData()
+    form.append('file', file)
+    return api.post('/attachments', form)
+  },
+}
+
 // API pour la collaboration documentaire
 export const documentCollaborationAPI = {
   // Gestion des versions
