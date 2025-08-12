@@ -7,6 +7,7 @@ import * as XLSX from 'xlsx'
 import { Document, Packer, Paragraph, TextRun, Table as DocxTable, TableRow, TableCell, WidthType } from 'docx'
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
+import { Tag } from 'antd'
 
 const { Title } = Typography
 
@@ -15,11 +16,13 @@ function PPMEditor() {
   const [form] = Form.useForm()
   const [loading, setLoading] = useState(true)
   const fileInputRef = React.useRef(null)
+  const [locked, setLocked] = useState(false)
 
   useEffect(() => {
     const run = async () => {
       const res = await documentsAPI.getElaborationItem('ppm', id)
       form.setFieldsValue(res.data)
+      setLocked(!!res.data.locked)
       setLoading(false)
     }
     run()
@@ -28,37 +31,38 @@ function PPMEditor() {
   const columns = [
     { title: 'Objet', dataIndex: 'subject', render: (_, __, idx) => (
       <Form.Item name={['lines', idx, 'subject']} noStyle>
-        <Input />
+        <Input disabled={locked} />
       </Form.Item>
     )},
     { title: 'Procédure', dataIndex: 'procedure', render: (_, __, idx) => (
       <Form.Item name={['lines', idx, 'procedure']} noStyle>
-        <Select options={[{value:'AO',label:'Appel d’offres'},{value:'DRP',label:'Demande de renseignements et prix'},{value:'AON',label:'AO national'}]} />
+        <Select disabled={locked} options={[{value:'AO',label:'Appel d’offres'},{value:'DRP',label:'Demande de renseignements et prix'},{value:'AON',label:'AO national'}]} />
       </Form.Item>
     )},
     { title: 'Montant (FCFA)', dataIndex: 'amount', render: (_, __, idx) => (
       <Form.Item name={['lines', idx, 'amount']} noStyle>
-        <InputNumber min={0} style={{ width: '100%' }} />
+        <InputNumber disabled={locked} min={0} style={{ width: '100%' }} />
       </Form.Item>
     )},
     { title: 'Statut', dataIndex: 'status', render: (_, __, idx) => (
       <Form.Item name={['lines', idx, 'status']} noStyle>
-        <Select options={[{value:'Planifié'},{value:'Lancé'},{value:'Attribué'},{value:'Annulé'}]} />
+        <Select disabled={locked} options={[{value:'Planifié'},{value:'Lancé'},{value:'Attribué'},{value:'Annulé'}]} />
       </Form.Item>
     )},
     { title: 'Date prév.', dataIndex: 'planned_date', render: (_, __, idx) => (
       <Form.Item name={['lines', idx, 'planned_date']} noStyle>
-        <DatePicker style={{ width: '100%' }} />
+        <DatePicker disabled={locked} style={{ width: '100%' }} />
       </Form.Item>
     )},
     { title: 'Date réelle', dataIndex: 'actual_date', render: (_, __, idx) => (
       <Form.Item name={['lines', idx, 'actual_date']} noStyle>
-        <DatePicker style={{ width: '100%' }} />
+        <DatePicker disabled={locked} style={{ width: '100%' }} />
       </Form.Item>
     )},
   ]
 
   const addLine = () => {
+    if (locked) return
     const rows = form.getFieldValue('lines') || []
     form.setFieldsValue({ lines: [...rows, { subject:'', procedure:'AO', amount:0, status:'Planifié', planned_date:null, actual_date:null }] })
   }
@@ -77,6 +81,7 @@ function PPMEditor() {
 
   const doValidate = async () => {
     await documentsAPI.validateElaborationItem('ppm', id)
+    setLocked(true)
     message.success('Document validé')
   }
 
@@ -182,6 +187,7 @@ function PPMEditor() {
     <Space direction="vertical" style={{ width: '100%' }}>
       <Title level={3}>Plan de Passation des Marchés</Title>
       <WorkflowPanel type="ppm" id={id} />
+      {locked && <Tag color="red">Document verrouillé (définitif)</Tag>}
       <input ref={fileInputRef} type="file" accept="application/json" style={{ display: 'none' }} onChange={importJSON} />
       <Space>
         <Button onClick={exportJSON}>Exporter JSON</Button>
@@ -202,9 +208,9 @@ function PPMEditor() {
         </Card>
       </Form>
       <Space>
-        <Button type="primary" onClick={doSave}>Enregistrer</Button>
-        <Button onClick={doSubmit}>Soumettre</Button>
-        <Button onClick={doValidate}>Valider</Button>
+        <Button type="primary" onClick={doSave} disabled={locked}>Enregistrer</Button>
+        <Button onClick={doSubmit} disabled={locked}>Soumettre</Button>
+        <Button onClick={doValidate} disabled={locked}>Valider</Button>
       </Space>
     </Space>
   )

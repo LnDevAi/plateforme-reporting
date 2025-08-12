@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Card, Form, Input, Button, Table, InputNumber, Space, Typography, message, Select } from 'antd'
+import { Card, Form, Input, Button, Table, InputNumber, Space, Typography, message, Select, Tag } from 'antd'
 import { useParams } from 'react-router-dom'
 import { documentsAPI } from '../../services/api'
 import WorkflowPanel from '../../components/Workflow/WorkflowPanel'
@@ -15,11 +15,13 @@ function ActivitiesProgramEditor() {
   const [form] = Form.useForm()
   const [loading, setLoading] = useState(true)
   const fileInputRef = React.useRef(null)
+  const [locked, setLocked] = useState(false)
 
   useEffect(() => {
     const run = async () => {
       const res = await documentsAPI.getElaborationItem('programme', id)
       form.setFieldsValue(res.data)
+      setLocked(!!res.data.locked)
       setLoading(false)
     }
     run()
@@ -28,17 +30,17 @@ function ActivitiesProgramEditor() {
   const actColumns = [
     { title: 'Activité', dataIndex: 'activity', render: (_, __, idx) => (
       <Form.Item name={['activities', idx, 'activity']} noStyle>
-        <Input />
+        <Input disabled={locked} />
       </Form.Item>
     )},
     { title: 'Période', dataIndex: 'period', render: (_, __, idx) => (
       <Form.Item name={['activities', idx, 'period']} noStyle>
-        <Select options={[{value:'T1'},{value:'T2'},{value:'T3'},{value:'T4'}]} style={{ width: '100%' }} />
+        <Select disabled={locked} options={[{value:'T1'},{value:'T2'},{value:'T3'},{value:'T4'}]} style={{ width: '100%' }} />
       </Form.Item>
     )},
     { title: 'Budget', dataIndex: 'budget', render: (_, __, idx) => (
       <Form.Item name={['activities', idx, 'budget']} noStyle>
-        <InputNumber min={0} style={{ width: '100%' }} />
+        <InputNumber disabled={locked} min={0} style={{ width: '100%' }} />
       </Form.Item>
     )},
   ]
@@ -57,6 +59,7 @@ function ActivitiesProgramEditor() {
   ]
 
   const addRow = (field) => {
+    if (locked) return
     const rows = form.getFieldValue(field) || []
     form.setFieldsValue({ [field]: [...rows, field==='activities' ? { activity:'', period:'T1', budget:0 } : { name:'', target:0 }] })
   }
@@ -75,6 +78,7 @@ function ActivitiesProgramEditor() {
 
   const doValidate = async () => {
     await documentsAPI.validateElaborationItem('programme', id)
+    setLocked(true)
     message.success('Document validé')
   }
 
@@ -154,6 +158,7 @@ function ActivitiesProgramEditor() {
     <Space direction="vertical" style={{ width: '100%' }}>
       <Title level={3}>Programme d’Activités</Title>
       <WorkflowPanel type="programme" id={id} />
+      {locked && <Tag color="red">Document verrouillé (définitif)</Tag>}
       <input ref={fileInputRef} type="file" accept="application/json" style={{ display: 'none' }} onChange={importJSON} />
       <Space>
         <Button onClick={exportJSON}>Exporter JSON</Button>
@@ -176,9 +181,9 @@ function ActivitiesProgramEditor() {
         </Card>
       </Form>
       <Space>
-        <Button type="primary" onClick={doSave}>Enregistrer</Button>
-        <Button onClick={doSubmit}>Soumettre</Button>
-        <Button onClick={doValidate}>Valider</Button>
+        <Button type="primary" onClick={doSave} disabled={locked}>Enregistrer</Button>
+        <Button onClick={doSubmit} disabled={locked}>Soumettre</Button>
+        <Button onClick={doValidate} disabled={locked}>Valider</Button>
       </Space>
     </Space>
   )

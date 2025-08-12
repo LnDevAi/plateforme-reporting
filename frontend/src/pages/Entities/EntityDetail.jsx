@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Card, Form, Input, Button, Select, Space, Typography, Row, Col } from 'antd'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { entitiesAPI } from '../../services/api'
 
 const { Title } = Typography
@@ -19,6 +19,7 @@ function RoleEditor({ label, value, onChange }) {
 
 function EntityDetail() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const [entity, setEntity] = useState(null)
 
   const load = async () => {
@@ -41,6 +42,10 @@ function EntityDetail() {
   return (
     <Space direction="vertical" style={{ width: '100%' }}>
       <Title level={3}>{entity.name} ({entity.type})</Title>
+      <Space>
+        <Button onClick={()=>navigate(`/entities/${id}/sessions`)}>Ouvrir sessions</Button>
+        <Button type="primary" onClick={save}>Enregistrer</Button>
+      </Space>
       <Card title="Tutelle">
         <Row gutter={12}>
           <Col span={12}><b>Technique:</b> {entity.tutelle?.technique || '-'}</Col>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Card, Form, Input, Button, Table, InputNumber, Space, Typography, message } from 'antd'
+import { Card, Form, Input, Button, Table, InputNumber, Space, Typography, message, Tag } from 'antd'
 import { useParams, useNavigate } from 'react-router-dom'
 import { documentsAPI } from '../../services/api'
 import WorkflowPanel from '../../components/Workflow/WorkflowPanel'
@@ -28,25 +28,28 @@ function BudgetEditor() {
     run()
   }, [id])
 
+  const locked = !!data?.locked
+
   const columns = [
     { title: 'Chapitre', dataIndex: 'chapter', render: (_, __, idx) => (
       <Form.Item name={['lines', idx, 'chapter']} noStyle>
-        <Input />
+        <Input disabled={locked} />
       </Form.Item>
     )},
     { title: 'Poste', dataIndex: 'item', render: (_, __, idx) => (
       <Form.Item name={['lines', idx, 'item']} noStyle>
-        <Input />
+        <Input disabled={locked} />
       </Form.Item>
     )},
     { title: 'Montant', dataIndex: 'amount', render: (_, __, idx) => (
       <Form.Item name={['lines', idx, 'amount']} noStyle>
-        <InputNumber min={0} style={{ width: '100%' }} formatter={(v)=>`${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} parser={(v)=>Number((v||'').replace(/\s/g,''))} />
+        <InputNumber disabled={locked} min={0} style={{ width: '100%' }} formatter={(v)=>`${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} parser={(v)=>Number((v||'').replace(/\s/g,''))} />
       </Form.Item>
     )},
   ]
 
   const addLine = () => {
+    if (locked) return
     const lines = form.getFieldValue('lines') || []
     form.setFieldsValue({ lines: [...lines, { chapter: '', item: '', amount: 0 }] })
   }
@@ -193,6 +196,7 @@ function BudgetEditor() {
     <Space direction="vertical" style={{ width: '100%' }}>
       <Title level={3}>{data?.title}</Title>
       <WorkflowPanel type="budget" id={id} />
+      {locked && <Tag color="red">Document verrouillé (définitif)</Tag>}
       <input ref={fileInputRef} type="file" accept="application/json" style={{ display: 'none' }} onChange={importJSON} />
       <Space>
         <Button onClick={exportJSON}>Exporter JSON</Button>
@@ -221,9 +225,9 @@ function BudgetEditor() {
         </Form>
       </Card>
       <Space>
-        <Button type="primary" onClick={doSave}>Enregistrer</Button>
-        <Button onClick={doSubmit}>Soumettre</Button>
-        <Button onClick={doValidate}>Valider</Button>
+        {!locked && <Button type="primary" onClick={doSave}>Enregistrer</Button>}
+        {!locked && <Button onClick={doSubmit}>Soumettre</Button>}
+        {!locked && <Button onClick={doValidate}>Valider</Button>}
       </Space>
     </Space>
   )

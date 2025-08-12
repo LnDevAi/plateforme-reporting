@@ -663,6 +663,7 @@ export const documentsAPI = {
       const key = `elab_${type}_${id}`
       const data = JSON.parse(localStorage.getItem(key) || '{}')
       data.status = 'Validé'
+      data.locked = true
       localStorage.setItem(key, JSON.stringify(data))
       return { success: true }
     }
