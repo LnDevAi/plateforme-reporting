@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Card, Typography, Table, Button, Space, Modal, Form, Input, Select, message } from 'antd'
+import { Card, Typography, Table, Button, Space, Modal, Form, Input, Select, message, Alert } from 'antd'
 
 const { Title } = Typography
 
@@ -18,14 +18,17 @@ const ROLE_OPTIONS = [
 
 function UsersList() {
   const [data, setData] = useState([])
+  const [entities, setEntities] = useState([])
   const [loading, setLoading] = useState(true)
   const [open, setOpen] = useState(false)
   const [form] = Form.useForm()
 
   const load = async () => {
     setLoading(true)
-    const raw = localStorage.getItem('users')
-    setData(raw ? JSON.parse(raw) : [])
+    const usersRaw = localStorage.getItem('users')
+    setData(usersRaw ? JSON.parse(usersRaw) : [])
+    const entitiesRaw = localStorage.getItem('entities')
+    setEntities(entitiesRaw ? JSON.parse(entitiesRaw) : [])
     setLoading(false)
   }
 
@@ -64,12 +67,15 @@ function UsersList() {
     })
   }
 
+  const structureOptions = entities.map(e => ({ value: e.id, label: `${e.name} (${e.type})` }))
+
   const columns = [
     { title: 'Nom', dataIndex: 'name', key: 'name' },
     { title: 'Prénom', dataIndex: 'surname', key: 'surname' },
     { title: 'Matricule', dataIndex: 'matricule', key: 'matricule' },
     { title: 'Contact', dataIndex: 'contact', key: 'contact' },
     { title: 'Email', dataIndex: 'email', key: 'email' },
+    { title: 'Structure', dataIndex: 'structureId', key: 'structureId', render: (id)=> structureOptions.find(o=>String(o.value)===String(id))?.label || '-' },
     { title: 'Rôle', dataIndex: 'role', key: 'role', render: (r)=> ROLE_OPTIONS.find(x=>x.value===r)?.label || r },
     { title: 'Actions', key: 'actions', render: (_, record) => (
       <Space>
@@ -82,6 +88,9 @@ function UsersList() {
   return (
     <div>
       <Title level={2}>Gestion des utilisateurs</Title>
+      {entities.length === 0 && (
+        <Alert type="warning" showIcon style={{ marginBottom: 12 }} message="Aucune structure trouvée" description="Créez d'abord une entité dans Inscription entités pour pouvoir lier les utilisateurs à une structure." />
+      )}
       <Card extra={<Button type="primary" onClick={onCreate}>Nouvel utilisateur</Button>}>
         <Table loading={loading} dataSource={data} columns={columns} rowKey={(r)=>r.id} />
       </Card>
@@ -94,6 +103,9 @@ function UsersList() {
           <Form.Item name="matricule" label="Matricule"><Input /></Form.Item>
           <Form.Item name="contact" label="Contact"><Input /></Form.Item>
           <Form.Item name="email" label="Email" rules={[{ type: 'email', required: true }]}><Input /></Form.Item>
+          <Form.Item name="structureId" label="Structure" rules={[{ required: true, message: 'Sélectionnez une structure' }]}>
+            <Select options={structureOptions} showSearch optionFilterProp="label" placeholder="Choisir la structure" />
+          </Form.Item>
           <Form.Item name="role" label="Rôle" rules={[{ required: true }]}>
             <Select options={ROLE_OPTIONS} showSearch optionFilterProp="label" />
           </Form.Item>
