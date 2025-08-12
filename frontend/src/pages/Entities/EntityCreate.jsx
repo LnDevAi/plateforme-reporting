@@ -37,7 +37,7 @@ function EntityCreate() {
       }
       const payload = {
         name: nameTrimmed,
-        type: values.type,
+        type: values.type || 'EPE',
         tutelle: { technique: values.technique, financier: values.financier },
         contact: {
           adresse: values.adresse || '',
@@ -61,12 +61,17 @@ function EntityCreate() {
     }
   }
 
+  const handleCreate = async () => {
+    const values = form.getFieldsValue(true)
+    await onFinish(values)
+  }
+
   return (
     <Card title="Inscription d'une entité">
-      <Form form={form} layout="vertical" onFinish={onFinish}>
-        <Form.Item name="name" label="Nom de l'entité"> <Input autoFocus placeholder="Ex: Société X" /> </Form.Item>
-        <Form.Item name="type" label="Type" rules={[{ required: true }]}>
-          <Select options={[{ value: 'EPE', label: 'EPE' }, { value: 'SocieteEtat', label: "Société d'État" }]} />
+      <Form form={form} layout="vertical">
+        <Form.Item name="name" label="Nom de l'entité"> <Input autoFocus placeholder="Ex: Société X" autoComplete="off" /> </Form.Item>
+        <Form.Item name="type" label="Type">
+          <Select allowClear placeholder="Choisir" options={[{ value: 'EPE', label: 'EPE' }, { value: 'SocieteEtat', label: "Société d'État" }]} />
         </Form.Item>
         <Form.Item name="technique" label="Ministère de tutelle technique"> <Input /> </Form.Item>
         <Form.Item name="financier" label="Ministère de tutelle financier"> <Input /> </Form.Item>
@@ -90,7 +95,7 @@ function EntityCreate() {
         </Form.Item>
 
         <Space>
-          <Button type="primary" htmlType="submit">Créer</Button>
+          <Button type="primary" onClick={handleCreate}>Créer</Button>
         </Space>
       </Form>
     </Card>
