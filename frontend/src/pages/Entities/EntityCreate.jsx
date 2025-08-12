@@ -63,8 +63,8 @@ function EntityCreate() {
         <Form.Item name="type" label="Type" rules={[{ required: true }]}>
           <Select options={[{ value: 'EPE', label: 'EPE' }, { value: 'SocieteEtat', label: "Société d'État" }]} />
         </Form.Item>
-        <Form.Item name="technique" label="Ministère de tutelle technique" rules={[{ required: true }]}> <Input /> </Form.Item>
-        <Form.Item name="financier" label="Ministère de tutelle financier" rules={[{ required: true }]}> <Input /> </Form.Item>
+        <Form.Item name="technique" label="Ministère de tutelle technique"> <Input /> </Form.Item>
+        <Form.Item name="financier" label="Ministère de tutelle financier"> <Input /> </Form.Item>
 
         <Form.Item name="adresse" label="Adresse"> <Input /> </Form.Item>
         <Form.Item name="telephone" label="Téléphone"> <Input /> </Form.Item>

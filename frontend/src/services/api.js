@@ -864,7 +864,17 @@ export const entitiesAPI = {
     const raw = localStorage.getItem('entities')
     const list = raw ? JSON.parse(raw) : []
     const id = Date.now()
-    const entity = { id, ...payload, created_at: new Date().toISOString() }
+    const entity = {
+      id,
+      name: payload?.name || 'Sans nom',
+      type: payload?.type || 'EPE',
+      tutelle: payload?.tutelle || { technique: '', financier: '' },
+      contact: payload?.contact || { adresse: '', telephone: '', email: '' },
+      identification: payload?.identification || { ifu: '', cnss: '', rccm: '' },
+      autresInformations: payload?.autresInformations || '',
+      documentsCreation: payload?.documentsCreation || [],
+      created_at: new Date().toISOString(),
+    }
     list.push(entity)
     localStorage.setItem('entities', JSON.stringify(list))
     return { success: true, data: entity }
