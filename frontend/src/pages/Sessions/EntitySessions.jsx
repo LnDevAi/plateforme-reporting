@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { Card, Tabs, Button, List, Input, Space, Tag, Alert } from 'antd'
+import { Card, Tabs, Button, List, Input, Space, Tag, message } from 'antd'
 import { useParams } from 'react-router-dom'
 import { sessionsAPI } from '../../services/api'
 
@@ -9,7 +9,7 @@ function JitsiPanel({ room }) {
 
   const startMeeting = () => {
     if (!window.JitsiMeetExternalAPI) {
-      Alert.error('Jitsi API non chargée');
+      message.error('Jitsi API non chargée')
       return
     }
     if (apiRef.current) return
