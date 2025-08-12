@@ -59,7 +59,8 @@ function EntitySessions() {
     <Tabs
       items={[
         { key: 'budgetaire', label: 'Session budgétaire', children: <SessionTab type="budgetaire" entityId={id} /> },
-        { key: 'comptes', label: 'Session d\'arrêt des comptes', children: <SessionTab type="comptes" entityId={id} /> },
+        { key: 'comptes', label: "Session d'arrêt des comptes", children: <SessionTab type="comptes" entityId={id} /> },
+        { key: 'ag', label: 'Assemblée générale', children: <SessionTab type="ag" entityId={id} /> },
         { key: 'extra', label: 'Sessions extraordinaires', children: <SessionTab type="extra" entityId={id} /> },
       ]}
     />
