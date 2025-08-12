@@ -1002,5 +1002,8 @@ export const ministryAPI = {
   deleteMinistry: (ministryId) => api.delete(`/ministries/${ministryId}`),
   
   // Relations de tutelle
-  getTutelageEntities: (ministryId, type = 'all') => 
-    api.get(`
+  getTutelageEntities: (ministryId, type = 'all') =>
+    api.get(`/ministries/${ministryId}/entities?tutelage_type=${type}`),
+}
+
+export default api
