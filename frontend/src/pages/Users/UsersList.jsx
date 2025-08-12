@@ -14,6 +14,7 @@ const ROLE_OPTIONS = [
   { value: 'OBS', label: 'Observateur' },
   { value: 'REP_PERS', label: 'Représentant du Personnel' },
   { value: 'COMMISSAIRE', label: 'Commissaire aux Comptes' },
+  { value: 'MINISTRE', label: 'Ministre' },
 ]
 
 function UsersList() {
@@ -77,7 +78,7 @@ function UsersList() {
     { title: 'Email', dataIndex: 'email', key: 'email' },
     { title: 'Structure', dataIndex: 'structureId', key: 'structureId', render: (id)=> structureOptions.find(o=>String(o.value)===String(id))?.label || '-' },
     { title: 'Rôle', dataIndex: 'role', key: 'role', render: (r)=> ROLE_OPTIONS.find(x=>x.value===r)?.label || r },
-    { title: 'Ministère représenté', dataIndex: 'ministere', key: 'ministere', render: (m, record)=> record.role==='ADMIN_CA' ? (m || <span style={{ color:'#999' }}>à renseigner</span>) : '-' },
+    { title: 'Ministère représenté', dataIndex: 'ministere', key: 'ministere', render: (m, record)=> (record.role==='ADMIN_CA' || record.role==='MINISTRE') ? (m || <span style={{ color:'#999' }}>à renseigner</span>) : '-' },
     { title: 'Actions', key: 'actions', render: (_, record) => (
       <Space>
         <Button onClick={()=>onEdit(record)}>Modifier</Button>
@@ -110,7 +111,7 @@ function UsersList() {
           <Form.Item name="role" label="Rôle" rules={[{ required: true }]}>
             <Select options={ROLE_OPTIONS} showSearch optionFilterProp="label" placeholder="Choisir le rôle" />
           </Form.Item>
-          <Form.Item name="ministere" label="Ministère (pour Administrateur CA)">
+          <Form.Item name="ministere" label="Ministère (pour Administrateur CA ou Ministre)">
             <Input placeholder="Intitulé du ministère représenté" />
           </Form.Item>
         </Form>
