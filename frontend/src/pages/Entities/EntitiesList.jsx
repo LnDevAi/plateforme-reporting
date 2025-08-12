@@ -10,8 +10,10 @@ function EntitiesList() {
 
   const load = async () => {
     setLoading(true)
-    const { data } = await entitiesAPI.getAll()
-    setData(data)
+    const raw = localStorage.getItem('entities')
+    let list = []
+    try { list = raw ? JSON.parse(raw) : [] } catch { list = [] }
+    setData(list)
     setLoading(false)
   }
 

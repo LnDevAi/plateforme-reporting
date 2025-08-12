@@ -27,8 +27,8 @@ function EntityCreate() {
     try {
       const docs = []
       for (const f of files) {
-        const content = await readFileAsBase64(f)
-        if (content) docs.push({ name: f.name, size: f.size, type: f.type, content })
+        // Stockage démo: uniquement les métadonnées, pas le contenu (évite dépassement de quota localStorage)
+        docs.push({ name: f.name, size: f.size, type: f.type })
       }
       const payload = {
         name: values.name,
