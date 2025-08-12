@@ -70,6 +70,7 @@ function AppLayout() {
     {
       key: '/entities', icon: <ApartmentOutlined />, label: 'Inscription entités',
       children: [
+        { key: '/entities', icon: <ApartmentOutlined />, label: 'Liste des entités' },
         { key: '/entities/create', icon: <PlusOutlined />, label: 'Nouvelle entité' },
       ]
     },
@@ -147,6 +148,7 @@ function AppLayout() {
               {location.pathname === '/dashboard' && 'Tableau de bord'}
               {location.pathname === '/projects' && 'Projets / Entités'}
               {location.pathname === '/projects/create' && 'Nouveau projet'}
+              {location.pathname === '/entities' && 'Entités'}
               {location.pathname === '/entities/create' && 'Inscription entité'}
               {location.pathname?.startsWith('/entities/') && 'Entité'}
               {location.pathname === '/reports/elaboration' && 'Rapports - Élaboration'}
