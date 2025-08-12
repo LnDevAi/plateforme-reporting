@@ -22,10 +22,20 @@ function SectionCard({ title, items, onCreate, onOpen }) {
   )
 }
 
+const FALLBACK_SECTIONS = [
+  { key: 'budget_prevision', title: 'Budget prévisionnel', items: [ { id: 1, title: 'Budget 2025', status: 'Brouillon', updated_at: '—' } ] },
+  { key: 'programme_activites', title: 'Programme d’Activités', items: [ { id: 2, title: 'PA 2025', status: 'Brouillon', updated_at: '—' } ] },
+  { key: 'ppm', title: 'Plan de Passation des Marchés (PPM)', items: [ { id: 3, title: 'PPM 2025', status: 'Brouillon', updated_at: '—' } ] },
+  { key: 'autres_elab', title: 'Autres documents', items: [] },
+  { key: 'avis_audit', title: 'Avis du Comité d’audit', items: [] },
+  { key: 'avis_commissaire', title: 'Avis du Commissaire aux Comptes', items: [] },
+  { key: 'rapport_ca_budget', title: 'Rapport du CA sur la session budgétaire', items: [] },
+]
+
 function DocumentsElaboration() {
   const navigate = useNavigate()
   const { data, isLoading } = useQuery(['documents-elaboration'], documentsAPI.getElaboration)
-  const [sections, setSections] = useState([])
+  const [sections, setSections] = useState(FALLBACK_SECTIONS)
 
   useEffect(()=>{
     if (data?.data) setSections(data.data)
@@ -49,8 +59,7 @@ function DocumentsElaboration() {
 
   return (
     <Space direction="vertical" style={{ width: '100%' }}>
-      {isLoading && <Card>Chargement...</Card>}
-      {!isLoading && sections.map((section)=> (
+      {sections.map((section)=> (
         <SectionCard
           key={section.key}
           title={section.title}
