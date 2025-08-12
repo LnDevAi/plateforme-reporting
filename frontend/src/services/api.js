@@ -850,6 +850,104 @@ export const sessionAPI = {
     api.post(`/sessions/templates/${templateId}/create`, data),
 }
 
+// === Entités & Sessions (démo) ===
+export const entitiesAPI = {
+  getAll: async () => {
+    await delay(80)
+    const raw = localStorage.getItem('entities')
+    const list = raw ? JSON.parse(raw) : []
+    return { success: true, data: list }
+  },
+  create: async (payload) => {
+    await delay(80)
+    const raw = localStorage.getItem('entities')
+    const list = raw ? JSON.parse(raw) : []
+    const id = Date.now()
+    const entity = { id, ...payload, created_at: new Date().toISOString() }
+    list.push(entity)
+    localStorage.setItem('entities', JSON.stringify(list))
+    return { success: true, data: entity }
+  },
+  getById: async (id) => {
+    await delay(60)
+    const list = JSON.parse(localStorage.getItem('entities') || '[]')
+    const entity = list.find(e => String(e.id) === String(id))
+    // Boot subdivisions if missing
+    if (entity) {
+      entity.structure = entity.structure || {
+        directionGenerale: {
+          roles: {
+            DG: null, DFC: null, PRM: null, DRH: null, CG: null, AI: null
+          },
+          autresDirections: [],
+        },
+        conseilAdministration: {
+          ministeres: Array.from({ length: 10 }).map((_, i) => ({ slot: `Ministère ${i+1}`, membre: null })),
+          observateurs: [null, null],
+          repPersonnel: null,
+          commissaireComptes: null,
+        },
+        assembleeGenerale: {
+          notes: '',
+        },
+      }
+    }
+    return { success: true, data: entity || null }
+  },
+  saveById: async (id, data) => {
+    await delay(80)
+    const list = JSON.parse(localStorage.getItem('entities') || '[]')
+    const idx = list.findIndex(e => String(e.id) === String(id))
+    if (idx >= 0) {
+      list[idx] = { ...list[idx], ...data }
+      localStorage.setItem('entities', JSON.stringify(list))
+      return { success: true, data: list[idx] }
+    }
+    return { success: false, message: 'Entité introuvable' }
+  },
+}
+
+export const sessionsAPI = {
+  list: async (entityId) => {
+    await delay(60)
+    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
+    return { success: true, data: all.filter(s => String(s.entityId) === String(entityId)) }
+  },
+  create: async (entityId, payload) => {
+    await delay(80)
+    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
+    const session = { id: Date.now(), entityId, type: payload.type, title: payload.title, status: 'planned', created_at: new Date().toISOString(), messages: [] }
+    all.push(session)
+    localStorage.setItem('sessions', JSON.stringify(all))
+    return { success: true, data: session }
+  },
+  start: async (sessionId) => {
+    await delay(50)
+    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
+    const s = all.find(x => String(x.id) === String(sessionId))
+    if (s) { s.status = 'live'; localStorage.setItem('sessions', JSON.stringify(all)); return { success: true, data: s } }
+    return { success: false }
+  },
+  end: async (sessionId) => {
+    await delay(50)
+    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
+    const s = all.find(x => String(x.id) === String(sessionId))
+    if (s) { s.status = 'ended'; localStorage.setItem('sessions', JSON.stringify(all)); return { success: true, data: s } }
+    return { success: false }
+  },
+  postMessage: async (sessionId, author, text) => {
+    await delay(20)
+    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
+    const s = all.find(x => String(x.id) === String(sessionId))
+    if (s) {
+      s.messages.push({ id: Date.now(), author, text, at: new Date().toISOString() })
+      localStorage.setItem('sessions', JSON.stringify(all))
+      return { success: true, data: s }
+    }
+    return { success: false }
+  }
+}
+
 // API pour les entités/structures
 export const entityAPI = {
   // CRUD entités

@@ -24,6 +24,8 @@ import DocumentsExecution from './pages/Documents/DocumentsExecution'
 import BudgetEditor from './pages/Documents/BudgetEditor'
 import ActivitiesProgramEditor from './pages/Documents/ActivitiesProgramEditor'
 import PPMEditor from './pages/Documents/PPMEditor'
+import EntityCreate from './pages/Entities/EntityCreate'
+import EntityDetail from './pages/Entities/EntityDetail'
 
 const { Content } = Layout
 
@@ -70,6 +72,8 @@ function AppRoutes() {
         {/* Sections */}
         <Route path="projects" element={<ProjectsList />} />
         <Route path="projects/create" element={<ProjectCreate />} />
+        <Route path="entities/create" element={<EntityCreate />} />
+        <Route path="entities/:id" element={<EntityDetail />} />
         <Route path="templates" element={<TemplatesList />} />
         <Route path="workflow" element={<ValidationWorkflow />} />
         <Route path="attachments" element={<AttachmentsManager />} />

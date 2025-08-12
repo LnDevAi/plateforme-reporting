@@ -68,6 +68,12 @@ function AppLayout() {
       ]
     },
     {
+      key: '/entities', icon: <ApartmentOutlined />, label: 'Inscription entités',
+      children: [
+        { key: '/entities/create', icon: <PlusOutlined />, label: 'Nouvelle entité' },
+      ]
+    },
+    {
       key: '/reports', icon: <FolderOpenOutlined />, label: 'Rapports',
       children: [
         { key: '/reports/elaboration', icon: <FileDoneOutlined />, label: 'Élaboration' },
@@ -101,6 +107,9 @@ function AppLayout() {
       if (path === '/reports/execution') return ['/reports/execution']
       return ['/reports']
     }
+    if (path.startsWith('/entities/')) {
+      return ['/entities']
+    }
     if (path.startsWith('/schedules/')) {
       if (path === '/schedules/create') return ['/schedules/create']
       return ['/schedules']
@@ -115,6 +124,7 @@ function AppLayout() {
   const getOpenKeys = () => {
     const path = location.pathname
     if (path.startsWith('/reports')) return ['/reports']
+    if (path.startsWith('/entities')) return ['/entities']
     if (path.startsWith('/schedules')) return ['/schedules']
     if (path.startsWith('/projects')) return ['/projects']
     return []
@@ -137,6 +147,8 @@ function AppLayout() {
               {location.pathname === '/dashboard' && 'Tableau de bord'}
               {location.pathname === '/projects' && 'Projets / Entités'}
               {location.pathname === '/projects/create' && 'Nouveau projet'}
+              {location.pathname === '/entities/create' && 'Inscription entité'}
+              {location.pathname?.startsWith('/entities/') && 'Entité'}
               {location.pathname === '/reports/elaboration' && 'Rapports - Élaboration'}
               {location.pathname === '/reports/execution' && 'Rapports - Exécution'}
               {location.pathname === '/templates' && 'Modèles de rapports'}
