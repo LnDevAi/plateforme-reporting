@@ -25,13 +25,18 @@ function EntityCreate() {
 
   const onFinish = async (values) => {
     try {
+      const nameTrimmed = (values.name || '').trim()
+      if (!nameTrimmed) {
+        message.error("Veuillez saisir le nom de l'entité")
+        return
+      }
       const docs = []
       for (const f of files) {
         // Stockage démo: uniquement les métadonnées, pas le contenu (évite dépassement de quota localStorage)
         docs.push({ name: f.name, size: f.size, type: f.type })
       }
       const payload = {
-        name: values.name,
+        name: nameTrimmed,
         type: values.type,
         tutelle: { technique: values.technique, financier: values.financier },
         contact: {
@@ -59,7 +64,7 @@ function EntityCreate() {
   return (
     <Card title="Inscription d'une entité">
       <Form form={form} layout="vertical" onFinish={onFinish}>
-        <Form.Item name="name" label="Nom de l'entité" rules={[{ required: true, message: 'Obligatoire' }]}> <Input /> </Form.Item>
+        <Form.Item name="name" label="Nom de l'entité"> <Input autoFocus placeholder="Ex: Société X" /> </Form.Item>
         <Form.Item name="type" label="Type" rules={[{ required: true }]}>
           <Select options={[{ value: 'EPE', label: 'EPE' }, { value: 'SocieteEtat', label: "Société d'État" }]} />
         </Form.Item>
