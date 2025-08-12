@@ -12,6 +12,7 @@ function BudgetEditor() {
   const [form] = Form.useForm()
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState(null)
+  const fileInputRef = React.useRef(null)
 
   useEffect(() => {
     const run = async () => {
@@ -73,12 +74,59 @@ function BudgetEditor() {
     message.success('Document validé')
   }
 
+  const exportJSON = () => {
+    const values = form.getFieldsValue(true)
+    const blob = new Blob([JSON.stringify(values, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `budget_${id}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const exportCSV = () => {
+    const lines = form.getFieldValue('lines') || []
+    const headers = ['chapter', 'item', 'amount']
+    const rows = lines.map(l => [l.chapter, l.item, l.amount])
+    const csv = [headers.join(','), ...rows.map(r=>r.map(v=>`"${(v??'').toString().replace(/"/g,'""')}"`).join(','))].join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `budget_${id}_lignes.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const importJSON = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const text = await file.text()
+    try {
+      const json = JSON.parse(text)
+      form.setFieldsValue(json)
+      await documentsAPI.saveElaborationItem('budget', id, json)
+      message.success('Import réussi')
+    } catch (err) {
+      message.error('Fichier JSON invalide')
+    } finally {
+      e.target.value = ''
+    }
+  }
+
   if (loading) return <Card>Chargement...</Card>
 
   return (
     <Space direction="vertical" style={{ width: '100%' }}>
       <Title level={3}>{data?.title}</Title>
       <WorkflowPanel type="budget" id={id} />
+      <input ref={fileInputRef} type="file" accept="application/json" style={{ display: 'none' }} onChange={importJSON} />
+      <Space>
+        <Button onClick={exportJSON}>Exporter JSON</Button>
+        <Button onClick={exportCSV}>Exporter CSV (lignes)</Button>
+        <Button onClick={()=>fileInputRef.current?.click()}>Importer JSON</Button>
+      </Space>
       <Card title="Hypothèses">
         <Form form={form} layout="vertical" onValuesChange={onValuesChange}>
           <Form.Item name="hypotheses" label="Hypothèses générales">
