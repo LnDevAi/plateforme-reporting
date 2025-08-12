@@ -44,6 +44,7 @@ function DocumentsElaboration() {
   const openEditor = (sectionKey, record) => {
     if (sectionKey === 'budget_prevision') navigate(`/reports/elaboration/budget/${record.id}`)
     else if (sectionKey === 'programme_activites') navigate(`/reports/elaboration/programme/${record.id}`)
+    else if (sectionKey === 'ppm') navigate(`/reports/elaboration/ppm/${record.id}`)
   }
 
   return (

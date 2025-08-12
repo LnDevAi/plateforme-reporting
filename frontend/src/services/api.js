@@ -554,6 +554,18 @@ export const documentsAPI = {
         localStorage.setItem(key, JSON.stringify(data))
         return { success: true, data }
       }
+      if (type === 'ppm') {
+        const data = {
+          id, title: `PPM ${id}`, status: 'Brouillon',
+          notes: '',
+          lines: [
+            { subject: 'Achat véhicules', procedure: 'AO', amount: 150000000, status: 'Planifié', planned_date: '2025-02-01', actual_date: '' },
+            { subject: 'Fournitures IT', procedure: 'DRP', amount: 25000000, status: 'Planifié', planned_date: '2025-03-15', actual_date: '' },
+          ],
+        }
+        localStorage.setItem(key, JSON.stringify(data))
+        return { success: true, data }
+      }
       return { success: false, message: 'Type inconnu' }
     }
     return api.get(`/documents/elaboration/${type}/${id}`)

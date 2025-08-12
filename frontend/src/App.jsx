@@ -23,6 +23,7 @@ import DocumentsElaboration from './pages/Documents/DocumentsElaboration'
 import DocumentsExecution from './pages/Documents/DocumentsExecution'
 import BudgetEditor from './pages/Documents/BudgetEditor'
 import ActivitiesProgramEditor from './pages/Documents/ActivitiesProgramEditor'
+import PPMEditor from './pages/Documents/PPMEditor'
 
 const { Content } = Layout
 
@@ -77,6 +78,7 @@ function AppRoutes() {
         <Route path="reports/execution" element={<DocumentsExecution />} />
         <Route path="reports/elaboration/budget/:id" element={<BudgetEditor />} />
         <Route path="reports/elaboration/programme/:id" element={<ActivitiesProgramEditor />} />
+        <Route path="reports/elaboration/ppm/:id" element={<PPMEditor />} />
         
         {/* Gestion des utilisateurs (admin seulement) */}
         <Route path="users" element={<UsersList />} />
