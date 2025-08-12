@@ -928,7 +928,17 @@ export const sessionsAPI = {
     await delay(80)
     const all = JSON.parse(localStorage.getItem('sessions') || '[]')
     const room = `pr-${entityId}-${Date.now()}`
-    const session = { id: Date.now(), entityId, type: payload.type, title: payload.title, status: 'planned', created_at: new Date().toISOString(), messages: [], room }
+    const session = { 
+      id: Date.now(), entityId, type: payload.type, title: payload.title,
+      status: 'planned', created_at: new Date().toISOString(), room,
+      messages: [],
+      participants: [], // {id,name,role,email,present}
+      agenda: [],       // {id,title,done,documents: [{name,url}]}
+      votes: [],        // {id,question,options:[{id,text,count}],open}
+      minutes: null,    // {content, generated_at, locked}
+      invitations: [],  // {id,email,sent_at,accepted}
+      recordings: [],   // {id,started_at,stopped_at}
+    }
     all.push(session)
     localStorage.setItem('sessions', JSON.stringify(all))
     return { success: true, data: session }
@@ -944,7 +954,7 @@ export const sessionsAPI = {
     await delay(50)
     const all = JSON.parse(localStorage.getItem('sessions') || '[]')
     const s = all.find(x => String(x.id) === String(sessionId))
-    if (s) { s.status = 'ended'; localStorage.setItem('sessions', JSON.stringify(all)); return { success: true, data: s } }
+    if (s) { s.status = 'ended'; if (s.minutes) s.minutes.locked = true; localStorage.setItem('sessions', JSON.stringify(all)); return { success: true, data: s } }
     return { success: false }
   },
   postMessage: async (sessionId, author, text) => {
@@ -957,7 +967,169 @@ export const sessionsAPI = {
       return { success: true, data: s }
     }
     return { success: false }
-  }
+  },
+  // Participants
+  addParticipant: async (sessionId, participant) => {
+    await delay(40)
+    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
+    const s = all.find(x => String(x.id) === String(sessionId))
+    if (!s) return { success: false }
+    const p = { id: Date.now(), present: false, ...participant }
+    s.participants.push(p)
+    localStorage.setItem('sessions', JSON.stringify(all))
+    return { success: true, data: p }
+  },
+  removeParticipant: async (sessionId, participantId) => {
+    await delay(40)
+    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
+    const s = all.find(x => String(x.id) === String(sessionId))
+    if (!s) return { success: false }
+    s.participants = s.participants.filter(p => String(p.id) !== String(participantId))
+    localStorage.setItem('sessions', JSON.stringify(all))
+    return { success: true }
+  },
+  markPresent: async (sessionId, participantId, present) => {
+    await delay(30)
+    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
+    const s = all.find(x => String(x.id) === String(sessionId))
+    if (!s) return { success: false }
+    const p = s.participants.find(p => String(p.id) === String(participantId))
+    if (p) p.present = !!present
+    localStorage.setItem('sessions', JSON.stringify(all))
+    return { success: true }
+  },
+  // Agenda
+  addAgendaItem: async (sessionId, title) => {
+    await delay(40)
+    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
+    const s = all.find(x => String(x.id) === String(sessionId))
+    if (!s) return { success: false }
+    const item = { id: Date.now(), title, done: false, documents: [] }
+    s.agenda.push(item)
+    localStorage.setItem('sessions', JSON.stringify(all))
+    return { success: true, data: item }
+  },
+  toggleAgendaItem: async (sessionId, itemId, done) => {
+    await delay(30)
+    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
+    const s = all.find(x => String(x.id) === String(sessionId))
+    if (!s) return { success: false }
+    const it = s.agenda.find(a => String(a.id) === String(itemId))
+    if (it) it.done = !!done
+    localStorage.setItem('sessions', JSON.stringify(all))
+    return { success: true }
+  },
+  attachDocument: async (sessionId, itemId, doc) => {
+    await delay(30)
+    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
+    const s = all.find(x => String(x.id) === String(sessionId))
+    if (!s) return { success: false }
+    const it = s.agenda.find(a => String(a.id) === String(itemId))
+    if (!it) return { success: false }
+    it.documents.push({ id: Date.now(), name: doc.name, url: doc.url || '#' })
+    localStorage.setItem('sessions', JSON.stringify(all))
+    return { success: true }
+  },
+  // Votes
+  createVote: async (sessionId, question, options) => {
+    await delay(50)
+    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
+    const s = all.find(x => String(x.id) === String(sessionId))
+    if (!s) return { success: false }
+    const vote = { id: Date.now(), question, options: options.map((t, idx)=>({ id: idx+1, text: t, count: 0 })), open: true }
+    s.votes.push(vote)
+    localStorage.setItem('sessions', JSON.stringify(all))
+    return { success: true, data: vote }
+  },
+  castVote: async (sessionId, voteId, optionId) => {
+    await delay(30)
+    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
+    const s = all.find(x => String(x.id) === String(sessionId))
+    if (!s) return { success: false }
+    const v = s.votes.find(v => String(v.id) === String(voteId))
+    if (!v || !v.open) return { success: false }
+    const opt = v.options.find(o => String(o.id) === String(optionId))
+    if (opt) opt.count = (opt.count || 0) + 1
+    localStorage.setItem('sessions', JSON.stringify(all))
+    return { success: true, data: v }
+  },
+  closeVote: async (sessionId, voteId) => {
+    await delay(20)
+    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
+    const s = all.find(x => String(x.id) === String(sessionId))
+    if (!s) return { success: false }
+    const v = s.votes.find(v => String(v.id) === String(voteId))
+    if (v) v.open = false
+    localStorage.setItem('sessions', JSON.stringify(all))
+    return { success: true }
+  },
+  // Minutes (PV)
+  generateMinutes: async (sessionId) => {
+    await delay(80)
+    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
+    const s = all.find(x => String(x.id) === String(sessionId))
+    if (!s) return { success: false }
+    const content = `Procès-verbal\nSession: ${s.title}\nType: ${s.type}\nDate: ${new Date().toLocaleString('fr-FR')}\n\nParticipants présents: ${(s.participants||[]).filter(p=>p.present).map(p=>p.name).join(', ') || 'N/A'}\n\nOrdre du jour:\n${(s.agenda||[]).map((a,i)=>`${i+1}. ${a.title} [${a.done?'Clôturé':'Ouvert'}]`).join('\n')}\n\nVotes:\n${(s.votes||[]).map(v=>`- ${v.question} => ${v.options.map(o=>o.text+': '+(o.count||0)).join(', ')}`).join('\n')}`
+    s.minutes = { content, generated_at: new Date().toISOString(), locked: s.status === 'ended' }
+    localStorage.setItem('sessions', JSON.stringify(all))
+    return { success: true, data: s.minutes }
+  },
+  saveMinutes: async (sessionId, content) => {
+    await delay(40)
+    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
+    const s = all.find(x => String(x.id) === String(sessionId))
+    if (!s) return { success: false }
+    if (!s.minutes) s.minutes = { content: '', generated_at: new Date().toISOString(), locked: false }
+    if (s.minutes.locked) return { success: false, message: 'PV verrouillé' }
+    s.minutes.content = content
+    localStorage.setItem('sessions', JSON.stringify(all))
+    return { success: true }
+  },
+  // Invitations
+  sendInvitations: async (sessionId, emails = []) => {
+    await delay(60)
+    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
+    const s = all.find(x => String(x.id) === String(sessionId))
+    if (!s) return { success: false }
+    const now = new Date().toISOString()
+    emails.forEach(email => s.invitations.push({ id: Date.now()+Math.random(), email, sent_at: now, accepted: false }))
+    localStorage.setItem('sessions', JSON.stringify(all))
+    return { success: true, data: s.invitations }
+  },
+  acceptInvitation: async (sessionId, email) => {
+    await delay(20)
+    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
+    const s = all.find(x => String(x.id) === String(sessionId))
+    if (!s) return { success: false }
+    const inv = s.invitations.find(i => i.email === email)
+    if (inv) inv.accepted = true
+    localStorage.setItem('sessions', JSON.stringify(all))
+    return { success: true }
+  },
+  sendReminders: async (sessionId) => {
+    await delay(30)
+    return { success: true }
+  },
+  // Recording flags (métadonnées)
+  startRecordingMeta: async (sessionId) => {
+    await delay(10)
+    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
+    const s = all.find(x => String(x.id) === String(sessionId))
+    if (!s) return { success: false }
+    s.recordings.push({ id: Date.now(), started_at: new Date().toISOString(), stopped_at: null })
+    localStorage.setItem('sessions', JSON.stringify(all))
+    return { success: true }
+  },
+  stopRecordingMeta: async (sessionId) => {
+    await delay(10)
+    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
+    const s = all.find(x => String(x.id) === String(sessionId))
+    if (!s) return { success: false }
+    const rec = [...s.recordings].reverse().find(r => !r.stopped_at)
+    if (rec) rec.stopped_at = new Date().toISOString()
+    localStorage.setItem('sessions', JSON.stringify(all))
+    return { success: true }
+  },
 }
 
 // API pour les entités/structures

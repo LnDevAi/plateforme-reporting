@@ -122,11 +122,171 @@ function JitsiPanel({ room }) {
         <Button onClick={startStreaming}>Streamer</Button>
         <Button onClick={stopStreaming}>Arrêter stream</Button>
       </Space>
-      <Divider style={{ margin: '12px 0' }} />
-      <div>
-        <strong>Participants ({participants.length})</strong>
-        <List size="small" dataSource={participants} renderItem={(p)=> <List.Item>{p.displayName || 'Utilisateur'} {p.formattedDisplayName ? `(${p.formattedDisplayName})` : ''}</List.Item>} />
-      </div>
+    </Card>
+  )
+}
+
+function ParticipantsPanel({ session, onChange }) {
+  const [name, setName] = useState('')
+  const [role, setRole] = useState('')
+  const [email, setEmail] = useState('')
+
+  const add = async () => {
+    if (!name) return
+    await sessionsAPI.addParticipant(session.id, { name, role, email })
+    setName(''); setRole(''); setEmail('')
+    onChange()
+  }
+  const remove = async (pid) => { await sessionsAPI.removeParticipant(session.id, pid); onChange() }
+  const toggle = async (pid, present) => { await sessionsAPI.markPresent(session.id, pid, present); onChange() }
+
+  return (
+    <Card size="small" title="Participants" extra={<Space>
+      <Input placeholder="Nom" value={name} onChange={e=>setName(e.target.value)} />
+      <Input placeholder="Rôle" value={role} onChange={e=>setRole(e.target.value)} />
+      <Input placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} />
+      <Button onClick={add}>Ajouter</Button>
+    </Space>}>
+      <List dataSource={session.participants||[]} renderItem={(p)=> (
+        <List.Item actions={[<Button key="rm" danger onClick={()=>remove(p.id)}>Supprimer</Button>, <Switch key="pr" checked={!!p.present} onChange={(v)=>toggle(p.id, v)} />]}>
+          <List.Item.Meta title={`${p.name} ${p.role?`- ${p.role}`:''}`} description={p.email} />
+        </List.Item>
+      )} />
+    </Card>
+  )
+}
+
+function AgendaPanel({ session, onChange }) {
+  const [title, setTitle] = useState('')
+  const [docName, setDocName] = useState('')
+
+  const addItem = async () => { if (!title) return; await sessionsAPI.addAgendaItem(session.id, title); setTitle(''); onChange() }
+  const toggle = async (itemId, done) => { await sessionsAPI.toggleAgendaItem(session.id, itemId, done); onChange() }
+  const attach = async (itemId) => { if (!docName) return; await sessionsAPI.attachDocument(session.id, itemId, { name: docName }); setDocName(''); onChange() }
+
+  return (
+    <Card size="small" title="Ordre du jour" extra={<Space>
+      <Input placeholder="Nouvel item" value={title} onChange={e=>setTitle(e.target.value)} />
+      <Button onClick={addItem}>Ajouter</Button>
+    </Space>}>
+      <List dataSource={session.agenda||[]} renderItem={(a)=> (
+        <List.Item actions={[<Switch key="dg" checked={!!a.done} onChange={(v)=>toggle(a.id, v)} />]}>
+          <List.Item.Meta title={a.title} description={(a.documents||[]).map(d=>d.name).join(', ') || '—'} />
+          <Space>
+            <Input placeholder="Nom doc" value={docName} onChange={e=>setDocName(e.target.value)} style={{ width: 180 }} />
+            <Button onClick={()=>attach(a.id)}>Joindre</Button>
+          </Space>
+        </List.Item>
+      )} />
+    </Card>
+  )
+}
+
+function VotesPanel({ session, onChange }) {
+  const [question, setQuestion] = useState('')
+  const [options, setOptions] = useState('Oui;Non;Abstention')
+
+  const create = async () => { if (!question) return; const opts = options.split(';').map(s=>s.trim()).filter(Boolean); await sessionsAPI.createVote(session.id, question, opts); setQuestion(''); onChange() }
+  const vote = async (voteId, optionId) => { await sessionsAPI.castVote(session.id, voteId, optionId); onChange() }
+  const close = async (voteId) => { await sessionsAPI.closeVote(session.id, voteId); onChange() }
+
+  return (
+    <Card size="small" title="Votes" extra={<Space>
+      <Input placeholder="Question" value={question} onChange={e=>setQuestion(e.target.value)} />
+      <Input placeholder="Options (séparées par ;)" value={options} onChange={e=>setOptions(e.target.value)} style={{ width: 240 }} />
+      <Button onClick={create}>Créer</Button>
+    </Space>}>
+      <List dataSource={session.votes||[]} renderItem={(v)=> (
+        <List.Item actions={[v.open && <Button key="cl" onClick={()=>close(v.id)}>Clore</Button>]}> 
+          <List.Item.Meta title={v.question} description={v.open ? 'Ouvert' : 'Fermé'} />
+          <Space>
+            {(v.options||[]).map(o => (
+              <Button key={o.id} onClick={()=>vote(v.id,o.id)} disabled={!v.open}>{o.text} ({o.count||0})</Button>
+            ))}
+          </Space>
+        </List.Item>
+      )} />
+    </Card>
+  )
+}
+
+function MinutesPanel({ session, onChange }) {
+  const [content, setContent] = useState(session.minutes?.content || '')
+  useEffect(()=>{ setContent(session.minutes?.content || '') }, [session.minutes?.content])
+  const generate = async () => { const { data } = await sessionsAPI.generateMinutes(session.id); setContent(data.content); onChange() }
+  const save = async () => { const r = await sessionsAPI.saveMinutes(session.id, content); if (!r.success) return message.warning('PV verrouillé'); message.success('PV enregistré'); onChange() }
+
+  const exportPdf = async () => {
+    const { jsPDF } = await import('jspdf')
+    const doc = new jsPDF({ unit: 'pt', format: 'a4' })
+    const left = 40, top = 40, maxWidth = 515
+    const lines = doc.splitTextToSize(content || '', maxWidth)
+    doc.setFontSize(12)
+    doc.text(lines, left, top)
+    doc.save(`PV_${session.title.replace(/\s+/g,'_')}.pdf`)
+  }
+
+  const exportWord = async () => {
+    const docx = await import('docx')
+    const { Document, Packer, Paragraph } = docx
+    const paragraphs = (content || '').split('\n').map(line => new Paragraph(line))
+    const doc = new Document({ sections: [{ properties: {}, children: paragraphs }] })
+    const blob = await Packer.toBlob(doc)
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = `PV_${session.title.replace(/\s+/g,'_')}.docx`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(a.href)
+  }
+
+  return (
+    <Card size="small" title="Procès-verbal">
+      <Space direction="vertical" style={{ width: '100%' }}>
+        <Space wrap>
+          <Button onClick={generate}>Générer auto</Button>
+          <Button onClick={save} disabled={session.minutes?.locked}>Enregistrer</Button>
+          <Button onClick={exportPdf}>Exporter PDF</Button>
+          <Button onClick={exportWord}>Exporter Word</Button>
+          {session.minutes?.locked && <Tag color="default">Verrouillé</Tag>}
+        </Space>
+        <Input.TextArea rows={6} value={content} onChange={e=>setContent(e.target.value)} disabled={session.minutes?.locked} />
+      </Space>
+    </Card>
+  )
+}
+
+function InvitesPanel({ session, onChange }) {
+  const [emails, setEmails] = useState('')
+  const send = async () => { const list = emails.split(/[;,\s]+/).map(s=>s.trim()).filter(Boolean); await sessionsAPI.sendInvitations(session.id, list); setEmails(''); message.success('Invitations envoyées'); onChange() }
+  return (
+    <Card size="small" title="Invitations/Rappels" extra={<Space>
+      <Input placeholder="emails séparés par ;" value={emails} onChange={e=>setEmails(e.target.value)} style={{ width: 300 }} />
+      <Button onClick={send}>Envoyer</Button>
+      <Button onClick={async()=>{ await sessionsAPI.sendReminders(session.id); message.success('Rappels envoyés'); }}>Rappels</Button>
+    </Space>}>
+      <List size="small" dataSource={session.invitations||[]} renderItem={(i)=> (
+        <List.Item>
+          <List.Item.Meta title={i.email} description={`Envoyé le ${new Date(i.sent_at).toLocaleString('fr-FR')} ${i.accepted?'(Accepté)':''}`} />
+        </List.Item>
+      )} />
+    </Card>
+  )
+}
+
+function RecordingMeta({ session, onChange }) {
+  return (
+    <Card size="small" title="Enregistrements (métadonnées)">
+      <Space>
+        <Button onClick={async()=>{ await sessionsAPI.startRecordingMeta(session.id); onChange() }}>Marquer début</Button>
+        <Button onClick={async()=>{ await sessionsAPI.stopRecordingMeta(session.id); onChange() }}>Marquer fin</Button>
+      </Space>
+      <List size="small" dataSource={session.recordings||[]} renderItem={(r)=> (
+        <List.Item>
+          <List.Item.Meta title={`Début: ${new Date(r.started_at).toLocaleString('fr-FR')}`} description={r.stopped_at ? `Fin: ${new Date(r.stopped_at).toLocaleString('fr-FR')}` : 'En cours...'} />
+        </List.Item>
+      )} />
     </Card>
   )
 }
@@ -166,8 +326,20 @@ function SessionTab({ type, entityId }) {
           ]}>
             <List.Item.Meta title={<>{s.title} <Tag color={s.status==='live'?'green':s.status==='ended'?'default':'blue'}>{s.status}</Tag></>} description={`Créée le ${new Date(s.created_at).toLocaleString('fr-FR')}`} />
             <div style={{ width: '100%' }}>
-              <JitsiPanel room={s.room || `pr-${entityId}-${s.id}`} />
-              <List size="small" dataSource={s.messages} renderItem={(m)=> <List.Item>{m.author}: {m.text} <span style={{ color:'#999' }}>({new Date(m.at).toLocaleTimeString('fr-FR')})</span></List.Item>} />
+              <Tabs
+                size="small"
+                items={[
+                  { key: 'reunion', label: 'Réunion', children: <JitsiPanel room={s.room || `pr-${entityId}-${s.id}`} /> },
+                  { key: 'participants', label: 'Participants', children: <ParticipantsPanel session={s} onChange={load} /> },
+                  { key: 'agenda', label: 'Ordre du jour', children: <AgendaPanel session={s} onChange={load} /> },
+                  { key: 'votes', label: 'Votes', children: <VotesPanel session={s} onChange={load} /> },
+                  { key: 'pv', label: 'PV', children: <MinutesPanel session={s} onChange={load} /> },
+                  { key: 'invites', label: 'Invitations', children: <InvitesPanel session={s} onChange={load} /> },
+                  { key: 'record', label: 'Enregistrements', children: <RecordingMeta session={s} onChange={load} /> },
+                ]}
+              />
+              <Divider />
+              <List size="small" header={<strong>Messages</strong>} dataSource={s.messages} renderItem={(m)=> <List.Item>{m.author}: {m.text} <span style={{ color:'#999' }}>({new Date(m.at).toLocaleTimeString('fr-FR')})</span></List.Item>} />
               {s.status==='live' && (
                 <Space style={{ marginTop: 8 }}>
                   <Input placeholder="Message" value={messageText} onChange={(e)=>setMessageText(e.target.value)} />
