@@ -3,6 +3,10 @@ import { Card, Form, Input, Button, Table, InputNumber, Space, Typography, Selec
 import { useParams } from 'react-router-dom'
 import { documentsAPI } from '../../services/api'
 import WorkflowPanel from '../../components/Workflow/WorkflowPanel'
+import * as XLSX from 'xlsx'
+import { Document, Packer, Paragraph, TextRun, Table as DocxTable, TableRow, TableCell, WidthType } from 'docx'
+import jsPDF from 'jspdf'
+import 'jspdf-autotable'
 
 const { Title } = Typography
 
@@ -101,6 +105,61 @@ function PPMEditor() {
     URL.revokeObjectURL(url)
   }
 
+  const exportExcel = () => {
+    const values = form.getFieldsValue(true)
+    const ws = XLSX.utils.json_to_sheet(values.lines || [])
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'PPM')
+    XLSX.writeFile(wb, `ppm_${id}.xlsx`)
+  }
+
+  const exportWord = async () => {
+    const values = form.getFieldsValue(true)
+    const rows = (values.lines||[]).map(l => new TableRow({ children: [
+      new TableCell({ children: [new Paragraph(l.subject||'')] }),
+      new TableCell({ children: [new Paragraph(l.procedure||'')] }),
+      new TableCell({ children: [new Paragraph(String(l.amount||0))] }),
+      new TableCell({ children: [new Paragraph(l.status||'')] }),
+      new TableCell({ children: [new Paragraph((l.planned_date||'').toString())] }),
+      new TableCell({ children: [new Paragraph((l.actual_date||'').toString())] }),
+    ] }))
+    const table = new DocxTable({ rows: [
+      new TableRow({ children: [
+        new TableCell({ children:[new Paragraph('Objet')]}),
+        new TableCell({ children:[new Paragraph('Procédure')]}),
+        new TableCell({ children:[new Paragraph('Montant')]}),
+        new TableCell({ children:[new Paragraph('Statut')]}),
+        new TableCell({ children:[new Paragraph('Date prév.')]}),
+        new TableCell({ children:[new Paragraph('Date réelle')]}),
+      ]}),
+      ...rows,
+    ]})
+    const doc = new Document({ sections: [{ children: [ new Paragraph({ children: [new TextRun({ text: `PPM ${id}`, bold: true, size: 28 })], spacing: { after: 200 } }), table ] }] })
+    const blob = await Packer.toBlob(doc)
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `ppm_${id}.docx`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const exportPDF = () => {
+    const values = form.getFieldsValue(true)
+    const doc = new jsPDF()
+    doc.setFontSize(14)
+    doc.text(`PPM ${id}`, 14, 16)
+    doc.autoTable({ startY: 24, columns: [
+      { header: 'Objet', dataKey: 'subject' },
+      { header: 'Procédure', dataKey: 'procedure' },
+      { header: 'Montant', dataKey: 'amount' },
+      { header: 'Statut', dataKey: 'status' },
+      { header: 'Date prév.', dataKey: 'planned_date' },
+      { header: 'Date réelle', dataKey: 'actual_date' },
+    ], body: values.lines||[] })
+    doc.save(`ppm_${id}.pdf`)
+  }
+
   const importJSON = async (e) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -128,6 +187,9 @@ function PPMEditor() {
         <Button onClick={exportJSON}>Exporter JSON</Button>
         <Button onClick={exportCSV}>Exporter CSV (lignes)</Button>
         <Button onClick={()=>fileInputRef.current?.click()}>Importer JSON</Button>
+        <Button onClick={exportExcel}>Exporter Excel</Button>
+        <Button onClick={exportWord}>Exporter Word</Button>
+        <Button onClick={exportPDF}>Exporter PDF</Button>
       </Space>
       <Form form={form} layout="vertical">
         <Card title="Notes">

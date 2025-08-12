@@ -3,6 +3,10 @@ import { Card, Form, Input, Button, Table, InputNumber, Space, Typography, messa
 import { useParams } from 'react-router-dom'
 import { documentsAPI } from '../../services/api'
 import WorkflowPanel from '../../components/Workflow/WorkflowPanel'
+import * as XLSX from 'xlsx'
+import { Document, Packer, Paragraph, TextRun, Table as DocxTable, TableRow, TableCell, WidthType } from 'docx'
+import jsPDF from 'jspdf'
+import 'jspdf-autotable'
 
 const { Title } = Typography
 
@@ -85,6 +89,49 @@ function ActivitiesProgramEditor() {
     URL.revokeObjectURL(url)
   }
 
+  const exportExcel = () => {
+    const values = form.getFieldsValue(true)
+    const wb = XLSX.utils.book_new()
+    const wsActs = XLSX.utils.json_to_sheet(values.activities || [])
+    XLSX.utils.book_append_sheet(wb, wsActs, 'Activites')
+    const wsInds = XLSX.utils.json_to_sheet(values.indicators || [])
+    XLSX.utils.book_append_sheet(wb, wsInds, 'Indicateurs')
+    XLSX.writeFile(wb, `programme_${id}.xlsx`)
+  }
+
+  const exportWord = async () => {
+    const values = form.getFieldsValue(true)
+    const actRows = (values.activities||[]).map(a => new TableRow({ children: [
+      new TableCell({ children: [new Paragraph(a.activity||'')], width: { size: 50, type: WidthType.PERCENTAGE } }),
+      new TableCell({ children: [new Paragraph(a.period||'')], width: { size: 20, type: WidthType.PERCENTAGE } }),
+      new TableCell({ children: [new Paragraph(String(a.budget||0))], width: { size: 30, type: WidthType.PERCENTAGE } }),
+    ] }))
+    const actsTable = new DocxTable({ rows: [ new TableRow({ children: [ new TableCell({ children:[new Paragraph('Activité')]}), new TableCell({ children:[new Paragraph('Période')]}), new TableCell({ children:[new Paragraph('Budget')]}), ] }), ...actRows ] })
+    const doc = new Document({ sections: [{ children: [
+      new Paragraph({ children: [new TextRun({ text: `Programme ${id}`, bold: true, size: 28 })], spacing: { after: 200 } }),
+      new Paragraph('Objectifs:'), new Paragraph(values.goals||''), actsTable,
+    ] }] })
+    const blob = await Packer.toBlob(doc)
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `programme_${id}.docx`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const exportPDF = () => {
+    const values = form.getFieldsValue(true)
+    const doc = new jsPDF()
+    doc.setFontSize(14)
+    doc.text(`Programme ${id}`, 14, 16)
+    doc.setFontSize(10)
+    doc.text('Objectifs:', 14, 24)
+    doc.text(doc.splitTextToSize(values.goals||'', 180), 14, 30)
+    doc.autoTable({ startY: 50, columns: [ { header: 'Activité', dataKey: 'activity' }, { header: 'Période', dataKey: 'period' }, { header: 'Budget', dataKey: 'budget' } ], body: values.activities||[] })
+    doc.save(`programme_${id}.pdf`)
+  }
+
   const importJSON = async (e) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -111,6 +158,9 @@ function ActivitiesProgramEditor() {
       <Space>
         <Button onClick={exportJSON}>Exporter JSON</Button>
         <Button onClick={()=>fileInputRef.current?.click()}>Importer JSON</Button>
+        <Button onClick={exportExcel}>Exporter Excel</Button>
+        <Button onClick={exportWord}>Exporter Word</Button>
+        <Button onClick={exportPDF}>Exporter PDF</Button>
       </Space>
       <Form form={form} layout="vertical">
         <Card title="Objectifs généraux">
