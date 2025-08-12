@@ -81,6 +81,13 @@ export default function LessonLab() {
                 </List.Item>
               )} />
             )},
+            { key: 'resources', label: 'Ressources', children: (
+              <List dataSource={lesson.resources||[]} renderItem={(r)=>(
+                <List.Item>
+                  <a href={r.url} target="_blank" rel="noreferrer">{r.title}</a>
+                </List.Item>
+              )} />
+            )},
             { key: 'tasks', label: 'Tâches', children: (
               <List dataSource={lesson.tasks||[]} renderItem={(t)=>(
                 <List.Item actions={[<Checkbox key="cb" checked={isTaskDone(t.id)} onChange={(e)=>toggleTask(t.id, e.target.checked)}>Terminé</Checkbox>] }>
