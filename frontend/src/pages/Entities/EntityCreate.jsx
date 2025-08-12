@@ -1,19 +1,48 @@
-import React from 'react'
-import { Card, Form, Input, Button, Select, Space } from 'antd'
+import React, { useState } from 'react'
+import { Card, Form, Input, Button, Select, Space, Upload, message } from 'antd'
 import { useNavigate } from 'react-router-dom'
 import { entitiesAPI } from '../../services/api'
+import { InboxOutlined } from '@ant-design/icons'
+
+const { Dragger } = Upload
 
 function EntityCreate() {
   const [form] = Form.useForm()
   const navigate = useNavigate()
+  const [files, setFiles] = useState([])
+
+  const readFileAsBase64 = (file) => new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result)
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
 
   const onFinish = async (values) => {
+    const docs = []
+    for (const f of files) {
+      const content = await readFileAsBase64(f)
+      docs.push({ name: f.name, size: f.size, type: f.type, content })
+    }
     const payload = {
       name: values.name,
       type: values.type,
       tutelle: { technique: values.technique, financier: values.financier },
+      contact: {
+        adresse: values.adresse || '',
+        telephone: values.telephone || '',
+        email: values.email || '',
+      },
+      identification: {
+        ifu: values.ifu || '',
+        cnss: values.cnss || '',
+        rccm: values.rccm || '',
+      },
+      autresInformations: values.autres || '',
+      documentsCreation: docs,
     }
     const { data } = await entitiesAPI.create(payload)
+    message.success('Entité créée')
     navigate(`/entities/${data.id}`)
   }
 
@@ -26,6 +55,25 @@ function EntityCreate() {
         </Form.Item>
         <Form.Item name="technique" label="Ministère de tutelle technique" rules={[{ required: true }]}> <Input /> </Form.Item>
         <Form.Item name="financier" label="Ministère de tutelle financier" rules={[{ required: true }]}> <Input /> </Form.Item>
+
+        <Form.Item name="adresse" label="Adresse"> <Input /> </Form.Item>
+        <Form.Item name="telephone" label="Téléphone"> <Input /> </Form.Item>
+        <Form.Item name="email" label="Email"> <Input type="email" /> </Form.Item>
+
+        <Form.Item name="ifu" label="IFU"> <Input /> </Form.Item>
+        <Form.Item name="cnss" label="CNSS"> <Input /> </Form.Item>
+        <Form.Item name="rccm" label="RCCM"> <Input /> </Form.Item>
+
+        <Form.Item name="autres" label="Autres informations"> <Input.TextArea rows={3} /> </Form.Item>
+
+        <Form.Item label="Documents de création">
+          <Dragger multiple beforeUpload={(f)=>{ setFiles(prev=>[...prev, f]); return false }} onRemove={(file)=>{ setFiles(prev=>prev.filter(x=>x.uid!==file.uid)); }} fileList={files} accept=".pdf,.doc,.docx,.png,.jpg,.jpeg">
+            <p className="ant-upload-drag-icon"><InboxOutlined /></p>
+            <p className="ant-upload-text">Cliquez ou glissez vos documents ici</p>
+            <p className="ant-upload-hint">PDF, Word, images. (Démo: stocké localement)</p>
+          </Dragger>
+        </Form.Item>
+
         <Space>
           <Button type="primary" htmlType="submit">Créer</Button>
         </Space>

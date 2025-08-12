@@ -26,6 +26,7 @@ import ActivitiesProgramEditor from './pages/Documents/ActivitiesProgramEditor'
 import PPMEditor from './pages/Documents/PPMEditor'
 import EntityCreate from './pages/Entities/EntityCreate'
 import EntityDetail from './pages/Entities/EntityDetail'
+import EntitySessions from './pages/Sessions/EntitySessions'
 
 const { Content } = Layout
 
@@ -74,6 +75,7 @@ function AppRoutes() {
         <Route path="projects/create" element={<ProjectCreate />} />
         <Route path="entities/create" element={<EntityCreate />} />
         <Route path="entities/:id" element={<EntityDetail />} />
+        <Route path="entities/:id/sessions" element={<EntitySessions />} />
         <Route path="templates" element={<TemplatesList />} />
         <Route path="workflow" element={<ValidationWorkflow />} />
         <Route path="attachments" element={<AttachmentsManager />} />
