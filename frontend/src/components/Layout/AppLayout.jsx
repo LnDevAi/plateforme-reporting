@@ -27,7 +27,8 @@ import {
   FileDoneOutlined,
   ClusterOutlined,
   PaperClipOutlined,
-  FolderOpenOutlined
+  FolderOpenOutlined,
+  BookOutlined
 } from '@ant-design/icons'
 import { useAuth } from '../../hooks/useAuth'
 import NotificationCenter from '../Notifications/NotificationCenter'
@@ -84,6 +85,7 @@ function AppLayout() {
     { key: '/templates', icon: <FileDoneOutlined />, label: 'Modèles de rapports' },
     { key: '/workflow', icon: <ClusterOutlined />, label: 'Workflow de validation' },
     { key: '/attachments', icon: <PaperClipOutlined />, label: 'Pièces justificatives' },
+    { key: '/e-learning', icon: <BookOutlined />, label: 'E‑Learning' },
     {
       key: '/schedules', icon: <ClockCircleOutlined />, label: 'Planifications',
       children: [

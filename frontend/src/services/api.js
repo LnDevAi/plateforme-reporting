@@ -675,7 +675,7 @@ export const documentsAPI = {
 export const documentCollaborationAPI = {
   // Gestion des versions
   getCurrentVersion: (reportId) => api.get(`/documents/${reportId}/current`),
-  getVersionHistory: (reportId) => api.get(`/documents/${reportId}/versions`),
+  getVersionHistory: (reportId) => api.get(`/documents/versions`),
   createVersion: (reportId, data) => api.post(`/documents/${reportId}/versions`, data),
   
   // Édition de contenu
@@ -1176,6 +1176,157 @@ export const ministryAPI = {
   // Relations de tutelle
   getTutelageEntities: (ministryId, type = 'all') =>
     api.get(`/ministries/${ministryId}/entities?tutelage_type=${type}`),
+}
+
+// === E-LEARNING (démo, laboratoire de métiers) ===
+const LEARNING_KEY = 'learning_tracks'
+const LEARNING_PROGRESS_KEY = 'learning_progress'
+
+function bootDemoLearning() {
+  const exists = localStorage.getItem(LEARNING_KEY)
+  if (exists) return
+  const tracks = [
+    {
+      id: 'gov-dg',
+      title: "Certification Management des ECP (Directeurs Généraux)",
+      domain: 'Gouvernance ECP',
+      audience: 'DG actuels et futurs',
+      description: "Programme pratique: gouvernance, stratégie, finances, audit, PPM, sessions CA/AG.",
+      competencies: ['Gouvernance', 'Stratégie', 'Pilotage financier', 'Audit & Contrôle', 'Procédures PPM'],
+      modules: [
+        {
+          id: 'gov-1', title: 'Cadre de gouvernance et responsabilités', lessons: [
+            { id: 'gov-1-1', title: 'Théorie & cas: responsabilités du DG',
+              theory: 'Rôles et responsabilités du DG, charte de gouvernance, interactions CA/AG, conformité réglementaire.',
+              scenarios: [ { title: 'Crise de trésorerie', description: 'DG face à un déficit inattendu, prioriser et communiquer.' } ],
+              tasks: [ { id: 't1', title: 'Cartographier les responsabilités clés' }, { id: 't2', title: 'Plan d’action court terme' } ],
+              quiz: { passScore: 70, questions: [
+                { id: 'q1', prompt: 'Quel est le rôle du DG vis-à-vis du CA ?', options: [ {id:'a', text:'Exécuter les orientations du CA', correct:true}, {id:'b', text:'Se substituer au CA', correct:false} ] },
+                { id: 'q2', prompt: 'La charte de gouvernance sert à…', options: [ {id:'a', text:'Définir les règles de fonctionnement', correct:true}, {id:'b', text:'Fixer les salaires', correct:false} ] },
+              ]}
+            }
+          ]}
+        },
+        {
+          id: 'gov-2', title: 'Pilotage financier et performance', lessons: [
+            { id: 'gov-2-1', title: 'Budget & KPI',
+              theory: 'Prévisions/Exécution, tableaux de bord, KPI stratégiques.',
+              scenarios: [ { title: 'Écart budgétaire majeur', description: 'Analyser les causes et proposer des mesures.' } ],
+              tasks: [ { id: 't1', title: 'Construire un KPI SMART' }, { id: 't2', title: 'Note de synthèse sur les écarts' } ],
+              quiz: { passScore: 70, questions: [
+                { id: 'q1', prompt: 'Un KPI SMART est…', options: [ {id:'a', text:'Spécifique, Mesurable, Atteignable, Réaliste, Temporel', correct:true}, {id:'b', text:'Simple et aléatoire', correct:false} ] }
+              ]}
+            }
+          ]}
+        },
+      ]
+    },
+    {
+      id: 'gov-admin',
+      title: "Certification Administrateur d’ECP",
+      domain: 'Gouvernance ECP',
+      audience: 'Administrateurs CA',
+      description: "Pratiques du Conseil d’Administration: supervision, audits, sessions, décisions.",
+      competencies: ['Supervision', 'Audit', 'Décision'],
+      modules: [ { id:'ca-1', title:'Rôle du CA', lessons:[ { id:'ca-1-1', title:'Fondamentaux du CA', theory:'Missions, comités, doctrine de décision.', scenarios:[{title:'Conflit d’intérêt', description:'Identifier et mitiger.'}], tasks:[{id:'t1',title:'Procédure de gestion des conflits'}], quiz:{passScore:60,questions:[{id:'q1',prompt:'Le CA...',options:[{id:'a',text:'Supervise la direction',correct:true},{id:'b',text:'Gère au quotidien',correct:false}]}]}} ] } ]
+    },
+    {
+      id: 'acc-assistant',
+      title: 'Certification Assistant Comptable',
+      domain: 'Comptabilité privée',
+      audience: 'Agents comptables ECP',
+      description: 'Pratique SYSCOHADA: journalisation, rapprochements, TVA.',
+      competencies: ['Journalisation', 'Rapprochement', 'Fiscalité indirecte'],
+      modules: [ { id:'acc-1', title:'Journalisation', lessons:[ { id:'acc-1-1', title:'Écritures de base', theory:'Achats, ventes, immobilisations.', scenarios:[{title:'Facture achat',description:'Enregistrer avec TVA.'}], tasks:[{id:'t1',title:'Écriture achat matériel'}], quiz:{passScore:60,questions:[{id:'q1',prompt:'Le débit/credit...',options:[{id:'a',text:'Actif augmente au débit',correct:true},{id:'b',text:'Passif augmente au débit',correct:false}]}]}} ] } ]
+    },
+    {
+      id: 'acc-responsable',
+      title: 'Certification Responsable Comptable',
+      domain: 'Comptabilité privée',
+      audience: 'DF/DFC et assimilés',
+      description: 'Clôture, états financiers, analyse et contrôle interne.',
+      competencies: ['Clôture', 'États financiers', 'Contrôle interne'],
+      modules: [ { id:'acc-2', title:'Clôture et EF', lessons:[ { id:'acc-2-1', title:'Cycle de clôture', theory:'Inventaires, provisions, cut-off.', scenarios:[{title:'Provision litige',description:'Évaluer et comptabiliser.'}], tasks:[{id:'t1',title:'Feuille de travail provisions'}], quiz:{passScore:70,questions:[{id:'q1',prompt:'Une provision est...',options:[{id:'a',text:'Une dette probable',correct:true},{id:'b',text:'Un produit certain',correct:false}]}]}} ] } ]
+    }
+  ]
+  localStorage.setItem(LEARNING_KEY, JSON.stringify(tracks))
+}
+
+function readTracks() {
+  bootDemoLearning()
+  return JSON.parse(localStorage.getItem(LEARNING_KEY) || '[]')
+}
+
+function readProgress() {
+  return JSON.parse(localStorage.getItem(LEARNING_PROGRESS_KEY) || '{}')
+}
+
+function writeProgress(progress) {
+  localStorage.setItem(LEARNING_PROGRESS_KEY, JSON.stringify(progress))
+}
+
+export const learningAPI = {
+  getTracks: async () => {
+    await delay(50)
+    const tracks = readTracks()
+    const progress = readProgress()
+    const withProgress = tracks.map(t => {
+      const tp = progress[t.id] || {}
+      const doneTasks = Object.values(tp.tasks || {}).filter(Boolean).length
+      const totalTasks = tracks
+        .find(x=>x.id===t.id).modules.flatMap(m=>m.lessons).flatMap(l=>l.tasks||[]).length
+      return { ...t, progress: totalTasks ? Math.round((doneTasks/totalTasks)*100) : 0 }
+    })
+    return { success: true, data: withProgress }
+  },
+  getTrack: async (trackId) => {
+    await delay(40)
+    const t = readTracks().find(t => t.id === trackId)
+    return { success: true, data: t || null }
+  },
+  getProgress: async (trackId) => {
+    await delay(20)
+    const tp = readProgress()[trackId] || { tasks: {}, quizzes: {} }
+    // calcul d’éligibilité certificat (simple): 70% tasks done + tous quiz >= passScore
+    const track = readTracks().find(t=>t.id===trackId)
+    const allTasks = track.modules.flatMap(m=>m.lessons).flatMap(l=>l.tasks||[])
+    const totalTasks = allTasks.length
+    const doneTasks = Object.values(tp.tasks||{}).filter(Boolean).length
+    const tasksOk = totalTasks === 0 ? true : (doneTasks/totalTasks) >= 0.7
+    const allLessons = track.modules.flatMap(m=>m.lessons)
+    const quizzesOk = allLessons.every(l => {
+      const attempt = tp.quizzes?.[l.id]
+      if (!l.quiz) return true
+      return attempt && attempt.score >= (l.quiz.passScore || 60)
+    })
+    const eligible = tasksOk && quizzesOk
+    return { success: true, data: { ...tp, eligible } }
+  },
+  markTask: async (trackId, lessonId, taskId, done) => {
+    await delay(10)
+    const progress = readProgress()
+    progress[trackId] = progress[trackId] || { tasks: {}, quizzes: {} }
+    progress[trackId].tasks[`${lessonId}:${taskId}`] = !!done
+    writeProgress(progress)
+    return { success: true }
+  },
+  submitQuiz: async (trackId, lessonId, answers) => {
+    await delay(30)
+    const track = readTracks().find(t=>t.id===trackId)
+    const lesson = track.modules.flatMap(m=>m.lessons).find(l=>l.id===lessonId)
+    const total = (lesson.quiz?.questions || []).length || 1
+    const correct = (lesson.quiz?.questions || []).reduce((acc, q) => {
+      const picked = answers[q.id]
+      const opt = (q.options||[]).find(o=>o.id===picked)
+      return acc + (opt?.correct ? 1 : 0)
+    }, 0)
+    const score = Math.round((correct/total)*100)
+    const progress = readProgress()
+    progress[trackId] = progress[trackId] || { tasks: {}, quizzes: {} }
+    progress[trackId].quizzes[lessonId] = { score, at: new Date().toISOString() }
+    writeProgress(progress)
+    return { success: true, data: { score } }
+  },
 }
 
 export default api

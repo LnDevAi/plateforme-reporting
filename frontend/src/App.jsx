@@ -28,6 +28,9 @@ import EntityCreate from './pages/Entities/EntityCreate'
 import EntityDetail from './pages/Entities/EntityDetail'
 import EntitySessions from './pages/Sessions/EntitySessions'
 import EntitiesList from './pages/Entities/EntitiesList'
+import ELearningHome from './pages/ELearning/ELearningHome'
+import TrackDetail from './pages/ELearning/TrackDetail'
+import LessonLab from './pages/ELearning/LessonLab'
 
 const { Content } = Layout
 
@@ -81,6 +84,10 @@ function AppRoutes() {
         <Route path="templates" element={<TemplatesList />} />
         <Route path="workflow" element={<ValidationWorkflow />} />
         <Route path="attachments" element={<AttachmentsManager />} />
+        {/* E-Learning */}
+        <Route path="e-learning" element={<ELearningHome />} />
+        <Route path="e-learning/track/:id" element={<TrackDetail />} />
+        <Route path="e-learning/track/:id/lesson/:lessonId" element={<LessonLab />} />
         {/* Renamed: Documents -> Rapports */}
         <Route path="reports/elaboration" element={<DocumentsElaboration />} />
         <Route path="reports/execution" element={<DocumentsExecution />} />
