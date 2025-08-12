@@ -10,6 +10,7 @@ import {
   Button,
   Select,
   Alert,
+  Tabs,
   Spin,
   Space,
   Progress
@@ -37,22 +38,42 @@ function Dashboard() {
   const [period, setPeriod] = useState('7days')
   const { user } = useAuth()
 
+  // Scope KPI: ensemble | ministere | entite
+  const [scope, setScope] = useState('ensemble')
+  const [selectedMinistry, setSelectedMinistry] = useState(undefined)
+  const [selectedEntity, setSelectedEntity] = useState(undefined)
+
+  // Load entities and ministries from localStorage (démo)
+  const [entities, setEntities] = useState([])
+  const [ministries, setMinistries] = useState([])
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('entities')
+      const list = raw ? JSON.parse(raw) : []
+      setEntities(list)
+      const mins = Array.from(new Set(list.map(e => (e?.tutelle?.technique || '').trim()).filter(Boolean)))
+      setMinistries(mins)
+    } catch {
+      setEntities([]); setMinistries([])
+    }
+  }, [])
+
   // Requêtes pour récupérer les données du tableau de bord
   const { data: stats, isLoading: statsLoading } = useQuery(
-    'dashboard-stats',
+    ['dashboard-stats'],
     dashboardAPI.getStats,
     {
-      refetchInterval: 30000, // Actualiser toutes les 30 secondes
+      refetchInterval: 30000,
     }
   )
 
   const { data: recentExecutions, isLoading: executionsLoading } = useQuery(
-    'dashboard-recent-executions',
+    ['dashboard-recent-executions'],
     () => dashboardAPI.getRecentExecutions({ limit: 10 })
   )
 
   const { data: popularReports, isLoading: reportsLoading } = useQuery(
-    'dashboard-popular-reports',
+    ['dashboard-popular-reports'],
     () => dashboardAPI.getPopularReports({ limit: 5 })
   )
 
@@ -65,14 +86,14 @@ function Dashboard() {
   )
 
   const { data: alerts } = useQuery(
-    'dashboard-alerts',
+    ['dashboard-alerts'],
     dashboardAPI.getAlerts
   )
 
   // Couleurs pour les graphiques
   const colors = ['#1890ff', '#52c41a', '#faad14', '#ff4d4f', '#722ed1']
 
-  // Colonnes pour le tableau des exécutions récentes
+  // Columns
   const executionColumns = [
     {
       title: 'Rapport',
@@ -130,21 +151,57 @@ function Dashboard() {
     )
   }
 
+  const scopeControls = (
+    <Space wrap>
+      <Tabs
+        size="small"
+        activeKey={scope}
+        onChange={setScope}
+        items={[
+          { key: 'ensemble', label: 'Ensemble' },
+          { key: 'ministere', label: 'Ministère' },
+          { key: 'entite', label: 'Entité' },
+        ]}
+      />
+      {scope === 'ministere' && (
+        <Select
+          allowClear
+          showSearch
+          placeholder="Sélectionner un ministère"
+          style={{ minWidth: 260 }}
+          value={selectedMinistry}
+          onChange={setSelectedMinistry}
+          options={ministries.map(m => ({ value: m, label: m }))}
+        />
+      )}
+      {scope === 'entite' && (
+        <Select
+          allowClear
+          showSearch
+          placeholder="Sélectionner une entité"
+          style={{ minWidth: 260 }}
+          value={selectedEntity}
+          onChange={setSelectedEntity}
+          options={entities.map(e => ({ value: e.id, label: e.name }))}
+        />
+      )}
+    </Space>
+  )
+
   return (
     <div className="fade-in">
-      {/* Message de bienvenue */}
-      <div style={{ marginBottom: '24px' }}>
-        <Title level={2}>
-          Bonjour, {user?.name} ! 👋
-        </Title>
-        <Text type="secondary">
-          Voici un aperçu de l'activité de votre plateforme de reporting.
-        </Text>
+      {/* Header */}
+      <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+        <div>
+          <Title level={2} style={{ marginBottom: 0 }}>Tableau de bord</Title>
+          <Text type="secondary">Bonjour, {user?.name} ! 👋</Text>
+        </div>
+        {scopeControls}
       </div>
 
       {/* Alertes */}
       {alerts?.data?.length > 0 && (
-        <div style={{ marginBottom: '24px' }}>
+        <div style={{ marginBottom: '16px' }}>
           {alerts.data.map((alert, index) => (
             <Alert
               key={index}
@@ -153,24 +210,17 @@ function Dashboard() {
               type={alert.type}
               showIcon
               style={{ marginBottom: '8px' }}
-              action={
-                alert.report_id && (
-                  <Button size="small" type="link">
-                    Voir le rapport
-                  </Button>
-                )
-              }
             />
           ))}
         </div>
       )}
 
       {/* Statistiques principales */}
-      <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
+      <Row gutter={[16, 16]} style={{ marginBottom: '16px' }}>
         <Col xs={24} sm={12} md={6}>
           <Card className="stats-card">
             <Statistic
-              title="Total des rapports"
+              title={`Total des rapports (${scope})`}
               value={stats?.data?.total_reports || 0}
               prefix={<FileTextOutlined />}
               valueStyle={{ color: '#1890ff' }}
@@ -185,7 +235,7 @@ function Dashboard() {
         <Col xs={24} sm={12} md={6}>
           <Card className="stats-card">
             <Statistic
-              title="Exécutions aujourd'hui"
+              title={`Exécutions aujourd'hui (${scope})`}
               value={stats?.data?.executions_today || 0}
               prefix={<PlayCircleOutlined />}
               valueStyle={{ color: '#52c41a' }}
@@ -199,19 +249,9 @@ function Dashboard() {
         <Col xs={24} sm={12} md={6}>
           <Card className="stats-card">
             <Statistic
-              title="Taux de réussite"
-              value={stats?.data?.success_rate || 0}
-              suffix="%"
-              prefix={<CheckCircleOutlined />}
-              valueStyle={{ 
-                color: (stats?.data?.success_rate || 0) >= 90 ? '#52c41a' : '#faad14' 
-              }}
-            />
-            <Progress 
-              percent={stats?.data?.success_rate || 0} 
-              showInfo={false} 
-              size="small"
-              strokeColor={(stats?.data?.success_rate || 0) >= 90 ? '#52c41a' : '#faad14'}
+              title={`Utilisateurs (${scope})`}
+              value={stats?.data?.users_count || 0}
+              prefix={<UserOutlined />}
             />
           </Card>
         </Col>
@@ -219,155 +259,54 @@ function Dashboard() {
         <Col xs={24} sm={12} md={6}>
           <Card className="stats-card">
             <Statistic
-              title="Utilisateurs actifs"
-              value={stats?.data?.active_users || 0}
-              prefix={<UserOutlined />}
-              valueStyle={{ color: '#722ed1' }}
+              title={`Échecs (${scope})`}
+              value={stats?.data?.failed_executions || 0}
+              prefix={<WarningOutlined />}
+              valueStyle={{ color: '#ff4d4f' }}
             />
-            <div className="stats-card-trend">
-              <span>Total: {stats?.data?.total_users || 0}</span>
-            </div>
           </Card>
         </Col>
       </Row>
 
+      {/* Graphiques */}
       <Row gutter={[16, 16]}>
-        {/* Graphique des exécutions */}
-        <Col xs={24} lg={12}>
-          <Card 
-            title="Évolution des exécutions" 
-            className="chart-container"
-            extra={
-              <Select 
-                value={period} 
-                onChange={setPeriod}
-                style={{ width: 120 }}
-              >
-                <Option value="7days">7 jours</Option>
-                <Option value="30days">30 jours</Option>
-                <Option value="90days">90 jours</Option>
-              </Select>
-            }
-            loading={chartsLoading}
-          >
-            {charts?.data?.executions_by_day && (
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={charts.data.executions_by_day}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis 
-                    dataKey="date" 
-                    tickFormatter={(date) => new Date(date).toLocaleDateString('fr-FR')}
-                  />
-                  <YAxis />
-                  <Tooltip 
-                    labelFormatter={(date) => new Date(date).toLocaleDateString('fr-FR')}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="total" 
-                    stroke="#1890ff" 
-                    strokeWidth={2}
-                    name="Total"
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="successful" 
-                    stroke="#52c41a" 
-                    strokeWidth={2}
-                    name="Réussies"
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="failed" 
-                    stroke="#ff4d4f" 
-                    strokeWidth={2}
-                    name="Échecs"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            )}
+        <Col xs={24} md={16}>
+          <Card title={`Exécutions (${period})`}>
+            <ResponsiveContainer width="100%" height={260}>
+              <LineChart data={charts?.data || []}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip />
+                <Line type="monotone" dataKey="executions" stroke="#1890ff" strokeWidth={2} />
+              </LineChart>
+            </ResponsiveContainer>
           </Card>
         </Col>
-
-        {/* Graphique par catégorie */}
-        <Col xs={24} lg={12}>
-          <Card 
-            title="Exécutions par catégorie" 
-            className="chart-container"
-            loading={chartsLoading}
-          >
-            {charts?.data?.executions_by_category && (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={charts.data.executions_by_category}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="category" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="execution_count" fill="#1890ff" />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-          </Card>
-        </Col>
-
-        {/* Rapports populaires */}
-        <Col xs={24} lg={12}>
-          <Card 
-            title="Rapports les plus populaires" 
-            loading={reportsLoading}
-            extra={
-              <Button type="link" href="/reports">
-                Voir tous
-              </Button>
-            }
-          >
-            {popularReports?.data?.map((report, index) => (
-              <div 
-                key={report.id}
-                style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '12px 0',
-                  borderBottom: index < popularReports.data.length - 1 ? '1px solid #f0f0f0' : 'none'
-                }}
-              >
-                <div>
-                  <Text strong>{report.name}</Text>
-                  <br />
-                  <Text type="secondary" style={{ fontSize: '12px' }}>
-                    {report.category} • Créé par {report.creator?.name}
-                  </Text>
-                </div>
-                <Tag color="blue">
-                  {report.execution_count || 0} exécutions
-                </Tag>
-              </div>
-            ))}
-          </Card>
-        </Col>
-
-        {/* Exécutions récentes */}
-        <Col xs={24} lg={12}>
-          <Card 
-            title="Exécutions récentes" 
-            loading={executionsLoading}
-            extra={
-              <Button type="link">
-                Voir l'historique
-              </Button>
-            }
-          >
-            <Table
-              dataSource={recentExecutions?.data || []}
-              columns={executionColumns}
-              pagination={false}
-              size="small"
-              rowKey="id"
-            />
+        <Col xs={24} md={8}>
+          <Card title="Répartition (démo)">
+            <ResponsiveContainer width="100%" height={260}>
+              <PieChart>
+                <Pie dataKey="value" data={[{ name: 'OK', value: 70 }, { name: 'Warn', value: 20 }, { name: 'KO', value: 10 }]} cx="50%" cy="50%" outerRadius={80} fill="#8884d8" label>
+                  {[0,1,2].map((i) => <Cell key={i} fill={colors[i]} />)}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
           </Card>
         </Col>
       </Row>
+
+      {/* Exécutions récentes */}
+      <Card style={{ marginTop: 16 }} title="Exécutions récentes">
+        <Table
+          loading={executionsLoading}
+          dataSource={recentExecutions?.data || []}
+          columns={executionColumns}
+          rowKey={(row) => row.id}
+          pagination={{ pageSize: 5 }}
+        />
+      </Card>
     </div>
   )
 }
