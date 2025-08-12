@@ -454,16 +454,83 @@ export const workflowAPI = {
   get: async () => {
     if (DEMO_MODE) {
       await delay(100)
-      return { success: true, data: { steps: [ { role: 'Éditeur', note: 'Prépare le rapport' }, { role: 'Manager', note: 'Valide niveau 1' }, { role: 'Validateur', note: 'Approbation finale' } ] } }
+      const stored = localStorage.getItem('workflow_definition')
+      if (stored) {
+        return { success: true, data: JSON.parse(stored) }
+      }
+      const data = { steps: [ { role: 'Éditeur', note: 'Prépare le rapport' }, { role: 'Manager', note: 'Validation niveau 1' }, { role: 'Validateur', note: 'Approbation finale' } ] }
+      localStorage.setItem('workflow_definition', JSON.stringify(data))
+      return { success: true, data }
     }
     return api.get('/workflow')
   },
   update: async (wf) => {
     if (DEMO_MODE) {
       await delay(100)
+      localStorage.setItem('workflow_definition', JSON.stringify(wf))
       return { success: true }
     }
     return api.put('/workflow', wf)
+  },
+  getInstance: async (type, id) => {
+    if (DEMO_MODE) {
+      await delay(80)
+      const key = `wf_instance_${type}_${id}`
+      const stored = localStorage.getItem(key)
+      if (stored) return { success: true, data: JSON.parse(stored) }
+      return { success: true, data: { status: 'not_started', currentStepIndex: -1, steps: [] } }
+    }
+    return api.get(`/workflow/instances/${type}/${id}`)
+  },
+  submit: async (type, id) => {
+    if (DEMO_MODE) {
+      await delay(120)
+      const def = JSON.parse(localStorage.getItem('workflow_definition') || '{"steps":[]}')
+      const instance = {
+        status: 'in_progress',
+        currentStepIndex: 0,
+        steps: def.steps.map((s, idx) => ({ role: s.role, note: s.note, status: idx === 0 ? 'awaiting' : 'pending', comment: '' })),
+      }
+      localStorage.setItem(`wf_instance_${type}_${id}`, JSON.stringify(instance))
+      return { success: true, data: instance }
+    }
+    return api.post(`/workflow/instances/${type}/${id}/submit`)
+  },
+  approve: async (type, id, comment = '') => {
+    if (DEMO_MODE) {
+      await delay(120)
+      const key = `wf_instance_${type}_${id}`
+      const instance = JSON.parse(localStorage.getItem(key) || '{"steps":[]}')
+      if (!instance.steps?.length) return { success: false, message: 'Instance introuvable' }
+      const idx = instance.currentStepIndex
+      instance.steps[idx].status = 'approved'
+      instance.steps[idx].comment = comment
+      if (idx + 1 < instance.steps.length) {
+        instance.currentStepIndex = idx + 1
+        instance.steps[idx + 1].status = 'awaiting'
+        instance.status = 'in_progress'
+      } else {
+        instance.status = 'approved'
+      }
+      localStorage.setItem(key, JSON.stringify(instance))
+      return { success: true, data: instance }
+    }
+    return api.post(`/workflow/instances/${type}/${id}/approve`, { comment })
+  },
+  reject: async (type, id, comment = '') => {
+    if (DEMO_MODE) {
+      await delay(120)
+      const key = `wf_instance_${type}_${id}`
+      const instance = JSON.parse(localStorage.getItem(key) || '{"steps":[]}')
+      if (!instance.steps?.length) return { success: false, message: 'Instance introuvable' }
+      const idx = instance.currentStepIndex
+      instance.steps[idx].status = 'rejected'
+      instance.steps[idx].comment = comment
+      instance.status = 'rejected'
+      localStorage.setItem(key, JSON.stringify(instance))
+      return { success: true, data: instance }
+    }
+    return api.post(`/workflow/instances/${type}/${id}/reject`, { comment })
   },
 }
 

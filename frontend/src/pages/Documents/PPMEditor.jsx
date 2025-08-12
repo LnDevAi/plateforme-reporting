@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Card, Form, Input, Button, Table, InputNumber, Space, Typography, Select, DatePicker, message } from 'antd'
 import { useParams } from 'react-router-dom'
 import { documentsAPI } from '../../services/api'
+import WorkflowPanel from '../../components/Workflow/WorkflowPanel'
 
 const { Title } = Typography
 
@@ -79,6 +80,7 @@ function PPMEditor() {
   return (
     <Space direction="vertical" style={{ width: '100%' }}>
       <Title level={3}>Plan de Passation des Marchés</Title>
+      <WorkflowPanel type="ppm" id={id} />
       <Form form={form} layout="vertical">
         <Card title="Notes">
           <Form.Item name="notes">

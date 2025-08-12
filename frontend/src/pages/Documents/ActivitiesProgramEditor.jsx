@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Card, Form, Input, Button, Table, InputNumber, Space, Typography, message, Select } from 'antd'
 import { useParams } from 'react-router-dom'
 import { documentsAPI } from '../../services/api'
+import WorkflowPanel from '../../components/Workflow/WorkflowPanel'
 
 const { Title } = Typography
 
@@ -77,6 +78,7 @@ function ActivitiesProgramEditor() {
   return (
     <Space direction="vertical" style={{ width: '100%' }}>
       <Title level={3}>Programme d’Activités</Title>
+      <WorkflowPanel type="programme" id={id} />
       <Form form={form} layout="vertical">
         <Card title="Objectifs généraux">
           <Form.Item name="goals">

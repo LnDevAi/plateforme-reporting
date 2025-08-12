@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Card, Form, Input, Button, Table, InputNumber, Space, Typography, message } from 'antd'
 import { useParams, useNavigate } from 'react-router-dom'
 import { documentsAPI } from '../../services/api'
+import WorkflowPanel from '../../components/Workflow/WorkflowPanel'
 
 const { Title } = Typography
 
@@ -77,6 +78,7 @@ function BudgetEditor() {
   return (
     <Space direction="vertical" style={{ width: '100%' }}>
       <Title level={3}>{data?.title}</Title>
+      <WorkflowPanel type="budget" id={id} />
       <Card title="Hypothèses">
         <Form form={form} layout="vertical" onValuesChange={onValuesChange}>
           <Form.Item name="hypotheses" label="Hypothèses générales">
