@@ -12,38 +12,48 @@ function EntityCreate() {
   const [files, setFiles] = useState([])
 
   const readFileAsBase64 = (file) => new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => resolve(reader.result)
-    reader.onerror = reject
-    reader.readAsDataURL(file)
+    try {
+      const raw = file?.originFileObj || file
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result)
+      reader.onerror = reject
+      reader.readAsDataURL(raw)
+    } catch (e) {
+      resolve(null)
+    }
   })
 
   const onFinish = async (values) => {
-    const docs = []
-    for (const f of files) {
-      const content = await readFileAsBase64(f)
-      docs.push({ name: f.name, size: f.size, type: f.type, content })
+    try {
+      const docs = []
+      for (const f of files) {
+        const content = await readFileAsBase64(f)
+        if (content) docs.push({ name: f.name, size: f.size, type: f.type, content })
+      }
+      const payload = {
+        name: values.name,
+        type: values.type,
+        tutelle: { technique: values.technique, financier: values.financier },
+        contact: {
+          adresse: values.adresse || '',
+          telephone: values.telephone || '',
+          email: values.email || '',
+        },
+        identification: {
+          ifu: values.ifu || '',
+          cnss: values.cnss || '',
+          rccm: values.rccm || '',
+        },
+        autresInformations: values.autres || '',
+        documentsCreation: docs,
+      }
+      const { data } = await entitiesAPI.create(payload)
+      message.success('Entité créée')
+      navigate(`/entities/${data.id}`)
+    } catch (e) {
+      console.error(e)
+      message.error("Erreur lors de la création de l'entité")
     }
-    const payload = {
-      name: values.name,
-      type: values.type,
-      tutelle: { technique: values.technique, financier: values.financier },
-      contact: {
-        adresse: values.adresse || '',
-        telephone: values.telephone || '',
-        email: values.email || '',
-      },
-      identification: {
-        ifu: values.ifu || '',
-        cnss: values.cnss || '',
-        rccm: values.rccm || '',
-      },
-      autresInformations: values.autres || '',
-      documentsCreation: docs,
-    }
-    const { data } = await entitiesAPI.create(payload)
-    message.success('Entité créée')
-    navigate(`/entities/${data.id}`)
   }
 
   return (
@@ -66,7 +76,7 @@ function EntityCreate() {
 
         <Form.Item name="autres" label="Autres informations"> <Input.TextArea rows={3} /> </Form.Item>
 
-        <Form.Item label="Documents de création">
+        <Form.Item label="Documents de création (optionnel)">
           <Dragger multiple beforeUpload={(f)=>{ setFiles(prev=>[...prev, f]); return false }} onRemove={(file)=>{ setFiles(prev=>prev.filter(x=>x.uid!==file.uid)); }} fileList={files} accept=".pdf,.doc,.docx,.png,.jpg,.jpeg">
             <p className="ant-upload-drag-icon"><InboxOutlined /></p>
             <p className="ant-upload-text">Cliquez ou glissez vos documents ici</p>
