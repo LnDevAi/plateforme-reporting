@@ -35,7 +35,7 @@ import './AIChat.css';
 const { TextArea } = Input;
 const { Text, Paragraph } = Typography;
 
-const AIChat = () => {
+const AIChat = ({ mode = 'reports' }) => {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -52,7 +52,7 @@ const AIChat = () => {
   useEffect(() => {
     loadSuggestions();
     loadUsageStats();
-  }, []);
+  }, [mode]);
 
   // Auto-scroll vers le bas
   useEffect(() => {
@@ -65,9 +65,9 @@ const AIChat = () => {
 
   const loadSuggestions = async () => {
     try {
-      const response = await fetch('/api/ai/suggestions', {
+      const response = await fetch(`/api/ai/suggestions?mode=${encodeURIComponent(mode)}`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('auth_token') || ''}`,
           'Content-Type': 'application/json'
         }
       });
@@ -85,7 +85,7 @@ const AIChat = () => {
     try {
       const response = await fetch('/api/ai/usage-stats', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('auth_token') || ''}`,
           'Content-Type': 'application/json'
         }
       });
@@ -117,12 +117,13 @@ const AIChat = () => {
       const response = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('auth_token') || ''}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           message: messageText,
-          conversation_id: conversationId
+          conversation_id: conversationId,
+          mode
         })
       });
 
@@ -416,7 +417,7 @@ const AIChat = () => {
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Posez votre question sur la gouvernance EPE, OHADA, UEMOA..."
+              placeholder={mode === 'help' ? 'Posez votre question sur le fonctionnement de la plateforme...' : 'Posez vos questions de lecture/rédaction/analyse de rapports...'}
               autoSize={{ minRows: 1, maxRows: 4 }}
               disabled={isLoading || (usageStats && !usageStats.available)}
             />

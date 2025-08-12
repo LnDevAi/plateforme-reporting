@@ -1,6 +1,6 @@
 import React from 'react';
-import { Card, Typography, Space, Tag } from 'antd';
-import { ThunderboltOutlined, BookOutlined, UserOutlined } from '@ant-design/icons';
+import { Card, Typography, Space, Tag, Tabs } from 'antd';
+import { ThunderboltOutlined, BookOutlined, UserOutlined, QuestionCircleOutlined, FileTextOutlined } from '@ant-design/icons';
 import AIChat from '../../components/AIAssistant/AIChat';
 
 const { Title, Paragraph } = Typography;
@@ -19,8 +19,7 @@ const AIAssistantPage = () => {
         </Space>
         
         <Paragraph style={{ fontSize: '16px', color: '#666', maxWidth: '800px' }}>
-          Votre assistant personnel spécialisé en gouvernance des entreprises publiques africaines. 
-          Expert en réglementation OHADA/UEMOA, formations EPE et analyse financière.
+          Votre assistant personnel. Deux volets: Aide plateforme (mode d’emploi) et Rédaction/Analyse des rapports.
         </Paragraph>
       </div>
 
@@ -39,18 +38,17 @@ const AIAssistantPage = () => {
         </Space>
       </div>
 
-      {/* Interface de chat */}
       <Card 
-        style={{ 
-          height: 'calc(100vh - 280px)',
-          minHeight: '600px'
-        }}
-        bodyStyle={{ 
-          height: '100%', 
-          padding: 0 
-        }}
+        style={{ height: 'calc(100vh - 280px)', minHeight: '600px' }}
+        bodyStyle={{ height: '100%', padding: 0 }}
       >
-        <AIChat />
+        <Tabs
+          defaultActiveKey="help"
+          items={[
+            { key: 'help', label: (<Space><QuestionCircleOutlined />Aide plateforme</Space>), children: <AIChat mode="help" /> },
+            { key: 'reports', label: (<Space><FileTextOutlined />Rédaction / Analyse</Space>), children: <AIChat mode="reports" /> },
+          ]}
+        />
       </Card>
     </div>
   );
