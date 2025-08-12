@@ -1,11 +1,15 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { Card, Tabs, Button, List, Input, Space, Tag, message } from 'antd'
+import { Card, Tabs, Button, List, Input, Space, Tag, message, Divider, Switch } from 'antd'
 import { useParams } from 'react-router-dom'
 import { sessionsAPI } from '../../services/api'
 
 function JitsiPanel({ room }) {
   const containerRef = useRef(null)
   const apiRef = useRef(null)
+  const [desiredPassword, setDesiredPassword] = useState('')
+  const [participants, setParticipants] = useState([])
+  const [handRaised, setHandRaised] = useState(false)
+  const [lobbyEnabled, setLobbyEnabled] = useState(false)
 
   const startMeeting = () => {
     if (!window.JitsiMeetExternalAPI) {
@@ -23,21 +27,106 @@ function JitsiPanel({ room }) {
       configOverwrite: { prejoinPageEnabled: true },
       interfaceConfigOverwrite: {}
     })
+
+    const updateParticipants = async () => {
+      try {
+        const info = await apiRef.current.getParticipantsInfo()
+        setParticipants(info || [])
+      } catch (_) {}
+    }
+
+    apiRef.current.addListener('participantJoined', updateParticipants)
+    apiRef.current.addListener('participantLeft', updateParticipants)
+    apiRef.current.addListener('participantRoleChanged', updateParticipants)
+    apiRef.current.addListener('videoConferenceJoined', () => {
+      updateParticipants()
+      if (desiredPassword) {
+        try { apiRef.current.executeCommand('password', desiredPassword) } catch (_) {}
+      }
+    })
   }
 
   const leaveMeeting = () => {
     if (apiRef.current) {
       apiRef.current.dispose()
       apiRef.current = null
+      setParticipants([])
     }
   }
 
   useEffect(() => () => leaveMeeting(), [])
 
+  const copyInvite = async () => {
+    const url = `https://meet.jit.si/${room}`
+    try { await navigator.clipboard.writeText(url); message.success('Lien copié') } catch { window.prompt('Copiez le lien:', url) }
+  }
+
+  const setRoomPassword = () => {
+    if (!apiRef.current) return message.info('Démarrez la réunion d’abord')
+    if (!desiredPassword) return message.info('Saisissez un mot de passe')
+    try { apiRef.current.executeCommand('password', desiredPassword); message.success('Mot de passe défini (si autorisé)') } catch { message.warning('Mot de passe non disponible sur cette salle') }
+  }
+
+  const toggleTileView = () => { if (apiRef.current) apiRef.current.executeCommand('toggleTileView') }
+  const toggleScreenShare = () => { if (apiRef.current) apiRef.current.executeCommand('toggleShareScreen') }
+  const muteEveryone = () => { if (apiRef.current) apiRef.current.executeCommand('muteEveryone', true) }
+  const toggleRaiseHand = () => { if (apiRef.current) { apiRef.current.executeCommand('toggleRaiseHand'); setHandRaised(v=>!v) } }
+  const toggleLobby = (checked) => {
+    setLobbyEnabled(checked)
+    if (!apiRef.current) return message.info('Démarrez la réunion d’abord')
+    try { apiRef.current.executeCommand('toggleLobby', checked) } catch { message.info('Le lobby nécessite des droits / configuration serveur') }
+  }
+
+  const startRecording = async () => {
+    if (!apiRef.current) return message.info('Démarrez la réunion d’abord')
+    try {
+      await apiRef.current.executeCommand('startRecording', { mode: 'file' })
+      message.success('Demande d’enregistrement envoyée (si disponible)')
+    } catch { message.info("L’enregistrement n’est pas disponible sur l’instance publique") }
+  }
+  const stopRecording = async () => {
+    if (!apiRef.current) return
+    try { await apiRef.current.executeCommand('stopRecording', { mode: 'file' }); message.success('Enregistrement arrêté (si actif)') } catch {}
+  }
+  const startStreaming = async () => {
+    if (!apiRef.current) return message.info('Démarrez la réunion d’abord')
+    const key = window.prompt('Clé de stream YouTube (rtmp)')
+    if (!key) return
+    try { await apiRef.current.executeCommand('startRecording', { mode: 'stream', youtubeStreamKey: key }); message.success('Streaming démarré (si disponible)') } catch { message.info('Streaming indisponible sur cette instance') }
+  }
+  const stopStreaming = async () => {
+    if (!apiRef.current) return
+    try { await apiRef.current.executeCommand('stopRecording', { mode: 'stream' }); message.success('Streaming arrêté') } catch {}
+  }
+
   return (
-    <Card title="Réunion en ligne" extra={<Space><Button onClick={startMeeting}>Démarrer</Button><Button danger onClick={leaveMeeting}>Quitter</Button></Space>}>
+    <Card title="Réunion en ligne" extra={<Space wrap>
+      <Button onClick={startMeeting}>Démarrer</Button>
+      <Button danger onClick={leaveMeeting}>Quitter</Button>
+      <Button onClick={copyInvite}>Copier lien</Button>
+    </Space>}>
       <div ref={containerRef} />
       <div style={{ marginTop: 8, color: '#999' }}>Salle: {room}</div>
+      <Divider style={{ margin: '12px 0' }} />
+      <Space wrap>
+        <Input.Password placeholder="Mot de passe de la salle" style={{ width: 220 }} value={desiredPassword} onChange={e=>setDesiredPassword(e.target.value)} />
+        <Button onClick={setRoomPassword}>Définir mot de passe</Button>
+        <Switch checked={lobbyEnabled} onChange={toggleLobby} />
+        <span>Lobby</span>
+        <Button onClick={toggleTileView}>Vue en tuiles</Button>
+        <Button onClick={toggleScreenShare}>Partager écran</Button>
+        <Button onClick={muteEveryone}>Couper micro (tous)</Button>
+        <Button onClick={toggleRaiseHand}>{handRaised ? 'Baisser la main' : 'Lever la main'}</Button>
+        <Button onClick={startRecording}>Enregistrer</Button>
+        <Button onClick={stopRecording}>Arrêter enreg.</Button>
+        <Button onClick={startStreaming}>Streamer</Button>
+        <Button onClick={stopStreaming}>Arrêter stream</Button>
+      </Space>
+      <Divider style={{ margin: '12px 0' }} />
+      <div>
+        <strong>Participants ({participants.length})</strong>
+        <List size="small" dataSource={participants} renderItem={(p)=> <List.Item>{p.displayName || 'Utilisateur'} {p.formattedDisplayName ? `(${p.formattedDisplayName})` : ''}</List.Item>} />
+      </div>
     </Card>
   )
 }
