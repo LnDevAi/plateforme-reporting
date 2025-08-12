@@ -1,7 +1,46 @@
-import React, { useEffect, useState } from 'react'
-import { Card, Tabs, Button, List, Input, Space, Tag } from 'antd'
+import React, { useEffect, useState, useRef } from 'react'
+import { Card, Tabs, Button, List, Input, Space, Tag, Alert } from 'antd'
 import { useParams } from 'react-router-dom'
 import { sessionsAPI } from '../../services/api'
+
+function JitsiPanel({ room }) {
+  const containerRef = useRef(null)
+  const apiRef = useRef(null)
+
+  const startMeeting = () => {
+    if (!window.JitsiMeetExternalAPI) {
+      Alert.error('Jitsi API non chargée');
+      return
+    }
+    if (apiRef.current) return
+    const domain = 'meet.jit.si'
+    apiRef.current = new window.JitsiMeetExternalAPI(domain, {
+      roomName: room,
+      parentNode: containerRef.current,
+      width: '100%',
+      height: 420,
+      userInfo: { displayName: 'Participant' },
+      configOverwrite: { prejoinPageEnabled: true },
+      interfaceConfigOverwrite: {}
+    })
+  }
+
+  const leaveMeeting = () => {
+    if (apiRef.current) {
+      apiRef.current.dispose()
+      apiRef.current = null
+    }
+  }
+
+  useEffect(() => () => leaveMeeting(), [])
+
+  return (
+    <Card title="Réunion en ligne" extra={<Space><Button onClick={startMeeting}>Démarrer</Button><Button danger onClick={leaveMeeting}>Quitter</Button></Space>}>
+      <div ref={containerRef} />
+      <div style={{ marginTop: 8, color: '#999' }}>Salle: {room}</div>
+    </Card>
+  )
+}
 
 function SessionTab({ type, entityId }) {
   const [sessions, setSessions] = useState([])
@@ -38,6 +77,7 @@ function SessionTab({ type, entityId }) {
           ]}>
             <List.Item.Meta title={<>{s.title} <Tag color={s.status==='live'?'green':s.status==='ended'?'default':'blue'}>{s.status}</Tag></>} description={`Créée le ${new Date(s.created_at).toLocaleString('fr-FR')}`} />
             <div style={{ width: '100%' }}>
+              <JitsiPanel room={s.room || `pr-${entityId}-${s.id}`} />
               <List size="small" dataSource={s.messages} renderItem={(m)=> <List.Item>{m.author}: {m.text} <span style={{ color:'#999' }}>({new Date(m.at).toLocaleTimeString('fr-FR')})</span></List.Item>} />
               {s.status==='live' && (
                 <Space style={{ marginTop: 8 }}>

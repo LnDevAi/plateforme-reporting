@@ -927,7 +927,8 @@ export const sessionsAPI = {
   create: async (entityId, payload) => {
     await delay(80)
     const all = JSON.parse(localStorage.getItem('sessions') || '[]')
-    const session = { id: Date.now(), entityId, type: payload.type, title: payload.title, status: 'planned', created_at: new Date().toISOString(), messages: [] }
+    const room = `pr-${entityId}-${Date.now()}`
+    const session = { id: Date.now(), entityId, type: payload.type, title: payload.title, status: 'planned', created_at: new Date().toISOString(), messages: [], room }
     all.push(session)
     localStorage.setItem('sessions', JSON.stringify(all))
     return { success: true, data: session }
@@ -1002,94 +1003,4 @@ export const ministryAPI = {
   
   // Relations de tutelle
   getTutelageEntities: (ministryId, type = 'all') => 
-    api.get(`/ministries/${ministryId}/entities?tutelage_type=${type}`),
-  assignTutelage: (ministryId, entityId, data) =>
-    api.post(`/ministries/${ministryId}/entities/${entityId}/tutelage`, data),
-  removeTutelage: (ministryId, entityId, type) =>
-    api.delete(`/ministries/${ministryId}/entities/${entityId}/tutelage?type=${type}`),
-  
-  // KPI ministériels
-  getMinistryKpis: (ministryId) => api.get(`/ministries/${ministryId}/kpis`),
-  getSupervisionDashboard: (ministryId) => api.get(`/ministries/${ministryId}/dashboard`),
-}
-
-// Services pour les métadonnées
-export const metaAPI = {
-  getCategories: () => api.get('/meta/categories'),
-  getReportTypes: () => api.get('/meta/report-types'),
-  getDepartments: () => api.get('/meta/departments'),
-}
-
-// Service pour vérifier la santé de l'API
-export const healthAPI = {
-  check: () => api.get('/health'),
-}
-
-// Fonction utilitaire pour télécharger des fichiers
-export const downloadFile = (blob, filename) => {
-  const url = window.URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = filename
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-  window.URL.revokeObjectURL(url)
-}
-
-// Fonction utilitaire pour formater les erreurs
-export const formatApiError = (error) => {
-  if (typeof error === 'string') {
-    return error
-  }
-  
-  if (error.errors && Object.keys(error.errors).length > 0) {
-    // Retourner la première erreur de validation
-    const firstField = Object.keys(error.errors)[0]
-    return error.errors[firstField][0]
-  }
-  
-  return error.message || 'Une erreur est survenue'
-}
-
-// Document Template API
-export const documentTemplateAPI = {
-  // Récupérer les templates
-  getTemplates: (params = {}) => api.get('/document-templates', { params }),
-  getTemplate: (templateKey) => api.get(`/document-templates/${templateKey}`),
-  getCategories: () => api.get('/document-templates/categories'),
-  getStatistics: () => api.get('/document-templates/statistics'),
-  getTemplatesForEntity: (entityId) => api.get(`/state-entities/${entityId}/templates`),
-
-  // Génération de documents
-  generateDocument: (data) => api.post('/document-templates/generate', data),
-  generateCustomDocument: (data) => api.post('/document-templates/generate-custom', data),
-  previewDocument: (data) => api.post('/document-templates/preview', data),
-
-  // Validation
-  validateTemplateData: (data) => api.post('/document-templates/validate', data),
-
-  // Téléchargement
-  downloadDocument: (path) => api.get('/documents/download', { params: { path } }),
-}
-
-// AI Writing Assistant API
-export const aiWritingAssistantAPI = {
-  // Génération de contenu
-  generateContent: (data) => api.post('/ai-assistant/generate-content', data),
-  improveContent: (data) => api.post('/ai-assistant/improve-content', data),
-  generateAdaptiveContent: (data) => api.post('/ai-assistant/adaptive-content', data),
-
-  // Suggestions et aide
-  getSuggestions: (data) => api.post('/ai-assistant/suggestions', data),
-  generateExecutiveSummary: (data) => api.post('/ai-assistant/executive-summary', data),
-
-  // Analyse et conformité
-  analyzeCompliance: (data) => api.post('/ai-assistant/analyze-compliance', data),
-
-  // Configuration et test
-  getContexts: () => api.get('/ai-assistant/contexts'),
-  testConnectivity: () => api.get('/ai-assistant/test-connectivity'),
-}
-
-export default api
+    api.get(`
