@@ -10,6 +10,7 @@ function EntityCreate() {
   const [form] = Form.useForm()
   const navigate = useNavigate()
   const [files, setFiles] = useState([])
+  const [nameValue, setNameValue] = useState('')
 
   const readFileAsBase64 = (file) => new Promise((resolve, reject) => {
     try {
@@ -25,7 +26,7 @@ function EntityCreate() {
 
   const onFinish = async (values) => {
     try {
-      const nameTrimmed = (values.name || '').trim()
+      const nameTrimmed = (nameValue || '').trim()
       if (!nameTrimmed) {
         message.error("Veuillez saisir le nom de l'entité")
         return
@@ -69,7 +70,9 @@ function EntityCreate() {
   return (
     <Card title="Inscription d'une entité">
       <Form form={form} layout="vertical">
-        <Form.Item name="name" label="Nom de l'entité"> <Input autoFocus placeholder="Ex: Société X" autoComplete="off" /> </Form.Item>
+        <Form.Item label="Nom de l'entité">
+          <Input autoFocus placeholder="Ex: Société X" autoComplete="off" value={nameValue} onChange={(e)=>setNameValue(e.target.value)} />
+        </Form.Item>
         <Form.Item name="type" label="Type">
           <Select allowClear placeholder="Choisir" options={[{ value: 'EPE', label: 'EPE' }, { value: 'SocieteEtat', label: "Société d'État" }]} />
         </Form.Item>
