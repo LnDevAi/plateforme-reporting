@@ -1406,7 +1406,7 @@ function bootDemoLearning() {
               id: 'ca-1-1',
               title: 'Fondamentaux du CA',
               theory: 'Missions, comités, doctrine de décision.',
-              scenarios: [ { title: 'Conflit d'intérêt', description: 'Identifier et mitiger.' } ],
+              scenarios: [ { title: "Conflit d'intérêt", description: 'Identifier et mitiger.' } ],
               tasks: [ { id:'t1', title:'Procédure de gestion des conflits' } ],
               resources: [
                 { title: "Formation Administrateurs — Missions & attributions (slides)", url: "https://github.com/LnDevAi/plateforme-reporting/blob/main/docs/knowledge-base/formations/modules-gouvernance/administrateurs/FORMATION%20MISSIONS%20ET%20ATTRIBUTIONS%20DE%20L'ADMINISTRATEUR.pptx" },
@@ -1416,7 +1416,7 @@ function bootDemoLearning() {
                 passScore: 60,
                 questions: [
                   { id:'q1', prompt:'Le CA...', options:[ {id:'a', text:'Supervise la direction', correct:true}, {id:'b', text:'Gère au quotidien', correct:false} ] },
-                  { id:'q2', prompt:'Qui préside l'AG-SE ?', options:[ {id:'a', text:'Le PCA', correct:true}, {id:'b', text:'Le Chef de service achats', correct:false} ] }
+                  { id:'q2', prompt:"Qui préside l'AG-SE ?", options:[ {id:'a', text:'Le PCA', correct:true}, {id:'b', text:'Le Chef de service achats', correct:false} ] }
                 ]
               }
             }
