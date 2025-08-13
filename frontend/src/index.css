@@ -24,6 +24,20 @@
   -webkit-text-size-adjust: 100%;
 }
 
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --primary-color: #3b82f6;
+  --success-color: #22c55e;
+  --warning-color: #eab308;
+  --error-color: #ef4444;
+  --info-color: #60a5fa;
+  --background-color: #0b1220;
+  --card-background: #0f172a;
+  --border-color: #1f2937;
+  --text-color: rgba(255, 255, 255, 0.92);
+  --text-secondary: rgba(255, 255, 255, 0.65);
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -255,4 +269,31 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
+}
+
+/* Accent hover states */
+.app-header, .app-sidebar {
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Elevated cards in dark */
+:root[data-theme='dark'] .stats-card,
+:root[data-theme='dark'] .form-container,
+:root[data-theme='dark'] .chart-container {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+/* Sidebar menu tweaks */
+.app-sidebar .ant-menu-item-selected {
+  background: rgba(59, 130, 246, 0.12) !important;
+}
+
+/* Refined typography sizes */
+.stats-card-title { font-size: 13px; }
+.stats-card-value { font-size: 26px; }
+
+/* Buttons minimal focus ring */
+:where(.ant-btn):focus-visible {
+  outline: 2px solid var(--primary-color) !important;
+  outline-offset: 2px;
 }

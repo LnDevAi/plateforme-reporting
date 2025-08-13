@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useTheme } from '../../contexts/ThemeContext'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { 
   Layout, 
@@ -39,6 +40,7 @@ const { Title } = Typography
 function AppLayout() {
   const [collapsed, setCollapsed] = useState(false)
   const { user, logout, isAdmin } = useAuth()
+  const { isDark, toggleTheme } = useTheme()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -166,6 +168,9 @@ function AppLayout() {
           </div>
 
           <Space size="middle">
+            <Button type="text" onClick={toggleTheme} title={isDark ? 'Mode clair' : 'Mode sombre'}>
+              {isDark ? '🌙' : '☀️'}
+            </Button>
             <NotificationCenter />
             <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" arrow>
               <Space style={{ cursor: 'pointer' }}>

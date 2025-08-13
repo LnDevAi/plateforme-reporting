@@ -2,8 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { ConfigProvider } from 'antd'
-import frFR from 'antd/locale/fr_FR'
+import { ThemeProvider } from './contexts/ThemeContext.jsx'
 import App from './App.jsx'
 import './index.css'
 
@@ -18,24 +17,15 @@ const queryClient = new QueryClient({
   },
 })
 
-// Configuration d'Ant Design
-const antdConfig = {
-  locale: frFR,
-  theme: {
-    token: {
-      colorPrimary: '#1890ff',
-      borderRadius: 6,
-    },
-  },
-}
+// Thème géré par ThemeProvider (light/dark), pas de config ici
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
-        <ConfigProvider {...antdConfig}>
+        <ThemeProvider>
           <App />
-        </ConfigProvider>
+        </ThemeProvider>
       </QueryClientProvider>
     </BrowserRouter>
   </React.StrictMode>,
