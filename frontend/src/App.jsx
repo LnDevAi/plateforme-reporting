@@ -17,6 +17,8 @@ import AIAssistantPage from './pages/AIAssistant/AIAssistantPage'
 import ProjectsList from './pages/Projects/ProjectsList'
 import ProjectCreate from './pages/Projects/ProjectCreate'
 import TemplatesList from './pages/Templates/TemplatesList'
+import MinistriesList from './pages/Ministries/MinistriesList'
+import MinistryDetail from './pages/Ministries/MinistryDetail'
 import ValidationWorkflow from './pages/Workflow/ValidationWorkflow'
 import AttachmentsManager from './pages/Attachments/AttachmentsManager'
 import DocumentsElaboration from './pages/Documents/DocumentsElaboration'
@@ -77,6 +79,9 @@ function AppRoutes() {
         {/* Sections */}
         <Route path="projects" element={<ProjectsList />} />
         <Route path="projects/create" element={<ProjectCreate />} />
+        {/* Ministères */}
+        <Route path="ministries" element={<MinistriesList />} />
+        <Route path="ministries/:id" element={<MinistryDetail />} />
         <Route path="entities" element={<EntitiesList />} />
         <Route path="entities/create" element={<EntityCreate />} />
         <Route path="entities/:id" element={<EntityDetail />} />

@@ -1167,11 +1167,55 @@ export const entityAPI = {
 // API pour les ministères
 export const ministryAPI = {
   // CRUD ministères
-  getMinistries: (params) => api.get('/ministries', { params }),
-  getMinistry: (ministryId) => api.get(`/ministries/${ministryId}`),
-  createMinistry: (data) => api.post('/ministries', data),
-  updateMinistry: (ministryId, data) => api.put(`/ministries/${ministryId}`, data),
-  deleteMinistry: (ministryId) => api.delete(`/ministries/${ministryId}`),
+  getMinistries: async (params) => {
+    if (DEMO_MODE) {
+      await delay(60)
+      const list = JSON.parse(localStorage.getItem('ministries') || '[]')
+      return { success: true, data: list }
+    }
+    return api.get('/ministries', { params })
+  },
+  getMinistry: async (ministryId) => {
+    if (DEMO_MODE) {
+      await delay(40)
+      const list = JSON.parse(localStorage.getItem('ministries') || '[]')
+      return { success: true, data: list.find(m => String(m.id) === String(ministryId)) || null }
+    }
+    return api.get(`/ministries/${ministryId}`)
+  },
+  createMinistry: async (data) => {
+    if (DEMO_MODE) {
+      await delay(80)
+      const list = JSON.parse(localStorage.getItem('ministries') || '[]')
+      const item = { id: Date.now(), name: data.name, code: data.code || '', contact: data.contact || { email: '', phone: '' } }
+      list.push(item)
+      localStorage.setItem('ministries', JSON.stringify(list))
+      return { success: true, data: item }
+    }
+    return api.post('/ministries', data)
+  },
+  updateMinistry: async (ministryId, data) => {
+    if (DEMO_MODE) {
+      await delay(80)
+      const list = JSON.parse(localStorage.getItem('ministries') || '[]')
+      const idx = list.findIndex(m => String(m.id) === String(ministryId))
+      if (idx < 0) return { success: false, message: 'Ministère introuvable' }
+      list[idx] = { ...list[idx], ...data }
+      localStorage.setItem('ministries', JSON.stringify(list))
+      return { success: true, data: list[idx] }
+    }
+    return api.put(`/ministries/${ministryId}`, data)
+  },
+  deleteMinistry: async (ministryId) => {
+    if (DEMO_MODE) {
+      await delay(60)
+      const list = JSON.parse(localStorage.getItem('ministries') || '[]')
+      const next = list.filter(m => String(m.id) !== String(ministryId))
+      localStorage.setItem('ministries', JSON.stringify(next))
+      return { success: true }
+    }
+    return api.delete(`/ministries/${ministryId}`)
+  },
   
   // Relations de tutelle
   getTutelageEntities: (ministryId, type = 'all') =>

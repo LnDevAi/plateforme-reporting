@@ -85,6 +85,7 @@ function AppLayout() {
       ]
     },
     { key: '/templates', icon: <FileDoneOutlined />, label: 'Modèles de rapports' },
+    { key: '/ministries', icon: <ApartmentOutlined />, label: 'Ministères' },
     { key: '/workflow', icon: <ClusterOutlined />, label: 'Workflow de validation' },
     { key: '/attachments', icon: <PaperClipOutlined />, label: 'Pièces justificatives' },
     { key: '/e-learning', icon: <BookOutlined />, label: 'E‑Learning' },
@@ -158,6 +159,8 @@ function AppLayout() {
               {location.pathname === '/reports/elaboration' && 'Rapports - Élaboration'}
               {location.pathname === '/reports/execution' && 'Rapports - Exécution'}
               {location.pathname === '/templates' && 'Modèles de rapports'}
+              {location.pathname === '/ministries' && 'Ministères'}
+              {location.pathname?.startsWith('/ministries/') && 'Ministère'}
               {location.pathname === '/workflow' && 'Workflow de validation'}
               {location.pathname === '/attachments' && 'Pièces justificatives'}
               {location.pathname === '/schedules' && 'Planifications'}
