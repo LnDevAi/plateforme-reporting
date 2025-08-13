@@ -240,13 +240,14 @@ function DeliberationsPanel({ session, onChange }) {
   }
 
   const remove = async (id) => { await sessionsAPI.removeDeliberation(session.id, id); onChange() }
+  const sign = async (d) => { await sessionsAPI.updateDeliberation(session.id, d.id, { signature: { name: 'Utilisateur', at: new Date().toISOString(), id: `SIG-D-${d.id}` } }); onChange() }
 
   const exportPdf = async (d) => {
     const { jsPDF } = await import('jspdf')
     const doc = new jsPDF({ unit: 'pt', format: 'a4' })
     const left = 40, top = 40, maxWidth = 515
     const lines = doc.splitTextToSize(
-      `Délibération\nTitre: ${d.title}\nDécision: ${d.decision}\nPoint ODJ: ${(session.agenda||[]).find(a=>String(a.id)===String(d.agendaItemId))?.title || '—'}\nDocument: ${d.documentName||'—'}\n\nTexte:\n${d.text||''}`,
+      `Délibération\nTitre: ${d.title}\nDécision: ${d.decision}\nPoint ODJ: ${(session.agenda||[]).find(a=>String(a.id)===String(d.agendaItemId))?.title || '—'}\nDocument: ${d.documentName||'—'}\n\nTexte:\n${d.text||''}${d.signature?`\n\nSignature: ${d.signature.name} — ${new Date(d.signature.at).toLocaleString('fr-FR')} — ID: ${d.signature.id}`:''}`,
       maxWidth
     )
     doc.setFontSize(12)
@@ -257,7 +258,7 @@ function DeliberationsPanel({ session, onChange }) {
   const exportWord = async (d) => {
     const docx = await import('docx')
     const { Document, Packer, Paragraph } = docx
-    const content = `Délibération\nTitre: ${d.title}\nDécision: ${d.decision}\nPoint ODJ: ${(session.agenda||[]).find(a=>String(a.id)===String(d.agendaItemId))?.title || '—'}\nDocument: ${d.documentName||'—'}\n\nTexte:\n${d.text||''}`
+    const content = `Délibération\nTitre: ${d.title}\nDécision: ${d.decision}\nPoint ODJ: ${(session.agenda||[]).find(a=>String(a.id)===String(d.agendaItemId))?.title || '—'}\nDocument: ${d.documentName||'—'}\n\nTexte:\n${d.text||''}${d.signature?`\n\nSignature: ${d.signature.name} — ${new Date(d.signature.at).toLocaleString('fr-FR')} — ID: ${d.signature.id}`:''}`
     const paragraphs = content.split('\n').map(line => new Paragraph(line))
     const doc = new Document({ sections: [{ properties: {}, children: paragraphs }] })
     const blob = await Packer.toBlob(doc)
@@ -300,6 +301,7 @@ function DeliberationsPanel({ session, onChange }) {
           <List.Item
             actions={[
               <Button key="ed" size="small" onClick={()=>edit(d)}>Modifier</Button>,
+              <Button key="sg" size="small" onClick={()=>sign(d)}>{d.signature?'Re-signer':'Signer'}</Button>,
               <Button key="rm" size="small" danger onClick={()=>remove(d.id)}>Supprimer</Button>,
               <Button key="pdf" size="small" onClick={()=>exportPdf(d)}>PDF</Button>,
               <Button key="docx" size="small" onClick={()=>exportWord(d)}>Word</Button>,
@@ -309,6 +311,7 @@ function DeliberationsPanel({ session, onChange }) {
               title={<Space>
                 <strong>{d.title}</strong>
                 <Tag color={d.decision==='Adoptée' ? 'green' : d.decision==='Rejetée' ? 'red' : 'orange'}>{d.decision}</Tag>
+                {d.signature && <Tag color="blue">Signé</Tag>}
               </Space>}
               description={
                 <>
@@ -329,6 +332,7 @@ function MinutesPanel({ session, onChange }) {
   useEffect(()=>{ setContent(session.minutes?.content || '') }, [session.minutes?.content])
   const generate = async () => { const { data } = await sessionsAPI.generateMinutes(session.id); setContent(data.content); onChange() }
   const save = async () => { const r = await sessionsAPI.saveMinutes(session.id, content); if (!r.success) return message.warning('PV verrouillé'); message.success('PV enregistré'); onChange() }
+  const sign = async () => { await sessionsAPI.signMinutes(session.id, 'Utilisateur'); message.success('PV signé'); onChange() }
 
   const exportPdf = async () => {
     const { jsPDF } = await import('jspdf')
@@ -361,6 +365,7 @@ function MinutesPanel({ session, onChange }) {
         <Space wrap>
           <Button onClick={generate}>Générer auto</Button>
           <Button onClick={save} disabled={session.minutes?.locked}>Enregistrer</Button>
+          <Button onClick={sign} disabled={session.minutes?.locked}>Signer (démo)</Button>
           <Button onClick={exportPdf}>Exporter PDF</Button>
           <Button onClick={exportWord}>Exporter Word</Button>
           {session.minutes?.locked && <Tag color="default">Verrouillé</Tag>}

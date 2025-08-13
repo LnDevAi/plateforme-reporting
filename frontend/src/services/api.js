@@ -825,6 +825,19 @@ export const documentsAPI = {
     }
     return api.delete(`/documents/others/${id}/deliberations/${deliberationId}`)
   },
+  updateOtherDeliberation: async (id, deliberationId, data) => {
+    if (DEMO_MODE) {
+      await delay(50)
+      const key = `other_${id}`
+      const doc = JSON.parse(localStorage.getItem(key) || '{}')
+      const d = (doc.deliberations||[]).find(x=> String(x.id) === String(deliberationId))
+      if (!d) return { success: false }
+      Object.assign(d, data, { updated_at: new Date().toISOString() })
+      localStorage.setItem(key, JSON.stringify(doc))
+      return { success: true, data: d }
+    }
+    return api.put(`/documents/others/${id}/deliberations/${deliberationId}`, data)
+  },
 }
 
 // API pour la collaboration documentaire
@@ -970,44 +983,133 @@ export const sessionAPI = {
   
   // Procès-verbaux
   getSessionMinutes: (sessionId) => api.get(`/sessions/${sessionId}/minutes`),
-  generateMinutes: (sessionId) => api.post(`/sessions/${sessionId}/minutes/generate`),
-  approveMinutes: (sessionId, minutesId) => 
-    api.post(`/sessions/${sessionId}/minutes/${minutesId}/approve`),
-  exportMinutes: (sessionId, format = 'pdf') => 
-    api.get(`/sessions/${sessionId}/minutes/export?format=${format}`, { responseType: 'blob' }),
-  
-  // Enregistrement et diffusion
-  startRecording: (sessionId) => api.post(`/sessions/${sessionId}/recording/start`),
-  stopRecording: (sessionId) => api.post(`/sessions/${sessionId}/recording/stop`),
-  getRecording: (sessionId) => api.get(`/sessions/${sessionId}/recording`),
-  downloadRecording: (sessionId) => 
-    api.get(`/sessions/${sessionId}/recording/download`, { responseType: 'blob' }),
-  
-  // Statistiques et métriques
-  getSessionMetrics: (sessionId) => api.get(`/sessions/${sessionId}/metrics`),
-  getParticipationStats: (sessionId) => api.get(`/sessions/${sessionId}/stats/participation`),
-  getComplianceStatus: (sessionId) => api.get(`/sessions/${sessionId}/compliance`),
-  
-  // Invitations et notifications
-  sendInvitations: (sessionId) => api.post(`/sessions/${sessionId}/invitations/send`),
-  sendReminders: (sessionId) => api.post(`/sessions/${sessionId}/reminders/send`),
-  respondToInvitation: (sessionId, response, data) => 
-    api.post(`/sessions/${sessionId}/invitation/respond`, { response, ...data }),
-  
-  // Délégation de pouvoirs
-  delegateVotingRights: (sessionId, participantId, data) => 
-    api.post(`/sessions/${sessionId}/participants/${participantId}/delegate`, data),
-  revokeDelegation: (sessionId, participantId) => 
-    api.delete(`/sessions/${sessionId}/participants/${participantId}/delegate`),
-  
-  // Templates et types de sessions
-  getSessionTypes: () => api.get('/sessions/types'),
-  getSessionTemplates: (type) => api.get(`/sessions/templates?type=${type}`),
-  createFromTemplate: (templateId, data) => 
-    api.post(`/sessions/templates/${templateId}/create`, data),
+  generateMinutes: async (sessionId) => {
+    await delay(80)
+    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
+    const s = all.find(x => String(x.id) === String(sessionId))
+    if (!s) return { success: false }
+    const delibsBlock = (s.deliberations||[]).length
+      ? `\n\nDélibérations:\n${(s.deliberations||[]).map(d=>`- ${d.title} [${d.decision}] ${d.text?(' — '+d.text.slice(0,120)+'...'):''}`).join('\n')}`
+      : ''
+    const signatureBlock = s.minutes?.signature
+      ? `\n\nSignature: ${s.minutes.signature.name} — ${new Date(s.minutes.signature.at).toLocaleString('fr-FR')} — ID: ${s.minutes.signature.id}`
+      : ''
+    const content = `Procès-verbal\nSession: ${s.title}\nType: ${s.type}\nDate: ${new Date().toLocaleString('fr-FR')}\n\nParticipants présents: ${(s.participants||[]).filter(p=>p.present).map(p=>p.name).join(', ') || 'N/A'}\n\nOrdre du jour:\n${(s.agenda||[]).map((a,i)=>`${i+1}. ${a.title} [${a.done?'Clôturé':'Ouvert'}]`).join('\n')}\n\nVotes:\n${(s.votes||[]).map(v=>`- ${v.question} => ${v.options.map(o=>o.text+': '+(o.count||0)).join(', ')}`).join('\n')}${delibsBlock}${signatureBlock}`
+    s.minutes = { content, generated_at: new Date().toISOString(), locked: s.status === 'ended' }
+    localStorage.setItem('sessions', JSON.stringify(all))
+    return { success: true, data: s.minutes }
+  },
+  saveMinutes: async (sessionId, content) => {
+    await delay(40)
+    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
+    const s = all.find(x => String(x.id) === String(sessionId))
+    if (!s) return { success: false }
+    if (!s.minutes) s.minutes = { content: '', generated_at: new Date().toISOString(), locked: false }
+    if (s.minutes.locked) return { success: false, message: 'PV verrouillé' }
+    s.minutes.content = content
+    localStorage.setItem('sessions', JSON.stringify(all))
+    return { success: true }
+  },
+  signMinutes: async (sessionId, signerName = 'Utilisateur') => {
+    await delay(30)
+    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
+    const s = all.find(x => String(x.id) === String(sessionId))
+    if (!s) return { success: false }
+    s.minutes = s.minutes || { content: '', generated_at: new Date().toISOString(), locked: false }
+    s.minutes.signature = { name: signerName, at: new Date().toISOString(), id: `SIG-${sessionId}-${Date.now()}` }
+    localStorage.setItem('sessions', JSON.stringify(all))
+    return { success: true, data: s.minutes.signature }
+  },
+  // Invitations
+  sendInvitations: async (sessionId, emails = []) => {
+    await delay(60)
+    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
+    const s = all.find(x => String(x.id) === String(sessionId))
+    if (!s) return { success: false }
+    const now = new Date().toISOString()
+    emails.forEach(email => s.invitations.push({ id: Date.now()+Math.random(), email, sent_at: now, accepted: false }))
+    localStorage.setItem('sessions', JSON.stringify(all))
+    return { success: true, data: s.invitations }
+  },
+  acceptInvitation: async (sessionId, email) => {
+    await delay(20)
+    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
+    const s = all.find(x => String(x.id) === String(sessionId))
+    if (!s) return { success: false }
+    const inv = s.invitations.find(i => i.email === email)
+    if (inv) inv.accepted = true
+    localStorage.setItem('sessions', JSON.stringify(all))
+    return { success: true }
+  },
+  sendReminders: async (sessionId) => {
+    await delay(30)
+    return { success: true }
+  },
+  // Recording flags (métadonnées)
+  startRecordingMeta: async (sessionId) => {
+    await delay(10)
+    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
+    const s = all.find(x => String(x.id) === String(sessionId))
+    if (!s) return { success: false }
+    s.recordings.push({ id: Date.now(), started_at: new Date().toISOString(), stopped_at: null })
+    localStorage.setItem('sessions', JSON.stringify(all))
+    return { success: true }
+  },
+  stopRecordingMeta: async (sessionId) => {
+    await delay(10)
+    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
+    const s = all.find(x => String(x.id) === String(sessionId))
+    if (!s) return { success: false }
+    const rec = [...s.recordings].reverse().find(r => !r.stopped_at)
+    if (rec) rec.stopped_at = new Date().toISOString()
+    localStorage.setItem('sessions', JSON.stringify(all))
+    return { success: true }
+  },
+  // Délibérations
+  addDeliberation: async (sessionId, data) => {
+    await delay(60)
+    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
+    const s = all.find(x => String(x.id) === String(sessionId))
+    if (!s) return { success: false }
+    if (!s.deliberations) s.deliberations = []
+    const item = {
+      id: Date.now(),
+      title: data.title || 'Délibération',
+      agendaItemId: data.agendaItemId || null,
+      documentName: data.documentName || '',
+      decision: data.decision || 'Adoptée', // Adoptée | Rejetée | Ajournée
+      text: data.text || '',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+    s.deliberations.push(item)
+    localStorage.setItem('sessions', JSON.stringify(all))
+    return { success: true, data: item }
+  },
+  updateDeliberation: async (sessionId, deliberationId, data) => {
+    await delay(50)
+    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
+    const s = all.find(x => String(x.id) === String(sessionId))
+    if (!s) return { success: false }
+    const d = (s.deliberations || []).find(x => String(x.id) === String(deliberationId))
+    if (!d) return { success: false }
+    Object.assign(d, data, { updated_at: new Date().toISOString() })
+    localStorage.setItem('sessions', JSON.stringify(all))
+    return { success: true, data: d }
+  },
+  removeDeliberation: async (sessionId, deliberationId) => {
+    await delay(40)
+    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
+    const s = all.find(x => String(x.id) === String(sessionId))
+    if (!s) return { success: false }
+    s.deliberations = (s.deliberations || []).filter(x => String(x.id) !== String(deliberationId))
+    localStorage.setItem('sessions', JSON.stringify(all))
+    return { success: true }
+  },
 }
 
-// === Entités & Sessions (démo) ===
+// === Entités & Sessions (DEMO adapters) ===
+// Simple demo-layer used by UI pages expecting these names
 export const entitiesAPI = {
   getAll: async () => {
     await delay(80)
@@ -1039,28 +1141,8 @@ export const entitiesAPI = {
   getById: async (id) => {
     await delay(60)
     const list = JSON.parse(localStorage.getItem('entities') || '[]')
-    const entity = list.find(e => String(e.id) === String(id))
-    // Boot subdivisions if missing
-    if (entity) {
-      entity.structure = entity.structure || {
-        directionGenerale: {
-          roles: {
-            DG: null, DFC: null, PRM: null, DRH: null, CG: null, AI: null
-          },
-          autresDirections: [],
-        },
-        conseilAdministration: {
-          ministeres: Array.from({ length: 10 }).map((_, i) => ({ slot: `Ministère ${i+1}`, membre: null })),
-          observateurs: [null, null],
-          repPersonnel: null,
-          commissaireComptes: null,
-        },
-        assembleeGenerale: {
-          notes: '',
-        },
-      }
-    }
-    return { success: true, data: entity || null }
+    const entity = list.find(e => String(e.id) === String(id)) || null
+    return { success: true, data: entity }
   },
   saveById: async (id, data) => {
     await delay(80)
@@ -1085,17 +1167,17 @@ export const sessionsAPI = {
     await delay(80)
     const all = JSON.parse(localStorage.getItem('sessions') || '[]')
     const room = `pr-${entityId}-${Date.now()}`
-    const session = { 
+    const session = {
       id: Date.now(), entityId, type: payload.type, title: payload.title,
       status: 'planned', created_at: new Date().toISOString(), room,
       messages: [],
-      participants: [], // {id,name,role,email,present}
-      agenda: [],       // {id,title,done,documents: [{name,url}]}
-      votes: [],        // {id,question,options:[{id,text,count}],open}
-      minutes: null,    // {content, generated_at, locked}
-      invitations: [],  // {id,email,sent_at,accepted}
-      recordings: [],   // {id,started_at,stopped_at}
-      deliberations: [], // {id,title,agendaItemId,documentName,decision,text,created_at,updated_at}
+      participants: [],
+      agenda: [],
+      votes: [],
+      minutes: null,
+      invitations: [],
+      recordings: [],
+      deliberations: [],
     }
     all.push(session)
     localStorage.setItem('sessions', JSON.stringify(all))
@@ -1221,151 +1303,25 @@ export const sessionsAPI = {
     localStorage.setItem('sessions', JSON.stringify(all))
     return { success: true }
   },
-  // Minutes (PV)
-  generateMinutes: async (sessionId) => {
-    await delay(80)
-    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
-    const s = all.find(x => String(x.id) === String(sessionId))
-    if (!s) return { success: false }
-    const content = `Procès-verbal\nSession: ${s.title}\nType: ${s.type}\nDate: ${new Date().toLocaleString('fr-FR')}\n\nParticipants présents: ${(s.participants||[]).filter(p=>p.present).map(p=>p.name).join(', ') || 'N/A'}\n\nOrdre du jour:\n${(s.agenda||[]).map((a,i)=>`${i+1}. ${a.title} [${a.done?'Clôturé':'Ouvert'}]`).join('\n')}\n\nVotes:\n${(s.votes||[]).map(v=>`- ${v.question} => ${v.options.map(o=>o.text+': '+(o.count||0)).join(', ')}`).join('\n')}`
-    s.minutes = { content, generated_at: new Date().toISOString(), locked: s.status === 'ended' }
-    localStorage.setItem('sessions', JSON.stringify(all))
-    return { success: true, data: s.minutes }
-  },
-  saveMinutes: async (sessionId, content) => {
-    await delay(40)
-    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
-    const s = all.find(x => String(x.id) === String(sessionId))
-    if (!s) return { success: false }
-    if (!s.minutes) s.minutes = { content: '', generated_at: new Date().toISOString(), locked: false }
-    if (s.minutes.locked) return { success: false, message: 'PV verrouillé' }
-    s.minutes.content = content
-    localStorage.setItem('sessions', JSON.stringify(all))
-    return { success: true }
-  },
+  // PV
+  generateMinutes: async (sessionId) => sessionAPI.generateMinutes(sessionId),
+  saveMinutes: async (sessionId, content) => sessionAPI.saveMinutes(sessionId, content),
+  signMinutes: async (sessionId, signerName) => sessionAPI.signMinutes(sessionId, signerName),
   // Invitations
-  sendInvitations: async (sessionId, emails = []) => {
-    await delay(60)
-    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
-    const s = all.find(x => String(x.id) === String(sessionId))
-    if (!s) return { success: false }
-    const now = new Date().toISOString()
-    emails.forEach(email => s.invitations.push({ id: Date.now()+Math.random(), email, sent_at: now, accepted: false }))
-    localStorage.setItem('sessions', JSON.stringify(all))
-    return { success: true, data: s.invitations }
-  },
-  acceptInvitation: async (sessionId, email) => {
-    await delay(20)
-    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
-    const s = all.find(x => String(x.id) === String(sessionId))
-    if (!s) return { success: false }
-    const inv = s.invitations.find(i => i.email === email)
-    if (inv) inv.accepted = true
-    localStorage.setItem('sessions', JSON.stringify(all))
-    return { success: true }
-  },
-  sendReminders: async (sessionId) => {
-    await delay(30)
-    return { success: true }
-  },
-  // Recording flags (métadonnées)
-  startRecordingMeta: async (sessionId) => {
-    await delay(10)
-    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
-    const s = all.find(x => String(x.id) === String(sessionId))
-    if (!s) return { success: false }
-    s.recordings.push({ id: Date.now(), started_at: new Date().toISOString(), stopped_at: null })
-    localStorage.setItem('sessions', JSON.stringify(all))
-    return { success: true }
-  },
-  stopRecordingMeta: async (sessionId) => {
-    await delay(10)
-    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
-    const s = all.find(x => String(x.id) === String(sessionId))
-    if (!s) return { success: false }
-    const rec = [...s.recordings].reverse().find(r => !r.stopped_at)
-    if (rec) rec.stopped_at = new Date().toISOString()
-    localStorage.setItem('sessions', JSON.stringify(all))
-    return { success: true }
-  },
+  sendInvitations: async (sessionId, emails=[]) => sessionAPI.sendInvitations(sessionId, emails),
+  acceptInvitation: async (sessionId, email) => sessionAPI.acceptInvitation(sessionId, email),
+  sendReminders: async (sessionId) => sessionAPI.sendReminders(sessionId),
+  // Enregistrement (métadonnées)
+  startRecordingMeta: async (sessionId) => sessionAPI.startRecordingMeta(sessionId),
+  stopRecordingMeta: async (sessionId) => sessionAPI.stopRecordingMeta(sessionId),
   // Délibérations
-  addDeliberation: async (sessionId, data) => {
-    await delay(60)
-    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
-    const s = all.find(x => String(x.id) === String(sessionId))
-    if (!s) return { success: false }
-    if (!s.deliberations) s.deliberations = []
-    const item = {
-      id: Date.now(),
-      title: data.title || 'Délibération',
-      agendaItemId: data.agendaItemId || null,
-      documentName: data.documentName || '',
-      decision: data.decision || 'Adoptée', // Adoptée | Rejetée | Ajournée
-      text: data.text || '',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    }
-    s.deliberations.push(item)
-    localStorage.setItem('sessions', JSON.stringify(all))
-    return { success: true, data: item }
-  },
-  updateDeliberation: async (sessionId, deliberationId, data) => {
-    await delay(50)
-    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
-    const s = all.find(x => String(x.id) === String(sessionId))
-    if (!s) return { success: false }
-    const d = (s.deliberations || []).find(x => String(x.id) === String(deliberationId))
-    if (!d) return { success: false }
-    Object.assign(d, data, { updated_at: new Date().toISOString() })
-    localStorage.setItem('sessions', JSON.stringify(all))
-    return { success: true, data: d }
-  },
-  removeDeliberation: async (sessionId, deliberationId) => {
-    await delay(40)
-    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
-    const s = all.find(x => String(x.id) === String(sessionId))
-    if (!s) return { success: false }
-    s.deliberations = (s.deliberations || []).filter(x => String(x.id) !== String(deliberationId))
-    localStorage.setItem('sessions', JSON.stringify(all))
-    return { success: true }
-  },
+  addDeliberation: async (sessionId, data) => sessionAPI.addDeliberation(sessionId, data),
+  updateDeliberation: async (sessionId, deliberationId, data) => sessionAPI.updateDeliberation(sessionId, deliberationId, data),
+  removeDeliberation: async (sessionId, deliberationId) => sessionAPI.removeDeliberation(sessionId, deliberationId),
 }
 
-// API pour les entités/structures
-export const entityAPI = {
-  // CRUD entités
-  getEntities: (params) => api.get('/entities', { params }),
-  getEntity: (entityId) => api.get(`/entities/${entityId}`),
-  createEntity: (data) => api.post('/entities', data),
-  updateEntity: (entityId, data) => api.put(`/entities/${entityId}`, data),
-  deleteEntity: (entityId) => api.delete(`/entities/${entityId}`),
-  
-  // Types et métadonnées
-  getStructureTypes: () => api.get('/entities/types'),
-  getSectors: () => api.get('/entities/sectors'),
-  
-  // KPI et statistiques spécifiques entité
-  getEntityKpis: (entityId) => api.get(`/entities/${entityId}/kpis`),
-  getEntityReports: (entityId, params) => api.get(`/entities/${entityId}/reports`, { params }),
-  getEntitySessions: (entityId, params) => api.get(`/entities/${entityId}/sessions`, { params }),
-  
-  // Validation et conformité
-  validateEntity: (entityId) => api.post(`/entities/${entityId}/validate`),
-  getComplianceStatus: (entityId) => api.get(`/entities/${entityId}/compliance`),
-  getRequiredReports: (entityId) => api.get(`/entities/${entityId}/required-reports`),
-  
-  // Import/Export
-  exportEntities: (format = 'excel') => 
-    api.get(`/entities/export?format=${format}`, { responseType: 'blob' }),
-  importEntities: (formData) =>
-    api.post('/entities/import', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    }),
-}
-
-// API pour les ministères
+// API pour les ministères (réintroduit)
 export const ministryAPI = {
-  // CRUD ministères
   getMinistries: async (params) => {
     if (DEMO_MODE) {
       await delay(60)
@@ -1386,16 +1342,7 @@ export const ministryAPI = {
     if (DEMO_MODE) {
       await delay(80)
       const list = JSON.parse(localStorage.getItem('ministries') || '[]')
-      const item = {
-        id: Date.now(),
-        name: data.name,
-        code: data.code || '',
-        address: data.address || '',
-        minister: data.minister || { firstName: '', lastName: '' },
-        contact: data.contact || { email: '', phone: '' },
-        decrees: data.decrees || '',
-        created_at: new Date().toISOString(),
-      }
+      const item = { id: Date.now(), name: data.name, code: data.code || '', address: data.address || '', minister: data.minister || { firstName: '', lastName: '' }, contact: data.contact || { email: '', phone: '' }, decrees: data.decrees || '', created_at: new Date().toISOString() }
       list.push(item)
       localStorage.setItem('ministries', JSON.stringify(list))
       return { success: true, data: item }
@@ -1424,10 +1371,7 @@ export const ministryAPI = {
     }
     return api.delete(`/ministries/${ministryId}`)
   },
-  
-  // Relations de tutelle
-  getTutelageEntities: (ministryId, type = 'all') =>
-    api.get(`/ministries/${ministryId}/entities?tutelage_type=${type}`),
+  getTutelageEntities: (ministryId, type = 'all') => api.get(`/ministries/${ministryId}/entities?tutelage_type=${type}`),
 }
 
 // === E-LEARNING (démo, laboratoire de métiers) ===

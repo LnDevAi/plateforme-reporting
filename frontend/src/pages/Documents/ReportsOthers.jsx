@@ -16,6 +16,7 @@ export default function ReportsOthers() {
   const [currentId, setCurrentId] = useState(null)
   const fileInputRef = useRef(null)
   const [delib, setDelib] = useState({ title:'', decision:'Adoptée', text:'' })
+  const [signature, setSignature] = useState(null)
 
   const load = async () => {
     setLoading(true)
@@ -42,6 +43,7 @@ export default function ReportsOthers() {
     const res = await documentsAPI.getOtherItem(id)
     setCurrentId(id)
     form.setFieldsValue(res.data)
+    setSignature(res.data.signature || null)
     setEditorOpen(true)
   }
 
@@ -50,6 +52,13 @@ export default function ReportsOthers() {
     await documentsAPI.saveOtherItem(currentId, values)
     message.success('Enregistré')
     load()
+  }
+  const sign = async () => {
+    const values = form.getFieldsValue(true)
+    const sig = { name:'Utilisateur', at:new Date().toISOString(), id:`SIG-OTH-${currentId}` }
+    await documentsAPI.saveOtherItem(currentId, { ...values, signature: sig })
+    setSignature(sig)
+    message.success('Signé (démo)')
   }
   const submit = async () => { await save(); await documentsAPI.submitOtherItem(currentId); message.success('Soumis'); load() }
   const validate = async () => { await documentsAPI.validateOtherItem(currentId); message.success('Validé'); load(); setEditorOpen(false) }
@@ -65,6 +74,10 @@ export default function ReportsOthers() {
     const y = 34 + (doc.splitTextToSize(values.summary||'', 180).length * 6) + 6
     doc.text('Contenu:', 14, y)
     doc.text(doc.splitTextToSize(values.content||'', 180), 14, y + 8)
+    let y2 = y + 60
+    const delibs = form.getFieldValue('deliberations') || []
+    if (delibs.length) { doc.setFont(undefined,'bold'); doc.text('Délibérations', 14, y2); doc.setFont(undefined,'normal'); y2+=6; delibs.forEach(d=>{ doc.text(doc.splitTextToSize(`- ${d.title} [${d.decision}] ${d.text?d.text.slice(0,100)+'...':''}`, 180), 14, y2); y2+=10 }) }
+    if (signature) { y2+=6; doc.text(`Signature: ${signature.name} — ${new Date(signature.at).toLocaleString('fr-FR')} — ID: ${signature.id}`, 14, y2) }
     doc.save(`autre_${currentId}.pdf`)
   }
 
@@ -72,7 +85,10 @@ export default function ReportsOthers() {
     const values = form.getFieldsValue(true)
     const lines = `${values.title || `Autre ${currentId}`}\n\nRésumé:\n${values.summary||''}\n\nContenu:\n${values.content||''}`.split('\n')
     const paragraphs = lines.map(l => new Paragraph(l))
-    const doc = new Document({ sections: [{ children: paragraphs }] })
+    const delibs = form.getFieldValue('deliberations') || []
+    const delibParas = delibs.length ? [ new Paragraph(''), new Paragraph('Délibérations'), ...delibs.map(d=> new Paragraph(`- ${d.title} [${d.decision}] ${d.text?d.text.slice(0,120)+'...':''}`)) ] : []
+    const sigParas = signature ? [ new Paragraph(''), new Paragraph(`Signature: ${signature.name} — ${new Date(signature.at).toLocaleString('fr-FR')} — ID: ${signature.id}`) ] : []
+    const doc = new Document({ sections: [{ children: [...paragraphs, ...delibParas, ...sigParas] }] })
     const blob = await Packer.toBlob(doc)
     const a = document.createElement('a')
     a.href = URL.createObjectURL(blob)
@@ -137,6 +153,7 @@ export default function ReportsOthers() {
             <Button onClick={save}>Enregistrer</Button>
             <Button onClick={submit}>Soumettre</Button>
             <Button onClick={validate}>Valider</Button>
+            <Button onClick={sign}>Signer (démo)</Button>
             <Button onClick={()=>fileInputRef.current?.click()}>Importer JSON</Button>
             <Button onClick={exportWord}>Exporter Word</Button>
             <Button onClick={exportPDF}>Exporter PDF</Button>

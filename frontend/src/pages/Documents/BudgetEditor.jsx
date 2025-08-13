@@ -17,12 +17,14 @@ function BudgetEditor() {
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState(null)
   const [delib, setDelib] = useState({ title:'', decision:'Adoptée', text:'' })
+  const [signature, setSignature] = useState(null)
   const fileInputRef = React.useRef(null)
 
   useEffect(() => {
     const run = async () => {
       const res = await documentsAPI.getElaborationItem('budget', id)
       setData(res.data)
+      setSignature(res.data.signature || null)
       form.setFieldsValue(res.data)
       setLoading(false)
     }
@@ -80,6 +82,15 @@ function BudgetEditor() {
   const doValidate = async () => {
     await documentsAPI.validateElaborationItem('budget', id)
     message.success('Document validé')
+  }
+  const doSign = async () => {
+    const values = form.getFieldsValue(true)
+    const sig = { name: 'Utilisateur', at: new Date().toISOString(), id: `SIG-BUD-${id}` }
+    const payload = { ...values, signature: sig, deliberations: data?.deliberations || [] }
+    await documentsAPI.saveElaborationItem('budget', id, payload)
+    setSignature(sig)
+    setData((prev)=> ({ ...(prev||{}), signature: sig }))
+    message.success('Signé (démo)')
   }
 
   const addDelib = async () => {
@@ -146,6 +157,12 @@ function BudgetEditor() {
       ]}),
       ...rows,
     ]})
+    const delibParas = ((data?.deliberations)||[]).length ? [
+      new Paragraph(''),
+      new Paragraph({ children: [new TextRun({ text: 'Délibérations', bold: true })] }),
+      ...((data?.deliberations)||[]).map(d=> new Paragraph(`- ${d.title} [${d.decision}] ${d.text?d.text.slice(0,120)+'...':''}`))
+    ] : []
+    const sigParas = signature ? [ new Paragraph(''), new Paragraph(`Signature: ${signature.name} — ${new Date(signature.at).toLocaleString('fr-FR')} — ID: ${signature.id}`) ] : []
     const doc = new Document({
       sections: [{
         children: [
@@ -155,6 +172,8 @@ function BudgetEditor() {
           table,
           new Paragraph({ children: [new TextRun({ text: `Total: ${values.summary?.total||0}`, bold: true })] }),
           new Paragraph(`Notes: ${values.summary?.notes||''}`),
+          ...delibParas,
+          ...sigParas,
         ]
       }]
     })
@@ -185,6 +204,14 @@ function BudgetEditor() {
     const finalY = (doc.lastAutoTable && doc.lastAutoTable.finalY) || 60
     doc.text(`Total: ${values.summary?.total||0}`, 14, finalY + 10)
     doc.text(`Notes: ${values.summary?.notes||''}`, 14, finalY + 16)
+    // Délibérations
+    let y = finalY + 28
+    if ((data?.deliberations||[]).length) {
+      doc.setFont(undefined, 'bold'); doc.text('Délibérations', 14, y); doc.setFont(undefined, 'normal'); y += 6
+      (data.deliberations||[]).forEach(d => { doc.text(doc.splitTextToSize(`- ${d.title} [${d.decision}] ${d.text?d.text.slice(0,100)+'...':''}`, 180), 14, y); y += 10 })
+    }
+    // Signature
+    if (signature) { y += 6; doc.text(`Signature: ${signature.name} — ${new Date(signature.at).toLocaleString('fr-FR')} — ID: ${signature.id}`, 14, y) }
     doc.save(`budget_${id}.pdf`)
   }
 
@@ -219,6 +246,7 @@ function BudgetEditor() {
         <Button onClick={exportExcel}>Exporter Excel</Button>
         <Button onClick={exportWord}>Exporter Word</Button>
         <Button onClick={exportPDF}>Exporter PDF</Button>
+        <Button onClick={doSign}>Signer (démo)</Button>
       </Space>
       <Card title="Hypothèses">
         <Form form={form} layout="vertical" onValuesChange={onValuesChange}>

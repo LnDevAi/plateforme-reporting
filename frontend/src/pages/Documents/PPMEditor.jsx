@@ -18,11 +18,13 @@ function PPMEditor() {
   const fileInputRef = React.useRef(null)
   const [locked, setLocked] = useState(false)
   const [delib, setDelib] = useState({ title:'', decision:'Adoptée', text:'' })
+  const [signature, setSignature] = useState(null)
 
   useEffect(() => {
     const run = async () => {
       const res = await documentsAPI.getElaborationItem('ppm', id)
       form.setFieldsValue(res.data)
+      setSignature(res.data.signature || null)
       setLocked(!!res.data.locked)
       setLoading(false)
     }
@@ -84,6 +86,13 @@ function PPMEditor() {
     await documentsAPI.validateElaborationItem('ppm', id)
     setLocked(true)
     message.success('Document validé')
+  }
+  const doSign = async () => {
+    const values = form.getFieldsValue(true)
+    const sig = { name: 'Utilisateur', at: new Date().toISOString(), id: `SIG-PPM-${id}` }
+    await documentsAPI.saveElaborationItem('ppm', id, { ...values, signature: sig })
+    setSignature(sig)
+    message.success('Signé (démo)')
   }
 
   const addDelib = async () => {
@@ -153,7 +162,9 @@ function PPMEditor() {
       ]}),
       ...rows,
     ]})
-    const doc = new Document({ sections: [{ children: [ new Paragraph({ children: [new TextRun({ text: `PPM ${id}`, bold: true, size: 28 })], spacing: { after: 200 } }), table ] }] })
+    const delibParas = ((form.getFieldValue('deliberations'))||[]).length ? [ new Paragraph(''), new Paragraph({ children: [new TextRun({ text: 'Délibérations', bold: true })] }), ...((form.getFieldValue('deliberations'))||[]).map(d=> new Paragraph(`- ${d.title} [${d.decision}] ${d.text?d.text.slice(0,120)+'...':''}`)) ] : []
+    const sigParas = signature ? [ new Paragraph(''), new Paragraph(`Signature: ${signature.name} — ${new Date(signature.at).toLocaleString('fr-FR')} — ID: ${signature.id}`) ] : []
+    const doc = new Document({ sections: [{ children: [ new Paragraph({ children: [new TextRun({ text: `PPM ${id}`, bold: true, size: 28 })], spacing: { after: 200 } }), table, ...delibParas, ...sigParas ] }] })
     const blob = await Packer.toBlob(doc)
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -176,6 +187,10 @@ function PPMEditor() {
       { header: 'Date prév.', dataKey: 'planned_date' },
       { header: 'Date réelle', dataKey: 'actual_date' },
     ], body: values.lines||[] })
+    let y = ((doc.lastAutoTable && doc.lastAutoTable.finalY) || 40) + 10
+    const delibs = form.getFieldValue('deliberations') || []
+    if (delibs.length) { doc.setFont(undefined,'bold'); doc.text('Délibérations', 14, y); doc.setFont(undefined,'normal'); y+=6; delibs.forEach(d=>{ doc.text(doc.splitTextToSize(`- ${d.title} [${d.decision}] ${d.text?d.text.slice(0,100)+'...':''}`, 180), 14, y); y+=10 }) }
+    if (signature) { y+=6; doc.text(`Signature: ${signature.name} — ${new Date(signature.at).toLocaleString('fr-FR')} — ID: ${signature.id}`, 14, y) }
     doc.save(`ppm_${id}.pdf`)
   }
 
@@ -239,6 +254,7 @@ function PPMEditor() {
         <Button type="primary" onClick={doSave} disabled={locked}>Enregistrer</Button>
         <Button onClick={doSubmit} disabled={locked}>Soumettre</Button>
         <Button onClick={doValidate} disabled={locked}>Valider</Button>
+        <Button onClick={doSign} disabled={locked}>Signer (démo)</Button>
       </Space>
     </Space>
   )
