@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Card, Table, Button, Space } from 'antd'
+import { Card, Table, Button, Space, Modal, Input, message } from 'antd'
 import { useNavigate } from 'react-router-dom'
 import { entitiesAPI } from '../../services/api'
 import { ministryAPI } from '../../services/api'
@@ -8,6 +8,8 @@ function EntitiesList() {
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(true)
   const [ministryMap, setMinistryMap] = useState({})
+  const [importOpen, setImportOpen] = useState(false)
+  const [importText, setImportText] = useState('')
   const navigate = useNavigate()
 
   const load = async () => {
@@ -40,8 +42,14 @@ function EntitiesList() {
   ]
 
   return (
-    <Card title="Entités" extra={<Button type="primary" onClick={()=>navigate('/entities/create')}>Nouvelle entité</Button>}>
+    <Card title="Entités" extra={<Space><Button onClick={()=>setImportOpen(true)}>Import JSON</Button><Button type="primary" onClick={()=>navigate('/entities/create')}>Nouvelle entité</Button></Space>}>
       <Table loading={loading} dataSource={data} columns={columns} rowKey={(r)=>r.id} />
+      <Modal title="Import JSON des entités" open={importOpen} onCancel={()=>setImportOpen(false)} onOk={async()=>{ try { const arr = JSON.parse(importText||'[]'); await entitiesAPI.bulkImport(arr); message.success('Importé'); setImportText(''); setImportOpen(false); load() } catch { message.error('JSON invalide') } }} okText="Importer">
+        <Input.TextArea rows={8} value={importText} onChange={e=>setImportText(e.target.value)} placeholder='[
+  {"name":"EPE Démo 1","type":"EPE"},
+  {"name":"EPE Démo 2","type":"SocieteEtat"}
+]'/>
+      </Modal>
     </Card>
   )
 }

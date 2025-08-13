@@ -1117,6 +1117,31 @@ export const entitiesAPI = {
     const list = raw ? JSON.parse(raw) : []
     return { success: true, data: list }
   },
+  bulkImport: async (items=[]) => {
+    if (!Array.isArray(items)) return { success:false }
+    await delay(80)
+    const list = JSON.parse(localStorage.getItem('entities') || '[]')
+    const next = [...list]
+    items.forEach((e, idx)=>{
+      const id = e.id || Date.now()+idx
+      const entity = {
+        id,
+        name: e.name || e.Nom || e.Entity || `Entité ${id}`,
+        type: e.type || e.Type || 'EPE',
+        ministryId: e.ministryId || null,
+        tutelle: e.tutelle || { technique: e.tutelleTechnique || '', financier: e.tutelleFinancier || '' },
+        contact: e.contact || { adresse: e.adresse || '', telephone: e.telephone || '', email: e.email || '' },
+        identification: e.identification || { ifu: e.ifu || '', cnss: e.cnss || '', rccm: e.rccm || '' },
+        autresInformations: e.autresInformations || '',
+        documentsCreation: e.documentsCreation || [],
+        created_at: new Date().toISOString(),
+        structure: e.structure || { directionGenerale: { roles: { DG: null, DFC: null, PRM: null, DRH: null, CG: null, AI: null }, autresDirections: [] }, conseilAdministration: { ministeres: Array.from({ length: 10 }).map((_, i) => ({ slot: `Ministère ${i+1}`, ministryId: null, membre: null })), observateurs: [null, null], repPersonnel: null, commissaireComptes: null }, assembleeGenerale: { notes: '' } },
+      }
+      next.push(entity)
+    })
+    localStorage.setItem('entities', JSON.stringify(next))
+    return { success: true, data: next }
+  },
   create: async (payload) => {
     await delay(80)
     const raw = localStorage.getItem('entities')
