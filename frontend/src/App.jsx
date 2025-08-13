@@ -19,6 +19,7 @@ import ProjectCreate from './pages/Projects/ProjectCreate'
 import TemplatesList from './pages/Templates/TemplatesList'
 import MinistriesList from './pages/Ministries/MinistriesList'
 import MinistryDetail from './pages/Ministries/MinistryDetail'
+import ReportsOthers from './pages/Documents/ReportsOthers'
 import ValidationWorkflow from './pages/Workflow/ValidationWorkflow'
 import AttachmentsManager from './pages/Attachments/AttachmentsManager'
 import DocumentsElaboration from './pages/Documents/DocumentsElaboration'
@@ -42,15 +43,6 @@ message.config({
   duration: 3,
   maxCount: 3,
 })
-
-function ReportsOthers() {
-  return (
-    <div>
-      <h3>Autres rapports</h3>
-      <p>Liste et dépôt d'autres documents non classés.</p>
-    </div>
-  )
-}
 
 function AppRoutes() {
   const { user, loading } = useAuth()

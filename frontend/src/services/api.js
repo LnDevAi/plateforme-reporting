@@ -715,6 +715,106 @@ export const documentsAPI = {
     }
     return api.delete(`/documents/elaboration/${type}/${id}/deliberations/${deliberationId}`)
   },
+  // --- AUTRES DOCUMENTS (liste + items) ---
+  getOthers: async () => {
+    if (DEMO_MODE) {
+      await delay(80)
+      const list = JSON.parse(localStorage.getItem('others_index') || '[]')
+      return { success: true, data: list }
+    }
+    return api.get('/documents/others')
+  },
+  createOther: async (payload = {}) => {
+    if (DEMO_MODE) {
+      await delay(80)
+      const list = JSON.parse(localStorage.getItem('others_index') || '[]')
+      const id = Date.now()
+      const item = { id, title: payload.title || `Autre ${list.length+1}`, status: 'Brouillon', updated_at: new Date().toLocaleString('fr-FR') }
+      list.push(item)
+      localStorage.setItem('others_index', JSON.stringify(list))
+      const key = `other_${id}`
+      const data = { id, title: item.title, category: payload.category || '', summary: '', content: '', status: 'Brouillon' }
+      localStorage.setItem(key, JSON.stringify(data))
+      return { success: true, data: item }
+    }
+    return api.post('/documents/others', payload)
+  },
+  getOtherItem: async (id) => {
+    if (DEMO_MODE) {
+      await delay(60)
+      const key = `other_${id}`
+      const raw = localStorage.getItem(key)
+      const data = raw ? JSON.parse(raw) : { id, title: `Autre ${id}`, category: '', summary: '', content: '', status: 'Brouillon' }
+      if (!raw) localStorage.setItem(key, JSON.stringify(data))
+      return { success: true, data }
+    }
+    return api.get(`/documents/others/${id}`)
+  },
+  saveOtherItem: async (id, payload) => {
+    if (DEMO_MODE) {
+      await delay(80)
+      const key = `other_${id}`
+      localStorage.setItem(key, JSON.stringify(payload))
+      // update index updated_at and title/status if present
+      const list = JSON.parse(localStorage.getItem('others_index') || '[]')
+      const idx = list.findIndex(x => String(x.id) === String(id))
+      if (idx >= 0) {
+        list[idx].title = payload.title || list[idx].title
+        list[idx].status = payload.status || list[idx].status
+        list[idx].updated_at = new Date().toLocaleString('fr-FR')
+        localStorage.setItem('others_index', JSON.stringify(list))
+      }
+      return { success: true }
+    }
+    return api.put(`/documents/others/${id}`, payload)
+  },
+  submitOtherItem: async (id) => {
+    if (DEMO_MODE) {
+      await delay(60)
+      const key = `other_${id}`
+      const data = JSON.parse(localStorage.getItem(key) || '{}')
+      data.status = 'Soumis'
+      localStorage.setItem(key, JSON.stringify(data))
+      return { success: true }
+    }
+    return api.post(`/documents/others/${id}/submit`)
+  },
+  validateOtherItem: async (id) => {
+    if (DEMO_MODE) {
+      await delay(60)
+      const key = `other_${id}`
+      const data = JSON.parse(localStorage.getItem(key) || '{}')
+      data.status = 'Validé'
+      data.locked = true
+      localStorage.setItem(key, JSON.stringify(data))
+      return { success: true }
+    }
+    return api.post(`/documents/others/${id}/validate`)
+  },
+  addOtherDeliberation: async (id, delib) => {
+    if (DEMO_MODE) {
+      await delay(60)
+      const key = `other_${id}`
+      const data = JSON.parse(localStorage.getItem(key) || '{}')
+      data.deliberations = data.deliberations || []
+      const item = { id: Date.now(), title: delib.title || 'Délibération', decision: delib.decision || 'Adoptée', text: delib.text || '', created_at: new Date().toISOString(), updated_at: new Date().toISOString() }
+      data.deliberations.push(item)
+      localStorage.setItem(key, JSON.stringify(data))
+      return { success: true, data: item }
+    }
+    return api.post(`/documents/others/${id}/deliberations`, delib)
+  },
+  removeOtherDeliberation: async (id, deliberationId) => {
+    if (DEMO_MODE) {
+      await delay(40)
+      const key = `other_${id}`
+      const data = JSON.parse(localStorage.getItem(key) || '{}')
+      data.deliberations = (data.deliberations || []).filter(x => String(x.id) !== String(deliberationId))
+      localStorage.setItem(key, JSON.stringify(data))
+      return { success: true }
+    }
+    return api.delete(`/documents/others/${id}/deliberations/${deliberationId}`)
+  },
 }
 
 // API pour la collaboration documentaire
