@@ -1661,4 +1661,49 @@ export const learningAPI = {
   },
 }
 
+// Boot démo: crée un ministère, un projet et une entité si absents
+export function bootDemoSeed() {
+  try {
+    const ministries = JSON.parse(localStorage.getItem('ministries') || '[]')
+    if (!ministries.length) {
+      const item = { id: Date.now(), name: "Ministère de la Santé", code: "MSAN", address: "Ouagadougou", minister: { firstName: "Robert", lastName: "Kargougou" }, contact: { email: "contact@msan.gov", phone: "+226" }, documents: [], created_at: new Date().toISOString() }
+      localStorage.setItem('ministries', JSON.stringify([item]))
+    }
+  } catch {}
+  try {
+    const projects = JSON.parse(localStorage.getItem('projects') || '[]')
+    if (!projects.length) {
+      const ms = JSON.parse(localStorage.getItem('ministries') || '[]')
+      const pid = Date.now()+1
+      const item = { id: pid, name: 'Projet Démo Santé 2025', owner: { id: pid+1, name: 'Responsable Démo' }, objectives: ['Objectif 1','Objectif 2'], team: [{id:pid+2,name:'Alice'},{id:pid+3,name:'Bob'}], ministryId: ms[0]?.id || null }
+      localStorage.setItem('projects', JSON.stringify([item]))
+    }
+  } catch {}
+  try {
+    const entities = JSON.parse(localStorage.getItem('entities') || '[]')
+    if (!entities.length) {
+      const ms = JSON.parse(localStorage.getItem('ministries') || '[]')
+      const eid = Date.now()+2
+      const entity = {
+        id: eid,
+        name: 'Entité Démo',
+        type: 'EPE',
+        ministryId: ms[0]?.id || null,
+        tutelle: { technique: 'Tutelle technique', financier: 'Tutelle financier', techniqueId: ms[0]?.id || null, financierId: null },
+        contact: { adresse: 'Adresse démo', telephone: '+226', email: 'entity@demo.local' },
+        identification: { ifu: '', cnss: '', rccm: '' },
+        autresInformations: '',
+        documentsCreation: [],
+        created_at: new Date().toISOString(),
+        structure: {
+          directionGenerale: { roles: { DG: null, DFC: null, PRM: null, DRH: null, CG: null, AI: null }, autresDirections: [] },
+          conseilAdministration: { ministeres: Array.from({ length: 10 }).map((_, i) => ({ slot: `Ministère ${i+1}`, ministryId: null, membre: null })), observateurs: [null, null], repPersonnel: null, commissaireComptes: null },
+          assembleeGenerale: { notes: '' },
+        },
+      }
+      localStorage.setItem('entities', JSON.stringify([entity]))
+    }
+  } catch {}
+}
+
 export default api
