@@ -1195,39 +1195,58 @@ function bootDemoLearning() {
       competencies: ['Gouvernance', 'Stratégie', 'Pilotage financier', 'Audit & Contrôle', 'Procédures PPM'],
       modules: [
         {
-          id: 'gov-1', title: 'Cadre de gouvernance et responsabilités', lessons: [
-            { id: 'gov-1-1', title: 'Théorie & cas: responsabilités du DG',
+          id: 'gov-1',
+          title: 'Cadre de gouvernance et responsabilités',
+          lessons: [
+            {
+              id: 'gov-1-1',
+              title: 'Théorie & cas: responsabilités du DG',
               theory: 'Rôles et responsabilités du DG, charte de gouvernance, interactions CA/AG, conformité réglementaire.',
-              scenarios: [ { title: 'Crise de trésorerie', description: 'DG face à un déficit inattendu, prioriser et communiquer.' } ],
-              tasks: [ { id: 't1', title: 'Cartographier les responsabilités clés' }, { id: 't2', title: 'Plan d’action court terme' } ],
-              resources: [
-                { title: "Documents gouvernance des ECP (Burkina)", url: "https://github.com/LnDevAi/plateforme-reporting/blob/main/docs/knowledge-base/formations/modules-gouvernance/Documents%20relatifs%20%C3%A0%20la%20gouvernance%20des%20entit%C3%A9s%20%C3%A0%20capitaux%20publics%20-%20Burkina%20Faso.pdf" },
-                { title: "Code BPGSE (bonnes pratiques)", url: "https://github.com/LnDevAi/plateforme-reporting/blob/main/docs/knowledge-base/epe-burkina/modeles-documents/Code%20BPGSE%20adopt%C3%A9%20AGSE%2030%20juin%202015.pdf" }
+              scenarios: [
+                { title: 'Crise de trésorerie', description: 'DG face à un déficit inattendu, prioriser et communiquer.' }
               ],
-              quiz: { passScore: 70, questions: [
-                { id: 'q1', prompt: 'Quel est le rôle du DG vis-à-vis du CA ?', options: [ {id:'a', text:'Exécuter les orientations du CA', correct:true}, {id:'b', text:'Se substituer au CA', correct:false} ] },
-                { id: 'q2', prompt: 'La charte de gouvernance sert à…', options: [ {id:'a', text:'Définir les règles de fonctionnement', correct:true}, {id:'b', text:'Fixer les salaires', correct:false} ] },
-                { id: 'q3', prompt: 'Qui valide les grandes orientations stratégiques ?', options: [ {id:'a', text:'Le Conseil d’Administration', correct:true}, {id:'b', text:'Le Chef comptable', correct:false} ] },
-              ]}
+              tasks: [
+                { id: 't1', title: 'Cartographier les responsabilités clés' },
+                { id: 't2', title: 'Plan d’action court terme' }
+              ],
+              resources: [
+                { title: 'Documents gouvernance des ECP (Burkina)', url: 'https://github.com/LnDevAi/plateforme-reporting/blob/main/docs/knowledge-base/formations/modules-gouvernance/Documents%20relatifs%20%C3%A0%20la%20gouvernance%20des%20entit%C3%A9s%20%C3%A0%20capitaux%20publics%20-%20Burkina%20Faso.pdf' },
+                { title: 'Code BPGSE (bonnes pratiques)', url: 'https://github.com/LnDevAi/plateforme-reporting/blob/main/docs/knowledge-base/epe-burkina/modeles-documents/Code%20BPGSE%20adopt%C3%A9%20AGSE%2030%20juin%202015.pdf' }
+              ],
+              quiz: {
+                passScore: 70,
+                questions: [
+                  { id: 'q1', prompt: 'Quel est le rôle du DG vis-à-vis du CA ?', options: [ {id:'a', text:'Exécuter les orientations du CA', correct:true}, {id:'b', text:'Se substituer au CA', correct:false} ] },
+                  { id: 'q2', prompt: 'La charte de gouvernance sert à…', options: [ {id:'a', text:'Définir les règles de fonctionnement', correct:true}, {id:'b', text:'Fixer les salaires', correct:false} ] },
+                  { id: 'q3', prompt: 'Qui valide les grandes orientations stratégiques ?', options: [ {id:'a', text:"Le Conseil d’Administration", correct:true}, {id:'b', text:'Le Chef comptable', correct:false} ] }
+                ]
+              }
             }
-          ]}
+          ]
         },
         {
-          id: 'gov-2', title: 'Pilotage financier et performance', lessons: [
-            { id: 'gov-2-1', title: 'Budget & KPI',
+          id: 'gov-2',
+          title: 'Pilotage financier et performance',
+          lessons: [
+            {
+              id: 'gov-2-1',
+              title: 'Budget & KPI',
               theory: 'Prévisions/Exécution, tableaux de bord, KPI stratégiques.',
               scenarios: [ { title: 'Écart budgétaire majeur', description: 'Analyser les causes et proposer des mesures.' } ],
               tasks: [ { id: 't1', title: 'Construire un KPI SMART' }, { id: 't2', title: 'Note de synthèse sur les écarts' } ],
               resources: [
-                { title: "AUSGIE (OHADA) — comptabilité", url: "https://github.com/LnDevAi/plateforme-reporting/blob/main/docs/knowledge-base/epe-burkina/modeles-documents/AUSGIE-REVISE-OHADA-fr(1).pdf" },
+                { title: 'AUSGIE (OHADA) — comptabilité', url: 'https://github.com/LnDevAi/plateforme-reporting/blob/main/docs/knowledge-base/epe-burkina/modeles-documents/AUSGIE-REVISE-OHADA-fr(1).pdf' },
                 { title: "Modèles docs EPE (Burkina)", url: "https://github.com/LnDevAi/plateforme-reporting/blob/main/docs/knowledge-base/epe-burkina/modeles-documents/Mod%C3%A8les%20de%20documents%20des%20EPE_Soci%C3%A9t%C3%A9s%20d'%C3%89tat%20-%20Burkina%20Faso.pdf" }
               ],
-              quiz: { passScore: 70, questions: [
-                { id: 'q1', prompt: 'Un KPI SMART est…', options: [ {id:'a', text:'Spécifique, Mesurable, Atteignable, Réaliste, Temporel', correct:true}, {id:'b', text:'Simple et aléatoire', correct:false} ] }
-              ]}
+              quiz: {
+                passScore: 70,
+                questions: [
+                  { id: 'q1', prompt: 'Un KPI SMART est…', options: [ {id:'a', text:'Spécifique, Mesurable, Atteignable, Réaliste, Temporel', correct:true}, {id:'b', text:'Simple et aléatoire', correct:false} ] }
+                ]
+              }
             }
-          ]}
-        },
+          ]
+        }
       ]
     },
     {
@@ -1237,13 +1256,32 @@ function bootDemoLearning() {
       audience: 'Administrateurs CA',
       description: "Pratiques du Conseil d’Administration: supervision, audits, sessions, décisions.",
       competencies: ['Supervision', 'Audit', 'Décision'],
-      modules: [ { id:'ca-1', title:'Rôle du CA', lessons:[ { id:'ca-1-1', title:'Fondamentaux du CA', theory:'Missions, comités, doctrine de décision.', scenarios:[{title:'Conflit d’intérêt', description:'Identifier et mitiger.'}], tasks:[{id:'t1',title:'Procédure de gestion des conflits'}], resources:[
-        { title: "Formation Administrateurs — Missions & attributions (slides)", url: "https://github.com/LnDevAi/plateforme-reporting/blob/main/docs/knowledge-base/formations/modules-gouvernance/administrateurs/FORMATION%20MISSIONS%20ET%20ATTRIBUTIONS%20DE%20L'ADMINISTRATEUR.pptx" },
-        { title: "Décret organisation AG-SE", url: "https://github.com/LnDevAi/plateforme-reporting/blob/main/docs/knowledge-base/epe-burkina/modeles-documents/d%C3%A9cret%20portant%20organisation%20de%20l'AG-SE.pdf" }
-      ], quiz:{passScore:60,questions:[
-        {id:'q1',prompt:'Le CA...',options:[{id:'a',text:'Supervise la direction',correct:true},{id:'b',text:'Gère au quotidien',correct:false}]},
-        {id:'q2',prompt:"Qui préside l’AG-SE ?",options:[{id:'a',text:'Le PCA',correct:true},{id:'b',text:'Le Chef de service achats',correct:false}]}
-      ]}} ] } ]
+      modules: [
+        {
+          id: 'ca-1',
+          title: 'Rôle du CA',
+          lessons: [
+            {
+              id: 'ca-1-1',
+              title: 'Fondamentaux du CA',
+              theory: 'Missions, comités, doctrine de décision.',
+              scenarios: [ { title: 'Conflit d’intérêt', description: 'Identifier et mitiger.' } ],
+              tasks: [ { id:'t1', title:'Procédure de gestion des conflits' } ],
+              resources: [
+                { title: "Formation Administrateurs — Missions & attributions (slides)", url: "https://github.com/LnDevAi/plateforme-reporting/blob/main/docs/knowledge-base/formations/modules-gouvernance/administrateurs/FORMATION%20MISSIONS%20ET%20ATTRIBUTIONS%20DE%20L'ADMINISTRATEUR.pptx" },
+                { title: "Décret organisation AG-SE", url: "https://github.com/LnDevAi/plateforme-reporting/blob/main/docs/knowledge-base/epe-burkina/modeles-documents/d%C3%A9cret%20portant%20organisation%20de%20l'AG-SE.pdf" }
+              ],
+              quiz: {
+                passScore: 60,
+                questions: [
+                  { id:'q1', prompt:'Le CA...', options:[ {id:'a', text:'Supervise la direction', correct:true}, {id:'b', text:'Gère au quotidien', correct:false} ] },
+                  { id:'q2', prompt:'Qui préside l’AG-SE ?', options:[ {id:'a', text:'Le PCA', correct:true}, {id:'b', text:'Le Chef de service achats', correct:false} ] }
+                ]
+              }
+            }
+          ]
+        }
+      ]
     },
     {
       id: 'acc-assistant',
@@ -1252,9 +1290,23 @@ function bootDemoLearning() {
       audience: 'Agents comptables ECP',
       description: 'Pratique SYSCOHADA: journalisation, rapprochements, TVA.',
       competencies: ['Journalisation', 'Rapprochement', 'Fiscalité indirecte'],
-      modules: [ { id:'acc-1', title:'Journalisation', lessons:[ { id:'acc-1-1', title:'Écritures de base', theory:'Achats, ventes, immobilisations.', scenarios:[{title:'Facture achat',description:'Enregistrer avec TVA.'}], tasks:[{id:'t1',title:'Écriture achat matériel'}], resources:[
-        { title: 'AUSGIE OHADA (référence)', url: 'https://github.com/LnDevAi/plateforme-reporting/blob/main/docs/knowledge-base/epe-burkina/modeles-documents/AUSGIE-REVISE-OHADA-fr(1).pdf' }
-      ], quiz:{passScore:60,questions:[{id:'q1',prompt:'Le débit/crédit...',options:[{id:'a',text:'Actif augmente au débit',correct:true},{id:'b',text:'Passif augmente au débit',correct:false}]}]}} ] } ]
+      modules: [
+        {
+          id: 'acc-1',
+          title: 'Journalisation',
+          lessons: [
+            {
+              id: 'acc-1-1',
+              title: 'Écritures de base',
+              theory: 'Achats, ventes, immobilisations.',
+              scenarios: [ { title:'Facture achat', description:'Enregistrer avec TVA.' } ],
+              tasks: [ { id:'t1', title:'Écriture achat matériel' } ],
+              resources: [ { title: 'AUSGIE OHADA (référence)', url: 'https://github.com/LnDevAi/plateforme-reporting/blob/main/docs/knowledge-base/epe-burkina/modeles-documents/AUSGIE-REVISE-OHADA-fr(1).pdf' } ],
+              quiz: { passScore: 60, questions: [ { id:'q1', prompt:'Le débit/crédit...', options:[ {id:'a', text:'Actif augmente au débit', correct:true}, {id:'b', text:'Passif augmente au débit', correct:false} ] } ] }
+            }
+          ]
+        }
+      ]
     },
     {
       id: 'acc-responsable',
@@ -1263,9 +1315,23 @@ function bootDemoLearning() {
       audience: 'DF/DFC et assimilés',
       description: 'Clôture, états financiers, analyse et contrôle interne.',
       competencies: ['Clôture', 'États financiers', 'Contrôle interne'],
-      modules: [ { id:'acc-2', title:'Clôture et EF', lessons:[ { id:'acc-2-1', title:'Cycle de clôture', theory:'Inventaires, provisions, cut-off.', scenarios:[{title:'Provision litige',description:'Évaluer et comptabiliser.'}], tasks:[{id:'t1',title:'Feuille de travail provisions'}], resources:[
-        { title: 'Modèles d’EF EPE (Burkina)', url: "https://github.com/LnDevAi/plateforme-reporting/blob/main/docs/knowledge-base/epe-burkina/modeles-documents/Mod%C3%A8les%20de%20documents%20des%20EPE_Soci%C3%A9t%C3%A9s%20d'%C3%89tat%20-%20Burkina%20Faso.pdf" }
-      ], quiz:{passScore:70,questions:[{id:'q1',prompt:'Une provision est...',options:[{id:'a',text:'Une dette probable',correct:true},{id:'b',text:'Un produit certain',correct:false}]}]}} ] } ]
+      modules: [
+        {
+          id: 'acc-2',
+          title: 'Clôture et EF',
+          lessons: [
+            {
+              id: 'acc-2-1',
+              title: 'Cycle de clôture',
+              theory: 'Inventaires, provisions, cut-off.',
+              scenarios: [ { title:'Provision litige', description:'Évaluer et comptabiliser.' } ],
+              tasks: [ { id:'t1', title:'Feuille de travail provisions' } ],
+              resources: [ { title: "Modèles d’EF EPE (Burkina)", url: "https://github.com/LnDevAi/plateforme-reporting/blob/main/docs/knowledge-base/epe-burkina/modeles-documents/Mod%C3%A8les%20de%20documents%20des%20EPE_Soci%C3%A9t%C3%A9s%20d'%C3%89tat%20-%20Burkina%20Faso.pdf" } ],
+              quiz: { passScore: 70, questions: [ { id:'q1', prompt:'Une provision est...', options:[ {id:'a', text:'Une dette probable', correct:true}, {id:'b', text:'Un produit certain', correct:false} ] } ] }
+            }
+          ]
+        }
+      ]
     }
   ]
   localStorage.setItem(LEARNING_KEY, JSON.stringify(tracks))
