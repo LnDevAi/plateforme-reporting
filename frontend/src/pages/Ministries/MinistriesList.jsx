@@ -65,7 +65,7 @@ export default function MinistriesList() {
 
   const columns = [
     { title: 'Intitulé', dataIndex: 'name' },
-    { title: 'Code', dataIndex: 'code' },
+    { title: 'SIGLE', dataIndex: 'code' },
     { title: 'Adresse', dataIndex: 'address' },
     { title: 'Ministre', render: (_, r) => `${r?.minister?.firstName || ''} ${r?.minister?.lastName || ''}`.trim() },
     { title: 'Email', dataIndex: ['contact','email'] },
@@ -96,7 +96,7 @@ export default function MinistriesList() {
           <Form.Item name="name" label="Intitulé" rules={[{ required: true, message: 'Intitulé requis' }]}>
             <Input placeholder="Ex: Ministère de la Santé" />
           </Form.Item>
-          <Form.Item name="code" label="Code">
+          <Form.Item name="code" label="SIGLE">
             <Input placeholder="Ex: MSAN" />
           </Form.Item>
           <Form.Item name="address" label="Adresse">

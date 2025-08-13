@@ -41,7 +41,7 @@ export default function MinistryDetail() {
         <Form.Item name="name" label="Intitulé" rules={[{ required: true, message: 'Intitulé requis' }]}>
           <Input />
         </Form.Item>
-        <Form.Item name="code" label="Code">
+        <Form.Item name="code" label="SIGLE">
           <Input />
         </Form.Item>
         <Form.Item name="address" label="Adresse">
