@@ -12,6 +12,7 @@ export default function MinistriesList() {
   const [form] = Form.useForm()
   const [importText, setImportText] = useState('')
   const [files, setFiles] = useState([])
+  const [catalog, setCatalog] = useState([])
 
   const load = async () => {
     setLoading(true)
@@ -25,7 +26,7 @@ export default function MinistriesList() {
     }
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { load(); ministryAPI.getCatalog().then(res=> setCatalog(res.data||[])).catch(()=>setCatalog([])) }, [])
 
   const onCreate = () => {
     setEditing(null)
@@ -99,6 +100,19 @@ export default function MinistriesList() {
         okText={editing ? 'Enregistrer' : 'Créer'}
       >
         <Form form={form} layout="vertical">
+          {(!editing) && (
+            <Form.Item label="Catalogue (auto-remplissage)">
+              <Input list="ministry-catalog" placeholder="Rechercher un intitulé (catalogue)" onChange={(e)=>{
+                const item = catalog.find(c=> c.name === e.target.value)
+                if (item) {
+                  form.setFieldsValue({ name: item.name, minister: { firstName: item.ministerFullName?.split(' ')[0]||'', lastName: item.ministerFullName?.split(' ').slice(1).join(' ')||'' } })
+                }
+              }} />
+              <datalist id="ministry-catalog">
+                {catalog.map((c,idx)=> (<option key={idx} value={c.name}>{c.ministerFullName}</option>))}
+              </datalist>
+            </Form.Item>
+          )}
           <Form.Item name="name" label="Intitulé" rules={[{ required: true, message: 'Intitulé requis' }]}>
             <Input placeholder="Ex: Ministère de la Santé" />
           </Form.Item>

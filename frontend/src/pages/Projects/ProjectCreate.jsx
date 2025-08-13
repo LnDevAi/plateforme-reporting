@@ -3,14 +3,17 @@ import { Card, Form, Input, Button, Select } from 'antd'
 import { useNavigate } from 'react-router-dom'
 import { projectsAPI } from '../../services/api'
 import { ministryAPI } from '../../services/api'
+import { entitiesAPI } from '../../services/api'
 
 function ProjectCreate() {
   const [form] = Form.useForm()
   const navigate = useNavigate()
   const [ministries, setMinistries] = React.useState([])
+  const [entities, setEntities] = React.useState([])
 
   React.useEffect(()=>{
     ministryAPI.getMinistries().then(res => setMinistries(res.data || [])).catch(()=>setMinistries([]))
+    entitiesAPI.getAll().then(res => setEntities(res.data || [])).catch(()=>setEntities([]))
   }, [])
 
   const onFinish = async (values) => {
@@ -26,6 +29,9 @@ function ProjectCreate() {
         </Form.Item>
         <Form.Item label="Ministère" name="ministryId">
           <Select allowClear placeholder="Sélectionner" options={(ministries||[]).map(m=>({ value:m.id, label:`${m.name}${m.code?` (${m.code})`:''}` }))} />
+        </Form.Item>
+        <Form.Item label="Entité (EPE / Société d'État)" name="entityId">
+          <Select allowClear placeholder="Sélectionner" options={(entities||[]).map(e=>({ value:e.id, label:`${e.name} — ${e.type||'EPE'}` }))} />
         </Form.Item>
         <Form.Item label="Responsable" name="ownerName">
           <Input placeholder="Nom du responsable" />
