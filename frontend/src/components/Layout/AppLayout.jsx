@@ -64,14 +64,14 @@ function AppLayout() {
   const menuItems = [
     { key: '/dashboard', icon: <DashboardOutlined />, label: 'Tableau de bord' },
     {
-      key: '/projects', icon: <ApartmentOutlined />, label: 'Projets / Entités',
+      key: '/projects', icon: <ApartmentOutlined />, label: 'Projets',
       children: [
         { key: '/projects', icon: <ApartmentOutlined />, label: 'Liste des projets' },
         { key: '/projects/create', icon: <PlusOutlined />, label: 'Nouveau projet' },
       ]
     },
     {
-      key: '/entities', icon: <ApartmentOutlined />, label: 'Inscription entités',
+      key: '/entities', icon: <ApartmentOutlined />, label: 'Entités',
       children: [
         { key: '/entities', icon: <ApartmentOutlined />, label: 'Liste des entités' },
         { key: '/entities/create', icon: <PlusOutlined />, label: 'Nouvelle entité' },
@@ -150,7 +150,7 @@ function AppLayout() {
             <Button type="text" icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />} onClick={() => setCollapsed(!collapsed)} style={{ fontSize: '16px' }} />
             <Title level={4} style={{ margin: 0, flex: 1 }}>
               {location.pathname === '/dashboard' && 'Tableau de bord'}
-              {location.pathname === '/projects' && 'Projets / Entités'}
+              {location.pathname === '/projects' && 'Projets'}
               {location.pathname === '/projects/create' && 'Nouveau projet'}
               {location.pathname === '/entities' && 'Entités'}
               {location.pathname === '/entities/create' && 'Inscription entité'}
