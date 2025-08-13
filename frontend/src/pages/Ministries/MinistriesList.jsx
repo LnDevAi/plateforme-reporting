@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Card, Form, Input, Modal, Space, Table, message } from 'antd'
-import { PlusOutlined } from '@ant-design/icons'
+import { Button, Card, Form, Input, Modal, Space, Table, message, Upload } from 'antd'
+import { InboxOutlined, PlusOutlined, UploadOutlined, CloudUploadOutlined } from '@ant-design/icons'
 import { ministryAPI } from '../../services/api'
 
 export default function MinistriesList() {
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(false)
   const [open, setOpen] = useState(false)
+  const [importOpen, setImportOpen] = useState(false)
   const [editing, setEditing] = useState(null)
   const [form] = Form.useForm()
+  const [importText, setImportText] = useState('')
+  const [files, setFiles] = useState([])
 
   const load = async () => {
     setLoading(true)
@@ -49,6 +52,7 @@ export default function MinistriesList() {
   const onSubmit = async () => {
     try {
       const values = await form.validateFields()
+      values.documents = files.map(f => ({ name: f.name, size: f.size, type: f.type }))
       if (editing) {
         await ministryAPI.updateMinistry(editing.id, values)
         message.success('Mis à jour')
@@ -57,6 +61,7 @@ export default function MinistriesList() {
         message.success('Créé')
       }
       setOpen(false)
+      setFiles([])
       load()
     } catch (e) {
       // validation or API error
@@ -70,6 +75,7 @@ export default function MinistriesList() {
     { title: 'Ministre', render: (_, r) => `${r?.minister?.firstName || ''} ${r?.minister?.lastName || ''}`.trim() },
     { title: 'Email', dataIndex: ['contact','email'] },
     { title: 'Téléphone', dataIndex: ['contact','phone'] },
+    { title: 'Docs', dataIndex: 'documents', render: (docs=[]) => (docs.length || 0) },
     {
       title: 'Actions',
       render: (_, record) => (
@@ -82,7 +88,7 @@ export default function MinistriesList() {
   ]
 
   return (
-    <Card title="Ministères" extra={<Button type="primary" icon={<PlusOutlined />} onClick={onCreate}>Nouveau</Button>}>
+    <Card title="Ministères" extra={<Space><Button icon={<CloudUploadOutlined />} onClick={()=>setImportOpen(true)}>Import JSON</Button><Button type="primary" icon={<PlusOutlined />} onClick={onCreate}>Nouveau</Button></Space>}>
       <Table rowKey="id" loading={loading} columns={columns} dataSource={data} pagination={{ pageSize: 8 }} />
 
       <Modal
@@ -118,10 +124,30 @@ export default function MinistriesList() {
           <Form.Item name={["contact","phone"]} label="Téléphone">
             <Input placeholder="Ex: +226 50 00 00 00" />
           </Form.Item>
-          <Form.Item name="decrees" label="Décrets de création (liens ou noms — démo)">
-            <Input.TextArea placeholder="Saisir une liste de liens ou de noms de fichiers, séparés par des virgules" rows={3} />
+          <Form.Item name="decrees" label="Décrets de création (texte — démo)">
+            <Input.TextArea placeholder="Texte libre" rows={3} />
+          </Form.Item>
+          <Form.Item label="Documents (upload — démo)">
+            <Upload.Dragger multiple beforeUpload={(f)=>{ setFiles(prev=>[...prev, f]); return false }} onRemove={(file)=>{ setFiles(prev=>prev.filter(x=>x.uid!==file.uid)) }} fileList={files} accept=".pdf,.doc,.docx,.png,.jpg">
+              <p className="ant-upload-drag-icon"><InboxOutlined /></p>
+              <p className="ant-upload-text">Cliquez ou glissez les documents ici</p>
+              <p className="ant-upload-hint">PDF/Word/Images (démo: seules les métadonnées sont stockées)</p>
+            </Upload.Dragger>
           </Form.Item>
         </Form>
+      </Modal>
+
+      <Modal
+        title="Import JSON des ministères"
+        open={importOpen}
+        onCancel={()=>setImportOpen(false)}
+        onOk={async()=>{ try { const arr = JSON.parse(importText||'[]'); await ministryAPI.bulkImport(arr); message.success('Importé'); setImportOpen(false); setImportText(''); load() } catch { message.error('JSON invalide') } }}
+        okText="Importer"
+      >
+        <Input.TextArea rows={8} value={importText} onChange={e=>setImportText(e.target.value)} placeholder='[
+  {"name":"Ministère 1","code":"M1"},
+  {"name":"Ministère 2","code":"M2"}
+]'/>
       </Modal>
     </Card>
   )

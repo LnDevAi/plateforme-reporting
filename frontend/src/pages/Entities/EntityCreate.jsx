@@ -13,9 +13,14 @@ function EntityCreate() {
   const [files, setFiles] = useState([])
   const [nameValue, setNameValue] = useState('')
   const [ministries, setMinistries] = useState([])
+  const [ministryOptions, setMinistryOptions] = useState([])
 
   React.useEffect(()=>{
-    ministryAPI.getMinistries().then(res=> setMinistries(res.data || [])).catch(()=>setMinistries([]))
+    ministryAPI.getMinistries().then(res=> {
+      const list = res.data || []
+      setMinistries(list)
+      setMinistryOptions(list.map(m=>({ value: m.id, label: `${m.name}${m.code?` (${m.code})`:''}` })))
+    }).catch(()=>{ setMinistries([]); setMinistryOptions([]) })
   }, [])
 
   const readFileAsBase64 = (file) => new Promise((resolve, reject) => {
@@ -46,7 +51,7 @@ function EntityCreate() {
         name: nameTrimmed,
         type: values.type || 'EPE',
         ministryId: values.ministryId || null,
-        tutelle: { technique: values.technique, financier: values.financier },
+        tutelle: { technique: values.technique, financier: values.financier, techniqueId: values.techniqueId || null, financierId: values.financierId || null },
         contact: {
           adresse: values.adresse || '',
           telephone: values.telephone || '',
@@ -90,8 +95,14 @@ function EntityCreate() {
             options={(ministries||[]).map(m=>({ value: m.id, label: `${m.name}${m.code?` (${m.code})`:''}` }))}
           />
         </Form.Item>
-        <Form.Item name="technique" label="Ministère de tutelle technique"> <Input /> </Form.Item>
-        <Form.Item name="financier" label="Ministère de tutelle financier"> <Input /> </Form.Item>
+        <Form.Item name="techniqueId" label="Tutelle technique (Ministère)">
+          <Select allowClear placeholder="Sélectionner" options={ministryOptions} />
+        </Form.Item>
+        <Form.Item name="financierId" label="Tutelle financier (Ministère)">
+          <Select allowClear placeholder="Sélectionner" options={ministryOptions} />
+        </Form.Item>
+        <Form.Item name="technique" label="Intitulé tutelle technique (optionnel)"> <Input /> </Form.Item>
+        <Form.Item name="financier" label="Intitulé tutelle financier (optionnel)"> <Input /> </Form.Item>
 
         <Form.Item name="adresse" label="Adresse"> <Input /> </Form.Item>
         <Form.Item name="telephone" label="Téléphone"> <Input /> </Form.Item>

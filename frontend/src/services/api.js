@@ -1342,7 +1342,7 @@ export const ministryAPI = {
     if (DEMO_MODE) {
       await delay(80)
       const list = JSON.parse(localStorage.getItem('ministries') || '[]')
-      const item = { id: Date.now(), name: data.name, code: data.code || '', address: data.address || '', minister: data.minister || { firstName: '', lastName: '' }, contact: data.contact || { email: '', phone: '' }, decrees: data.decrees || '', created_at: new Date().toISOString() }
+      const item = { id: Date.now(), name: data.name, code: data.code || '', address: data.address || '', minister: data.minister || { firstName: '', lastName: '' }, contact: data.contact || { email: '', phone: '' }, decrees: data.decrees || '', documents: data.documents || [], created_at: new Date().toISOString() }
       list.push(item)
       localStorage.setItem('ministries', JSON.stringify(list))
       return { success: true, data: item }
@@ -1372,6 +1372,24 @@ export const ministryAPI = {
     return api.delete(`/ministries/${ministryId}`)
   },
   getTutelageEntities: (ministryId, type = 'all') => api.get(`/ministries/${ministryId}/entities?tutelage_type=${type}`),
+  // Import en masse (démo)
+  bulkImport: async (items = []) => {
+    if (!Array.isArray(items)) return { success: false }
+    await delay(80)
+    const normalized = items.map((m, idx) => ({
+      id: m.id || Date.now() + idx,
+      name: m.name || m.Intitulé || m.title || 'Ministère',
+      code: m.code || m.SIGLE || '',
+      address: m.address || m.Adresse || '',
+      minister: m.minister || { firstName: m.ministerFirstName || '', lastName: m.ministerLastName || '' },
+      contact: m.contact || { email: m.email || '', phone: m.phone || '' },
+      documents: m.documents || [],
+      decrees: m.decrees || '',
+      created_at: new Date().toISOString(),
+    }))
+    localStorage.setItem('ministries', JSON.stringify(normalized))
+    return { success: true, data: normalized }
+  },
 }
 
 // === E-LEARNING (démo, laboratoire de métiers) ===

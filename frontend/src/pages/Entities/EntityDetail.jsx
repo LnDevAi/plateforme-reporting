@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react'
-import { Card, Form, Input, Button, Select, Space, Typography, Row, Col } from 'antd'
+import { Card, Form, Input, Button, Select, Space, Typography, Row, Col, message } from 'antd'
 import { useParams, useNavigate } from 'react-router-dom'
 import { entitiesAPI } from '../../services/api'
+import { ministryAPI } from '../../services/api'
 
 const { Title } = Typography
 
@@ -21,16 +22,19 @@ function EntityDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const [entity, setEntity] = useState(null)
+  const [ministries, setMinistries] = useState([])
+  const options = ministries.map(m=>({ value: m.id, label: `${m.name}${m.code?` (${m.code})`:''}` }))
 
   const load = async () => {
     const { data } = await entitiesAPI.getById(id)
     setEntity(data)
   }
 
-  useEffect(()=>{ load() }, [id])
+  useEffect(()=>{ load(); ministryAPI.getMinistries().then(res=> setMinistries(res.data||[])).catch(()=>setMinistries([])) }, [id])
 
   const save = async () => {
     await entitiesAPI.saveById(id, entity)
+    message.success('Enregistré')
   }
 
   if (!entity) return <Card>Chargement...</Card>
@@ -48,8 +52,18 @@ function EntityDetail() {
       </Space>
       <Card title="Tutelle">
         <Row gutter={12}>
-          <Col span={12}><b>Technique:</b> {entity.tutelle?.technique || '-'}</Col>
-          <Col span={12}><b>Financier:</b> {entity.tutelle?.financier || '-'}</Col>
+          <Col span={12}>
+            <Space direction="vertical">
+              <span><b>Technique:</b> {entity.tutelle?.technique || '-'}</span>
+              <Select style={{minWidth:320}} allowClear placeholder="Ministère de tutelle technique" value={entity.tutelle?.techniqueId||null} options={options} onChange={(v)=>{ entity.tutelle = { ...(entity.tutelle||{}), techniqueId: v||null }; setEntity({ ...entity }) }} />
+            </Space>
+          </Col>
+          <Col span={12}>
+            <Space direction="vertical">
+              <span><b>Financier:</b> {entity.tutelle?.financier || '-'}</span>
+              <Select style={{minWidth:320}} allowClear placeholder="Ministère de tutelle financier" value={entity.tutelle?.financierId||null} options={options} onChange={(v)=>{ entity.tutelle = { ...(entity.tutelle||{}), financierId: v||null }; setEntity({ ...entity }) }} />
+            </Space>
+          </Col>
         </Row>
       </Card>
 
@@ -64,7 +78,12 @@ function EntityDetail() {
 
       <Card title="Conseil d'Administration">
         {ca.ministeres.map((m, idx) => (
-          <RoleEditor key={idx} label={m.slot} value={m.membre} onChange={(v)=>{ ca.ministeres[idx].membre = v; setEntity({ ...entity }) }} />
+          <div key={idx} style={{ marginBottom: 8 }}>
+            <Space direction="vertical">
+              <Select style={{minWidth:360}} allowClear placeholder={`Siège: ${m.slot}`} value={m.ministryId||null} options={options} onChange={(v)=>{ ca.ministeres[idx].ministryId = v||null; setEntity({ ...entity }) }} />
+              <RoleEditor label={m.slot} value={m.membre} onChange={(v)=>{ ca.ministeres[idx].membre = v; setEntity({ ...entity }) }} />
+            </Space>
+          </div>
         ))}
         <RoleEditor label="Observateur 1" value={ca.observateurs[0]} onChange={(v)=>{ ca.observateurs[0]=v; setEntity({ ...entity }) }} />
         <RoleEditor label="Observateur 2" value={ca.observateurs[1]} onChange={(v)=>{ ca.observateurs[1]=v; setEntity({ ...entity }) }} />
