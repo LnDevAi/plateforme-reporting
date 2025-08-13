@@ -63,18 +63,19 @@ function AppLayout() {
 
   const menuItems = [
     { key: '/dashboard', icon: <DashboardOutlined />, label: 'Tableau de bord' },
-    {
-      key: '/projects', icon: <ApartmentOutlined />, label: 'Projets',
-      children: [
-        { key: '/projects', icon: <ApartmentOutlined />, label: 'Liste des projets' },
-        { key: '/projects/create', icon: <PlusOutlined />, label: 'Nouveau projet' },
-      ]
-    },
+    { key: '/ministries', icon: <ApartmentOutlined />, label: 'Ministères' },
     {
       key: '/entities', icon: <ApartmentOutlined />, label: 'Entités',
       children: [
         { key: '/entities', icon: <ApartmentOutlined />, label: 'Liste des entités' },
         { key: '/entities/create', icon: <PlusOutlined />, label: 'Nouvelle entité' },
+      ]
+    },
+    {
+      key: '/projects', icon: <ApartmentOutlined />, label: 'Projets',
+      children: [
+        { key: '/projects', icon: <ApartmentOutlined />, label: 'Liste des projets' },
+        { key: '/projects/create', icon: <PlusOutlined />, label: 'Nouveau projet' },
       ]
     },
     {
@@ -85,7 +86,6 @@ function AppLayout() {
       ]
     },
     { key: '/templates', icon: <FileDoneOutlined />, label: 'Modèles de rapports' },
-    { key: '/ministries', icon: <ApartmentOutlined />, label: 'Ministères' },
     { key: '/workflow', icon: <ClusterOutlined />, label: 'Workflow de validation' },
     { key: '/attachments', icon: <PaperClipOutlined />, label: 'Pièces justificatives' },
     { key: '/e-learning', icon: <BookOutlined />, label: 'E‑Learning' },

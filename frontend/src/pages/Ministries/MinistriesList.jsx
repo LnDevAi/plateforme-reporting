@@ -64,8 +64,10 @@ export default function MinistriesList() {
   }
 
   const columns = [
-    { title: 'Nom', dataIndex: 'name' },
+    { title: 'Intitulé', dataIndex: 'name' },
     { title: 'Code', dataIndex: 'code' },
+    { title: 'Adresse', dataIndex: 'address' },
+    { title: 'Ministre', render: (_, r) => `${r?.minister?.firstName || ''} ${r?.minister?.lastName || ''}`.trim() },
     { title: 'Email', dataIndex: ['contact','email'] },
     { title: 'Téléphone', dataIndex: ['contact','phone'] },
     {
@@ -91,17 +93,33 @@ export default function MinistriesList() {
         okText={editing ? 'Enregistrer' : 'Créer'}
       >
         <Form form={form} layout="vertical">
-          <Form.Item name="name" label="Nom du ministère" rules={[{ required: true, message: 'Nom requis' }]}>
+          <Form.Item name="name" label="Intitulé" rules={[{ required: true, message: 'Intitulé requis' }]}>
             <Input placeholder="Ex: Ministère de la Santé" />
           </Form.Item>
           <Form.Item name="code" label="Code">
             <Input placeholder="Ex: MSAN" />
+          </Form.Item>
+          <Form.Item name="address" label="Adresse">
+            <Input placeholder="Adresse postale/physique" />
+          </Form.Item>
+          <Form.Item label="Ministre — Prénom">
+            <Form.Item name={["minister","firstName"]} noStyle>
+              <Input placeholder="Prénom" />
+            </Form.Item>
+          </Form.Item>
+          <Form.Item label="Ministre — Nom">
+            <Form.Item name={["minister","lastName"]} noStyle>
+              <Input placeholder="Nom" />
+            </Form.Item>
           </Form.Item>
           <Form.Item name={["contact","email"]} label="Email">
             <Input placeholder="contact@ministere.gov" />
           </Form.Item>
           <Form.Item name={["contact","phone"]} label="Téléphone">
             <Input placeholder="Ex: +226 50 00 00 00" />
+          </Form.Item>
+          <Form.Item name="decrees" label="Décrets de création (liens ou noms — démo)">
+            <Input.TextArea placeholder="Saisir une liste de liens ou de noms de fichiers, séparés par des virgules" rows={3} />
           </Form.Item>
         </Form>
       </Modal>

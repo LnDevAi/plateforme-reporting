@@ -1187,7 +1187,16 @@ export const ministryAPI = {
     if (DEMO_MODE) {
       await delay(80)
       const list = JSON.parse(localStorage.getItem('ministries') || '[]')
-      const item = { id: Date.now(), name: data.name, code: data.code || '', contact: data.contact || { email: '', phone: '' } }
+      const item = {
+        id: Date.now(),
+        name: data.name,
+        code: data.code || '',
+        address: data.address || '',
+        minister: data.minister || { firstName: '', lastName: '' },
+        contact: data.contact || { email: '', phone: '' },
+        decrees: data.decrees || '',
+        created_at: new Date().toISOString(),
+      }
       list.push(item)
       localStorage.setItem('ministries', JSON.stringify(list))
       return { success: true, data: item }

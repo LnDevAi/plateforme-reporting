@@ -38,10 +38,13 @@ export default function MinistryDetail() {
   return (
     <Card title={`Ministère: ${data?.name || ''}`} extra={<Button type="primary" onClick={save}>Enregistrer</Button>}>
       <Form form={form} layout="vertical">
-        <Form.Item name="name" label="Nom" rules={[{ required: true, message: 'Nom requis' }]}>
+        <Form.Item name="name" label="Intitulé" rules={[{ required: true, message: 'Intitulé requis' }]}>
           <Input />
         </Form.Item>
         <Form.Item name="code" label="Code">
+          <Input />
+        </Form.Item>
+        <Form.Item name="address" label="Adresse">
           <Input />
         </Form.Item>
         <Descriptions title="Contact" bordered size="small" column={2} style={{ marginBottom: 16 }}>
@@ -56,6 +59,21 @@ export default function MinistryDetail() {
             </Form.Item>
           </Descriptions.Item>
         </Descriptions>
+        <Descriptions title="Ministre" bordered size="small" column={2} style={{ marginBottom: 16 }}>
+          <Descriptions.Item label="Prénom">
+            <Form.Item name={["minister","firstName"]} style={{ margin: 0 }}>
+              <Input placeholder="Prénom" />
+            </Form.Item>
+          </Descriptions.Item>
+          <Descriptions.Item label="Nom">
+            <Form.Item name={["minister","lastName"]} style={{ margin: 0 }}>
+              <Input placeholder="Nom" />
+            </Form.Item>
+          </Descriptions.Item>
+        </Descriptions>
+        <Form.Item name="decrees" label="Décrets de création (liens ou noms — démo)">
+          <Input.TextArea rows={4} placeholder="Liste séparée par des virgules" />
+        </Form.Item>
       </Form>
     </Card>
   )
