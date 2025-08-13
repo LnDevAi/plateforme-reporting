@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Card, Form, Input, Button, Select, Space, Upload, message } from 'antd'
 import { useNavigate } from 'react-router-dom'
 import { entitiesAPI } from '../../services/api'
+import { ministryAPI } from '../../services/api'
 import { InboxOutlined } from '@ant-design/icons'
 
 const { Dragger } = Upload
@@ -11,6 +12,11 @@ function EntityCreate() {
   const navigate = useNavigate()
   const [files, setFiles] = useState([])
   const [nameValue, setNameValue] = useState('')
+  const [ministries, setMinistries] = useState([])
+
+  React.useEffect(()=>{
+    ministryAPI.getMinistries().then(res=> setMinistries(res.data || [])).catch(()=>setMinistries([]))
+  }, [])
 
   const readFileAsBase64 = (file) => new Promise((resolve, reject) => {
     try {
@@ -39,6 +45,7 @@ function EntityCreate() {
       const payload = {
         name: nameTrimmed,
         type: values.type || 'EPE',
+        ministryId: values.ministryId || null,
         tutelle: { technique: values.technique, financier: values.financier },
         contact: {
           adresse: values.adresse || '',
@@ -75,6 +82,13 @@ function EntityCreate() {
         </Form.Item>
         <Form.Item name="type" label="Type">
           <Select allowClear placeholder="Choisir" options={[{ value: 'EPE', label: 'EPE' }, { value: 'SocieteEtat', label: "Société d'État" }]} />
+        </Form.Item>
+        <Form.Item name="ministryId" label="Ministère">
+          <Select
+            allowClear
+            placeholder="Sélectionner un ministère"
+            options={(ministries||[]).map(m=>({ value: m.id, label: `${m.name}${m.code?` (${m.code})`:''}` }))}
+          />
         </Form.Item>
         <Form.Item name="technique" label="Ministère de tutelle technique"> <Input /> </Form.Item>
         <Form.Item name="financier" label="Ministère de tutelle financier"> <Input /> </Form.Item>

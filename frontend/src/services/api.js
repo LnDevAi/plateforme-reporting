@@ -417,17 +417,27 @@ export const projectsAPI = {
   getAll: async () => {
     if (DEMO_MODE) {
       await delay(150)
-      return { success: true, data: [
-        { id: 1, name: 'Programme Santé 2025', owner: { id: 1, name: 'Alice' }, objectives: ['Réduction mortalité','Couverture vaccinale'], team: [{id:2,name:'Bob'},{id:3,name:'Carla'}] },
-        { id: 2, name: 'Réforme Éducation', owner: { id: 4, name: 'David' }, objectives: ['Qualité enseignement'], team: [{id:5,name:'Emma'}] },
-      ]}
+      const stored = JSON.parse(localStorage.getItem('projects') || '[]')
+      const seed = [
+        { id: 1, name: 'Programme Santé 2025', owner: { id: 1, name: 'Alice' }, objectives: ['Réduction mortalité','Couverture vaccinale'], team: [{id:2,name:'Bob'},{id:3,name:'Carla'}], ministryId: null },
+        { id: 2, name: 'Réforme Éducation', owner: { id: 4, name: 'David' }, objectives: ['Qualité enseignement'], team: [{id:5,name:'Emma'}], ministryId: null },
+      ]
+      return { success: true, data: [...seed, ...stored] }
     }
     return api.get('/projects')
   },
   create: async (data) => {
     if (DEMO_MODE) {
       await delay(150)
-      return { success: true, data: { id: Math.floor(Math.random()*1000), ...data } }
+      const id = Date.now()
+      const owner = data.ownerName ? { id: id+1, name: data.ownerName } : null
+      const objectives = (data.objectives || '').split(',').map(s=>s.trim()).filter(Boolean)
+      const team = (data.teamNames || '').split(',').map((n,i)=>n.trim()).filter(Boolean).map((name,idx)=>({ id: id+100+idx, name }))
+      const item = { id, name: data.name, owner, objectives, team, ministryId: data.ministryId || null }
+      const list = JSON.parse(localStorage.getItem('projects') || '[]')
+      list.push(item)
+      localStorage.setItem('projects', JSON.stringify(list))
+      return { success: true, data: item }
     }
     return api.post('/projects', data)
   },
@@ -1014,6 +1024,7 @@ export const entitiesAPI = {
       id,
       name: payload?.name || 'Sans nom',
       type: payload?.type || 'EPE',
+      ministryId: payload?.ministryId || null,
       tutelle: payload?.tutelle || { technique: '', financier: '' },
       contact: payload?.contact || { adresse: '', telephone: '', email: '' },
       identification: payload?.identification || { ifu: '', cnss: '', rccm: '' },
