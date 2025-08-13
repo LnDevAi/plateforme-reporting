@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { Card, Tabs, Button, List, Input, Space, Tag, message, Divider, Switch } from 'antd'
+import { Card, Tabs, Button, List, Input, Space, Tag, message, Divider, Switch, Select } from 'antd'
 import { useParams } from 'react-router-dom'
 import { sessionsAPI } from '../../services/api'
 
@@ -210,6 +210,120 @@ function VotesPanel({ session, onChange }) {
   )
 }
 
+function DeliberationsPanel({ session, onChange }) {
+  const [title, setTitle] = useState('')
+  const [agendaItemId, setAgendaItemId] = useState(null)
+  const [documentName, setDocumentName] = useState('')
+  const [decision, setDecision] = useState('Adoptée')
+  const [text, setText] = useState('')
+  const [editingId, setEditingId] = useState(null)
+
+  const resetForm = () => { setTitle(''); setAgendaItemId(null); setDocumentName(''); setDecision('Adoptée'); setText(''); setEditingId(null) }
+
+  const submit = async () => {
+    if (!title) return message.info('Titre requis')
+    if (editingId) {
+      await sessionsAPI.updateDeliberation(session.id, editingId, { title, agendaItemId, documentName, decision, text })
+    } else {
+      await sessionsAPI.addDeliberation(session.id, { title, agendaItemId, documentName, decision, text })
+    }
+    resetForm(); onChange()
+  }
+
+  const edit = (d) => {
+    setEditingId(d.id)
+    setTitle(d.title || '')
+    setAgendaItemId(d.agendaItemId || null)
+    setDocumentName(d.documentName || '')
+    setDecision(d.decision || 'Adoptée')
+    setText(d.text || '')
+  }
+
+  const remove = async (id) => { await sessionsAPI.removeDeliberation(session.id, id); onChange() }
+
+  const exportPdf = async (d) => {
+    const { jsPDF } = await import('jspdf')
+    const doc = new jsPDF({ unit: 'pt', format: 'a4' })
+    const left = 40, top = 40, maxWidth = 515
+    const lines = doc.splitTextToSize(
+      `Délibération\nTitre: ${d.title}\nDécision: ${d.decision}\nPoint ODJ: ${(session.agenda||[]).find(a=>String(a.id)===String(d.agendaItemId))?.title || '—'}\nDocument: ${d.documentName||'—'}\n\nTexte:\n${d.text||''}`,
+      maxWidth
+    )
+    doc.setFontSize(12)
+    doc.text(lines, left, top)
+    doc.save(`Deliberation_${(d.title||'delib').replace(/\s+/g,'_')}.pdf`)
+  }
+
+  const exportWord = async (d) => {
+    const docx = await import('docx')
+    const { Document, Packer, Paragraph } = docx
+    const content = `Délibération\nTitre: ${d.title}\nDécision: ${d.decision}\nPoint ODJ: ${(session.agenda||[]).find(a=>String(a.id)===String(d.agendaItemId))?.title || '—'}\nDocument: ${d.documentName||'—'}\n\nTexte:\n${d.text||''}`
+    const paragraphs = content.split('\n').map(line => new Paragraph(line))
+    const doc = new Document({ sections: [{ properties: {}, children: paragraphs }] })
+    const blob = await Packer.toBlob(doc)
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = `Deliberation_${(d.title||'delib').replace(/\s+/g,'_')}.docx`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(a.href)
+  }
+
+  return (
+    <Card size="small" title="Délibérations" extra={<Space>
+      <Input placeholder="Titre" value={title} onChange={e=>setTitle(e.target.value)} style={{ width: 220 }} />
+      <Select
+        placeholder="Point ODJ"
+        value={agendaItemId}
+        onChange={setAgendaItemId}
+        style={{ width: 220 }}
+        allowClear
+        options={(session.agenda||[]).map(a=>({ value: a.id, label: a.title }))}
+      />
+      <Input placeholder="Document concerné" value={documentName} onChange={e=>setDocumentName(e.target.value)} style={{ width: 220 }} />
+      <Select
+        value={decision}
+        onChange={setDecision}
+        style={{ width: 160 }}
+        options={[{value:'Adoptée',label:'Adoptée'},{value:'Rejetée',label:'Rejetée'},{value:'Ajournée',label:'Ajournée'}]}
+      />
+      <Input.TextArea placeholder="Texte de la délibération" value={text} onChange={e=>setText(e.target.value)} style={{ width: 320 }} rows={2} />
+      <Button type="primary" onClick={submit}>{editingId ? 'Enregistrer' : 'Ajouter'}</Button>
+      {editingId && <Button onClick={resetForm}>Annuler</Button>}
+    </Space>}>
+      <List
+        size="small"
+        dataSource={session.deliberations || []}
+        locale={{ emptyText: 'Aucune délibération' }}
+        renderItem={(d)=> (
+          <List.Item
+            actions={[
+              <Button key="ed" size="small" onClick={()=>edit(d)}>Modifier</Button>,
+              <Button key="rm" size="small" danger onClick={()=>remove(d.id)}>Supprimer</Button>,
+              <Button key="pdf" size="small" onClick={()=>exportPdf(d)}>PDF</Button>,
+              <Button key="docx" size="small" onClick={()=>exportWord(d)}>Word</Button>,
+            ]}
+          >
+            <List.Item.Meta
+              title={<Space>
+                <strong>{d.title}</strong>
+                <Tag color={d.decision==='Adoptée' ? 'green' : d.decision==='Rejetée' ? 'red' : 'orange'}>{d.decision}</Tag>
+              </Space>}
+              description={
+                <>
+                  <div>Point ODJ: {(session.agenda||[]).find(a=>String(a.id)===String(d.agendaItemId))?.title || '—'}</div>
+                  <div>Document: {d.documentName || '—'}</div>
+                </>
+              }
+            />
+          </List.Item>
+        )}
+      />
+    </Card>
+  )
+}
+
 function MinutesPanel({ session, onChange }) {
   const [content, setContent] = useState(session.minutes?.content || '')
   useEffect(()=>{ setContent(session.minutes?.content || '') }, [session.minutes?.content])
@@ -333,6 +447,7 @@ function SessionTab({ type, entityId }) {
                   { key: 'participants', label: 'Participants', children: <ParticipantsPanel session={s} onChange={load} /> },
                   { key: 'agenda', label: 'Ordre du jour', children: <AgendaPanel session={s} onChange={load} /> },
                   { key: 'votes', label: 'Votes', children: <VotesPanel session={s} onChange={load} /> },
+                  { key: 'delibs', label: 'Délibérations', children: <DeliberationsPanel session={s} onChange={load} /> },
                   { key: 'pv', label: 'PV', children: <MinutesPanel session={s} onChange={load} /> },
                   { key: 'invites', label: 'Invitations', children: <InvitesPanel session={s} onChange={load} /> },
                   { key: 'record', label: 'Enregistrements', children: <RecordingMeta session={s} onChange={load} /> },

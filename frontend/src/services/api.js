@@ -938,6 +938,7 @@ export const sessionsAPI = {
       minutes: null,    // {content, generated_at, locked}
       invitations: [],  // {id,email,sent_at,accepted}
       recordings: [],   // {id,started_at,stopped_at}
+      deliberations: [], // {id,title,agendaItemId,documentName,decision,text,created_at,updated_at}
     }
     all.push(session)
     localStorage.setItem('sessions', JSON.stringify(all))
@@ -1127,6 +1128,47 @@ export const sessionsAPI = {
     if (!s) return { success: false }
     const rec = [...s.recordings].reverse().find(r => !r.stopped_at)
     if (rec) rec.stopped_at = new Date().toISOString()
+    localStorage.setItem('sessions', JSON.stringify(all))
+    return { success: true }
+  },
+  // Délibérations
+  addDeliberation: async (sessionId, data) => {
+    await delay(60)
+    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
+    const s = all.find(x => String(x.id) === String(sessionId))
+    if (!s) return { success: false }
+    if (!s.deliberations) s.deliberations = []
+    const item = {
+      id: Date.now(),
+      title: data.title || 'Délibération',
+      agendaItemId: data.agendaItemId || null,
+      documentName: data.documentName || '',
+      decision: data.decision || 'Adoptée', // Adoptée | Rejetée | Ajournée
+      text: data.text || '',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+    s.deliberations.push(item)
+    localStorage.setItem('sessions', JSON.stringify(all))
+    return { success: true, data: item }
+  },
+  updateDeliberation: async (sessionId, deliberationId, data) => {
+    await delay(50)
+    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
+    const s = all.find(x => String(x.id) === String(sessionId))
+    if (!s) return { success: false }
+    const d = (s.deliberations || []).find(x => String(x.id) === String(deliberationId))
+    if (!d) return { success: false }
+    Object.assign(d, data, { updated_at: new Date().toISOString() })
+    localStorage.setItem('sessions', JSON.stringify(all))
+    return { success: true, data: d }
+  },
+  removeDeliberation: async (sessionId, deliberationId) => {
+    await delay(40)
+    const all = JSON.parse(localStorage.getItem('sessions') || '[]')
+    const s = all.find(x => String(x.id) === String(sessionId))
+    if (!s) return { success: false }
+    s.deliberations = (s.deliberations || []).filter(x => String(x.id) !== String(deliberationId))
     localStorage.setItem('sessions', JSON.stringify(all))
     return { success: true }
   },
