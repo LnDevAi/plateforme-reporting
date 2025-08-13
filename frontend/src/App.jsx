@@ -43,6 +43,15 @@ message.config({
   maxCount: 3,
 })
 
+function ReportsOthers() {
+  return (
+    <div>
+      <h3>Autres rapports</h3>
+      <p>Liste et dépôt d'autres documents non classés.</p>
+    </div>
+  )
+}
+
 function AppRoutes() {
   const { user, loading } = useAuth()
 
@@ -96,6 +105,7 @@ function AppRoutes() {
         {/* Renamed: Documents -> Rapports */}
         <Route path="reports/elaboration" element={<DocumentsElaboration />} />
         <Route path="reports/execution" element={<DocumentsExecution />} />
+        <Route path="reports/others" element={<ReportsOthers />} />
         <Route path="reports/elaboration/budget/:id" element={<BudgetEditor />} />
         <Route path="reports/elaboration/programme/:id" element={<ActivitiesProgramEditor />} />
         <Route path="reports/elaboration/ppm/:id" element={<PPMEditor />} />

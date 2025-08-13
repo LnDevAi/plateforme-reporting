@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Card, Form, Input, Button, Table, InputNumber, Space, Typography, Select, DatePicker, message } from 'antd'
+import { Card, Form, Input, Button, Table, InputNumber, Space, Typography, Select, DatePicker, message, List, Tag } from 'antd'
 import { useParams } from 'react-router-dom'
 import { documentsAPI } from '../../services/api'
 import WorkflowPanel from '../../components/Workflow/WorkflowPanel'
@@ -7,7 +7,7 @@ import * as XLSX from 'xlsx'
 import { Document, Packer, Paragraph, TextRun, Table as DocxTable, TableRow, TableCell, WidthType } from 'docx'
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
-import { Tag } from 'antd'
+// Tag included in the grouped import above
 
 const { Title } = Typography
 
@@ -17,6 +17,7 @@ function PPMEditor() {
   const [loading, setLoading] = useState(true)
   const fileInputRef = React.useRef(null)
   const [locked, setLocked] = useState(false)
+  const [delib, setDelib] = useState({ title:'', decision:'Adoptée', text:'' })
 
   useEffect(() => {
     const run = async () => {
@@ -83,6 +84,19 @@ function PPMEditor() {
     await documentsAPI.validateElaborationItem('ppm', id)
     setLocked(true)
     message.success('Document validé')
+  }
+
+  const addDelib = async () => {
+    if (!delib.title) return message.info('Titre requis')
+    await documentsAPI.addElaborationDeliberation('ppm', id, delib)
+    const res = await documentsAPI.getElaborationItem('ppm', id)
+    form.setFieldsValue(res.data)
+    setDelib({ title:'', decision:'Adoptée', text:'' })
+  }
+  const removeDelib = async (did) => {
+    await documentsAPI.removeElaborationDeliberation('ppm', id, did)
+    const res = await documentsAPI.getElaborationItem('ppm', id)
+    form.setFieldsValue(res.data)
   }
 
   const exportJSON = () => {
@@ -207,6 +221,20 @@ function PPMEditor() {
           <Table pagination={false} columns={columns} dataSource={form.getFieldValue('lines') || []} rowKey={(_,i)=>i} />
         </Card>
       </Form>
+      <Card title="Délibérations" style={{ marginTop: 12 }} extra={
+        <Space>
+          <Input placeholder="Titre" value={delib.title} onChange={e=>setDelib(v=>({...v,title:e.target.value}))} style={{ width: 220 }} />
+          <Select value={delib.decision} onChange={(v)=>setDelib(d=>({...d,decision:v}))} style={{ width: 160 }} options={[{value:'Adoptée'},{value:'Rejetée'},{value:'Ajournée'}]} />
+          <Input.TextArea placeholder="Texte" value={delib.text} onChange={e=>setDelib(v=>({...v,text:e.target.value}))} rows={1} style={{ width: 260 }} />
+          <Button onClick={addDelib}>Ajouter</Button>
+        </Space>
+      }>
+        <List size="small" dataSource={(form.getFieldValue('deliberations')||[])} locale={{emptyText:'Aucune délibération'}} renderItem={(d)=> (
+          <List.Item actions={[<Button key="rm" danger size="small" onClick={()=>removeDelib(d.id)}>Supprimer</Button>]}> 
+            <List.Item.Meta title={<Space><strong>{d.title}</strong><Tag color={d.decision==='Adoptée'?'green':d.decision==='Rejetée'?'red':'orange'}>{d.decision}</Tag></Space>} description={(d.text||'').slice(0,200)} />
+          </List.Item>
+        )} />
+      </Card>
       <Space>
         <Button type="primary" onClick={doSave} disabled={locked}>Enregistrer</Button>
         <Button onClick={doSubmit} disabled={locked}>Soumettre</Button>

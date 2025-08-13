@@ -83,6 +83,7 @@ function AppLayout() {
       children: [
         { key: '/reports/elaboration', icon: <FileDoneOutlined />, label: 'Élaboration' },
         { key: '/reports/execution', icon: <ClusterOutlined />, label: 'Exécution' },
+        { key: '/reports/others', icon: <FileTextOutlined />, label: 'Autres' },
       ]
     },
     { key: '/templates', icon: <FileDoneOutlined />, label: 'Modèles de rapports' },
@@ -111,6 +112,7 @@ function AppLayout() {
     if (path.startsWith('/reports/')) {
       if (path === '/reports/elaboration') return ['/reports/elaboration']
       if (path === '/reports/execution') return ['/reports/execution']
+      if (path === '/reports/others') return ['/reports/others']
       return ['/reports']
     }
     if (path.startsWith('/entities/')) {
@@ -158,6 +160,7 @@ function AppLayout() {
               {location.pathname?.startsWith('/entities/') && 'Entité'}
               {location.pathname === '/reports/elaboration' && 'Rapports - Élaboration'}
               {location.pathname === '/reports/execution' && 'Rapports - Exécution'}
+              {location.pathname === '/reports/others' && 'Rapports - Autres'}
               {location.pathname === '/templates' && 'Modèles de rapports'}
               {location.pathname === '/ministries' && 'Ministères'}
               {location.pathname?.startsWith('/ministries/') && 'Ministère'}

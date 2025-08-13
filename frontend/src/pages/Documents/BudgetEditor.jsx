@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Card, Form, Input, Button, Table, InputNumber, Space, Typography, message, Tag } from 'antd'
+import { Card, Form, Input, Button, Table, InputNumber, Space, Typography, message, Tag, Select, List } from 'antd'
 import { useParams, useNavigate } from 'react-router-dom'
 import { documentsAPI } from '../../services/api'
 import WorkflowPanel from '../../components/Workflow/WorkflowPanel'
@@ -16,6 +16,7 @@ function BudgetEditor() {
   const [form] = Form.useForm()
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState(null)
+  const [delib, setDelib] = useState({ title:'', decision:'Adoptée', text:'' })
   const fileInputRef = React.useRef(null)
 
   useEffect(() => {
@@ -79,6 +80,19 @@ function BudgetEditor() {
   const doValidate = async () => {
     await documentsAPI.validateElaborationItem('budget', id)
     message.success('Document validé')
+  }
+
+  const addDelib = async () => {
+    if (!delib.title) return message.info('Titre requis')
+    await documentsAPI.addElaborationDeliberation('budget', id, delib)
+    const res = await documentsAPI.getElaborationItem('budget', id)
+    setData(res.data)
+    setDelib({ title:'', decision:'Adoptée', text:'' })
+  }
+  const removeDelib = async (did) => {
+    await documentsAPI.removeElaborationDeliberation('budget', id, did)
+    const res = await documentsAPI.getElaborationItem('budget', id)
+    setData(res.data)
   }
 
   const exportJSON = () => {
@@ -221,6 +235,20 @@ function BudgetEditor() {
             <Form.Item name={['summary', 'notes']} label="Notes">
               <Input.TextArea rows={3} />
             </Form.Item>
+          </Card>
+          <Card title="Délibérations" style={{ marginTop: 12 }} extra={
+            <Space>
+              <Input placeholder="Titre" value={delib.title} onChange={e=>setDelib(v=>({...v,title:e.target.value}))} style={{ width: 220 }} />
+              <Select value={delib.decision} onChange={(v)=>setDelib(d=>({...d,decision:v}))} style={{ width: 160 }} options={[{value:'Adoptée'},{value:'Rejetée'},{value:'Ajournée'}]} />
+              <Input.TextArea placeholder="Texte" value={delib.text} onChange={e=>setDelib(v=>({...v,text:e.target.value}))} rows={1} style={{ width: 260 }} />
+              <Button onClick={addDelib}>Ajouter</Button>
+            </Space>
+          }>
+            <List size="small" dataSource={data?.deliberations||[]} locale={{emptyText:'Aucune délibération'}} renderItem={(d)=> (
+              <List.Item actions={[<Button key="rm" danger size="small" onClick={()=>removeDelib(d.id)}>Supprimer</Button>]}> 
+                <List.Item.Meta title={<Space><strong>{d.title}</strong><Tag color={d.decision==='Adoptée'?'green':d.decision==='Rejetée'?'red':'orange'}>{d.decision}</Tag></Space>} description={(d.text||'').slice(0,200)} />
+              </List.Item>
+            )} />
           </Card>
         </Form>
       </Card>

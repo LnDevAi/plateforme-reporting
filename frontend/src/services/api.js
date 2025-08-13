@@ -439,10 +439,10 @@ export const templatesAPI = {
     if (DEMO_MODE) {
       await delay(120)
       return { success: true, data: [
-        { id: 1, name: 'Rapport d’activités', type: 'Activités', sections: ['Contexte','Réalisation','Difficultés','Perspectives'] },
-        { id: 2, name: 'Rapport budgétaire', type: 'Budget', sections: ['Prévisions','Exécution','Écarts','Justifications'] },
-        { id: 3, name: 'Passation des marchés', type: 'PM', sections: ['Procédures','Contrats','Délais','Conformité'] },
-        { id: 4, name: 'Bilan social / RH', type: 'Social', sections: ['Effectifs','Recrutements','Formation','Climat social'] },
+        { id: 1, name: "Rapport d'activités", type: "Activités", sections: ["Contexte","Réalisation","Difficultés","Perspectives"] },
+        { id: 2, name: "Rapport budgétaire", type: "Budget", sections: ["Prévisions","Exécution","Écarts","Justifications"] },
+        { id: 3, name: "Passation des marchés", type: "PM", sections: ["Procédures","Contrats","Délais","Conformité"] },
+        { id: 4, name: "Bilan social / RH", type: "Social", sections: ["Effectifs","Recrutements","Formation","Climat social"] },
       ]}
     }
     return api.get('/templates')
@@ -564,10 +564,10 @@ export const documentsAPI = {
       await delay(120)
       return { success: true, data: [
         { key: 'budget_prevision', title: 'Budget prévisionnel', items: [ { id: 1, title: 'Budget 2025', status: 'Brouillon', updated_at: '2025-01-15 10:30' } ] },
-        { key: 'programme_activites', title: 'Programme d’Activités', items: [ { id: 2, title: 'PA 2025', status: 'Soumis', updated_at: '2025-02-02 09:15' } ] },
+        { key: 'programme_activites', title: "Programme d'Activités", items: [ { id: 2, title: 'PA 2025', status: 'Soumis', updated_at: '2025-02-02 09:15' } ] },
         { key: 'ppm', title: 'Plan de Passation des Marchés (PPM)', items: [ { id: 3, title: 'PPM 2025', status: 'Validé', updated_at: '2025-02-20 14:00' } ] },
         { key: 'autres_elab', title: 'Autres documents', items: [] },
-        { key: 'avis_audit', title: 'Avis du Comité d’audit', items: [] },
+        { key: 'avis_audit', title: "Avis du Comité d'audit", items: [] },
         { key: 'avis_commissaire', title: 'Avis du Commissaire aux Comptes', items: [] },
         { key: 'rapport_ca_budget', title: 'Rapport du CA sur la session budgétaire', items: [] },
       ]}
@@ -578,16 +578,16 @@ export const documentsAPI = {
     if (DEMO_MODE) {
       await delay(120)
       return { success: true, data: [
-        { key: 'budget_execution', title: 'Rapport d’exécution du Budget', items: [ { id: 11, title: 'Exécution Budget 2025 S1', status: 'Soumis', updated_at: '2025-07-10 11:00' } ] },
-        { key: 'rapport_activites', title: 'Rapport d’activités', items: [ { id: 12, title: 'Rapport semestriel 2025', status: 'Brouillon', updated_at: '2025-07-18 08:45' } ] },
-        { key: 'ppm_execution', title: 'Rapport d’exécution du PPM', items: [] },
+        { key: 'budget_execution', title: "Rapport d'exécution du Budget", items: [ { id: 11, title: 'Exécution Budget 2025 S1', status: 'Soumis', updated_at: '2025-07-10 11:00' } ] },
+        { key: 'rapport_activites', title: "Rapport d'activités", items: [ { id: 12, title: 'Rapport semestriel 2025', status: 'Brouillon', updated_at: '2025-07-18 08:45' } ] },
+        { key: 'ppm_execution', title: "Rapport d'exécution du PPM", items: [] },
         { key: 'etats_financiers', title: 'États financiers', items: [] },
         { key: 'bilan_social', title: 'Bilan social', items: [] },
         { key: 'rapport_gestion', title: 'Rapport de gestion', items: [] },
-        { key: 'comites_audit', title: 'Rapports des comités d’audit', items: [] },
+        { key: 'comites_audit', title: "Rapports des comités d'audit", items: [] },
         { key: 'commissaire_comptes', title: 'Rapports du Commissaire aux comptes', items: [] },
         { key: 'sejour_pca', title: 'Rapports du séjour du PCA', items: [] },
-        { key: 'rapport_ca_comptes', title: 'Rapport du CA sur la session d’arrêt des comptes', items: [] },
+        { key: 'rapport_ca_comptes', title: "Rapport du CA sur la session d'arrêt des comptes", items: [] },
         { key: 'autres_exec', title: 'Autres documents', items: [] },
       ]}
     }
@@ -668,6 +668,52 @@ export const documentsAPI = {
       return { success: true }
     }
     return api.post(`/documents/elaboration/${type}/${id}/validate`)
+  },
+  // Délibérations associées aux documents (Élaboration)
+  addElaborationDeliberation: async (type, id, delib) => {
+    if (DEMO_MODE) {
+      await delay(80)
+      const key = `elab_${type}_${id}`
+      const data = JSON.parse(localStorage.getItem(key) || '{}')
+      data.deliberations = data.deliberations || []
+      const item = {
+        id: Date.now(),
+        title: delib.title || 'Délibération',
+        decision: delib.decision || 'Adoptée', // Adoptée | Rejetée | Ajournée
+        text: delib.text || '',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }
+      data.deliberations.push(item)
+      localStorage.setItem(key, JSON.stringify(data))
+      return { success: true, data: item }
+    }
+    return api.post(`/documents/elaboration/${type}/${id}/deliberations`, delib)
+  },
+  updateElaborationDeliberation: async (type, id, deliberationId, delib) => {
+    if (DEMO_MODE) {
+      await delay(80)
+      const key = `elab_${type}_${id}`
+      const data = JSON.parse(localStorage.getItem(key) || '{}')
+      data.deliberations = data.deliberations || []
+      const d = data.deliberations.find(x => String(x.id) === String(deliberationId))
+      if (!d) return { success: false }
+      Object.assign(d, delib, { updated_at: new Date().toISOString() })
+      localStorage.setItem(key, JSON.stringify(data))
+      return { success: true, data: d }
+    }
+    return api.put(`/documents/elaboration/${type}/${id}/deliberations/${deliberationId}`, delib)
+  },
+  removeElaborationDeliberation: async (type, id, deliberationId) => {
+    if (DEMO_MODE) {
+      await delay(60)
+      const key = `elab_${type}_${id}`
+      const data = JSON.parse(localStorage.getItem(key) || '{}')
+      data.deliberations = (data.deliberations || []).filter(x => String(x.id) !== String(deliberationId))
+      localStorage.setItem(key, JSON.stringify(data))
+      return { success: true }
+    }
+    return api.delete(`/documents/elaboration/${type}/${id}/deliberations/${deliberationId}`)
   },
 }
 
@@ -1302,7 +1348,7 @@ function bootDemoLearning() {
               ],
               tasks: [
                 { id: 't1', title: 'Cartographier les responsabilités clés' },
-                { id: 't2', title: 'Plan d’action court terme' }
+                { id: 't2', title: "Plan d'action court terme" }
               ],
               resources: [
                 { title: 'Documents gouvernance des ECP (Burkina)', url: 'https://github.com/LnDevAi/plateforme-reporting/blob/main/docs/knowledge-base/formations/modules-gouvernance/Documents%20relatifs%20%C3%A0%20la%20gouvernance%20des%20entit%C3%A9s%20%C3%A0%20capitaux%20publics%20-%20Burkina%20Faso.pdf' },
@@ -1313,7 +1359,7 @@ function bootDemoLearning() {
                 questions: [
                   { id: 'q1', prompt: 'Quel est le rôle du DG vis-à-vis du CA ?', options: [ {id:'a', text:'Exécuter les orientations du CA', correct:true}, {id:'b', text:'Se substituer au CA', correct:false} ] },
                   { id: 'q2', prompt: 'La charte de gouvernance sert à…', options: [ {id:'a', text:'Définir les règles de fonctionnement', correct:true}, {id:'b', text:'Fixer les salaires', correct:false} ] },
-                  { id: 'q3', prompt: 'Qui valide les grandes orientations stratégiques ?', options: [ {id:'a', text:"Le Conseil d’Administration", correct:true}, {id:'b', text:'Le Chef comptable', correct:false} ] }
+                  { id: 'q3', prompt: 'Qui valide les grandes orientations stratégiques ?', options: [ {id:'a', text:"Le Conseil d'Administration", correct:true}, {id:'b', text:'Le Chef comptable', correct:false} ] }
                 ]
               }
             }
@@ -1346,10 +1392,10 @@ function bootDemoLearning() {
     },
     {
       id: 'gov-admin',
-      title: "Certification Administrateur d’ECP",
+      title: "Certification Administrateur d'ECP",
       domain: 'Gouvernance ECP',
       audience: 'Administrateurs CA',
-      description: "Pratiques du Conseil d’Administration: supervision, audits, sessions, décisions.",
+      description: "Pratiques du Conseil d'Administration: supervision, audits, sessions, décisions.",
       competencies: ['Supervision', 'Audit', 'Décision'],
       modules: [
         {
@@ -1360,7 +1406,7 @@ function bootDemoLearning() {
               id: 'ca-1-1',
               title: 'Fondamentaux du CA',
               theory: 'Missions, comités, doctrine de décision.',
-              scenarios: [ { title: 'Conflit d’intérêt', description: 'Identifier et mitiger.' } ],
+              scenarios: [ { title: 'Conflit d'intérêt', description: 'Identifier et mitiger.' } ],
               tasks: [ { id:'t1', title:'Procédure de gestion des conflits' } ],
               resources: [
                 { title: "Formation Administrateurs — Missions & attributions (slides)", url: "https://github.com/LnDevAi/plateforme-reporting/blob/main/docs/knowledge-base/formations/modules-gouvernance/administrateurs/FORMATION%20MISSIONS%20ET%20ATTRIBUTIONS%20DE%20L'ADMINISTRATEUR.pptx" },
@@ -1370,7 +1416,7 @@ function bootDemoLearning() {
                 passScore: 60,
                 questions: [
                   { id:'q1', prompt:'Le CA...', options:[ {id:'a', text:'Supervise la direction', correct:true}, {id:'b', text:'Gère au quotidien', correct:false} ] },
-                  { id:'q2', prompt:'Qui préside l’AG-SE ?', options:[ {id:'a', text:'Le PCA', correct:true}, {id:'b', text:'Le Chef de service achats', correct:false} ] }
+                  { id:'q2', prompt:'Qui préside l'AG-SE ?', options:[ {id:'a', text:'Le PCA', correct:true}, {id:'b', text:'Le Chef de service achats', correct:false} ] }
                 ]
               }
             }
@@ -1421,7 +1467,7 @@ function bootDemoLearning() {
               theory: 'Inventaires, provisions, cut-off.',
               scenarios: [ { title:'Provision litige', description:'Évaluer et comptabiliser.' } ],
               tasks: [ { id:'t1', title:'Feuille de travail provisions' } ],
-              resources: [ { title: "Modèles d’EF EPE (Burkina)", url: "https://github.com/LnDevAi/plateforme-reporting/blob/main/docs/knowledge-base/epe-burkina/modeles-documents/Mod%C3%A8les%20de%20documents%20des%20EPE_Soci%C3%A9t%C3%A9s%20d'%C3%89tat%20-%20Burkina%20Faso.pdf" } ],
+              resources: [ { title: "Modèles d'EF EPE (Burkina)", url: "https://github.com/LnDevAi/plateforme-reporting/blob/main/docs/knowledge-base/epe-burkina/modeles-documents/Mod%C3%A8les%20de%20documents%20des%20EPE_Soci%C3%A9t%C3%A9s%20d'%C3%89tat%20-%20Burkina%20Faso.pdf" } ],
               quiz: { passScore: 70, questions: [ { id:'q1', prompt:'Une provision est...', options:[ {id:'a', text:'Une dette probable', correct:true}, {id:'b', text:'Un produit certain', correct:false} ] } ] }
             }
           ]
@@ -1467,7 +1513,7 @@ export const learningAPI = {
   getProgress: async (trackId) => {
     await delay(20)
     const tp = readProgress()[trackId] || { tasks: {}, quizzes: {} }
-    // calcul d’éligibilité certificat (simple): 70% tasks done + tous quiz >= passScore
+    // calcul d'éligibilité certificat (simple): 70% tasks done + tous quiz >= passScore
     const track = readTracks().find(t=>t.id===trackId)
     const allTasks = track.modules.flatMap(m=>m.lessons).flatMap(l=>l.tasks||[])
     const totalTasks = allTasks.length
