@@ -1322,6 +1322,39 @@ export const sessionsAPI = {
 
 // API pour les ministères (réintroduit)
 export const ministryAPI = {
+  getCatalog: async () => {
+    // Catalogue démo (peut être remplacé par import JSON)
+    await delay(20)
+    return {
+      success: true,
+      data: [
+        { name: "Ministre d'État, Ministre de la Défense et des Anciens Combattants", ministerFullName: 'Célestin Simporé' },
+        { name: "Ministre d'État, Ministre de l'Administration Territoriale et de la Mobilité", ministerFullName: 'Émile Zerbo' },
+        { name: "Ministre d'État, Ministre de l'Agriculture, des Ressources Animales et Halieutiques", ministerFullName: 'Ismaël Sombié' },
+        { name: "Ministre de l'Économie et des Finances", ministerFullName: 'Aboubacar Nacanabo' },
+        { name: 'Ministre de la Justice et des Droits Humains, chargé des Relations avec les Institutions, Garde des Sceaux', ministerFullName: 'Edasso Rodrigue Bayala' },
+        { name: 'Ministre de la Fonction Publique, du Travail et de la Protection Sociale', ministerFullName: 'Mathias Traoré' },
+        { name: 'Ministre de la Sécurité', ministerFullName: 'Mahamadou Sana' },
+        { name: 'Ministre de l\'Action Humanitaire et de la Solidarité Nationale', ministerFullName: 'Passowendé Pélagie Kabré' },
+        { name: "Ministre des Infrastructures et du Désenclavement", ministerFullName: 'Adama Luc Sorgho' },
+        { name: "Ministre des Affaires Étrangères, de la Coopération Régionale et des Burkinabè de l'Extérieur", ministerFullName: 'Karamoko Jean-Marie Traoré' },
+        { name: "Ministre de l'Enseignement de Base, de l'Alphabétisation et de la Promotion des Langues Nationales", ministerFullName: 'Jacques Sosthène Dingara' },
+        { name: "Ministre de l'Enseignement Secondaire et de la Formation Professionnelle et Technique", ministerFullName: 'Boubakar Savadogo' },
+        { name: "Ministre de l'Enseignement Supérieur, de la Recherche et de l'Innovation", ministerFullName: 'Adjima Thiombiano' },
+        { name: "Ministre de l'Énergie, des Mines et des Carrières", ministerFullName: 'Yacouba Zabré Gouba' },
+        { name: 'Ministre de la Santé', ministerFullName: 'Robert Lucien Jean-Claude Kargougou' },
+        { name: 'Ministre des Sports, de la Jeunesse et de l\'Emploi', ministerFullName: 'Anuuyirtole Roland Somda' },
+        { name: 'Ministre de la Transition Digitale, des Postes et des Communications Électroniques', ministerFullName: 'Aminata Zerbo Sabané' },
+        { name: "Ministre de l'Industrie, du Commerce et de l'Artisanat", ministerFullName: 'Serge Gnaniodem Poda' },
+        { name: "Ministre de l'Urbanisme et de l'Habitat", ministerFullName: 'Mikaïlou Sidibé' },
+        { name: "Ministre de l'Environnement, de l'Eau et de l'Assainissement", ministerFullName: 'Roger Baro' },
+        { name: 'Ministre de la Communication, de la Culture, des Arts et du Tourisme, Porte-Parole du Gouvernement', ministerFullName: 'Pingdwendé Gilbert Ouédraogo' },
+        { name: 'Ministre Délégué chargé des Ressources Animales', ministerFullName: 'Amadou Dicko' },
+        { name: 'Ministre Délégué chargé du Budget', ministerFullName: 'Fatoumata Bako' },
+        { name: 'Ministre Délégué chargé de la Coopération Régionale', ministerFullName: 'Bebgnasgnan Stella Eldine Kabré' },
+      ]
+    }
+  },
   getMinistries: async (params) => {
     if (DEMO_MODE) {
       await delay(60)
