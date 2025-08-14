@@ -1117,6 +1117,13 @@ export const entitiesAPI = {
     const list = raw ? JSON.parse(raw) : []
     return { success: true, data: list }
   },
+  getCatalog: async () => {
+    await delay(20)
+    const list = JSON.parse(localStorage.getItem('entities') || '[]')
+    const epe = list.filter(e => (e.type || 'EPE') === 'EPE').map(e => e.name).filter(Boolean)
+    const se = list.filter(e => (e.type || '') !== 'EPE').map(e => e.name).filter(Boolean)
+    return { success: true, data: { epe, se } }
+  },
   bulkImport: async (items=[]) => {
     if (!Array.isArray(items)) return { success:false }
     await delay(80)

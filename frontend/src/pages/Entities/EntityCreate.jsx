@@ -14,6 +14,7 @@ function EntityCreate() {
   const [nameValue, setNameValue] = useState('')
   const [ministries, setMinistries] = useState([])
   const [ministryOptions, setMinistryOptions] = useState([])
+  const [catalog, setCatalog] = useState({ epe: [], se: [] })
 
   React.useEffect(()=>{
     ministryAPI.getMinistries().then(res=> {
@@ -21,6 +22,7 @@ function EntityCreate() {
       setMinistries(list)
       setMinistryOptions(list.map(m=>({ value: m.id, label: `${m.name}${m.code?` (${m.code})`:''}` })))
     }).catch(()=>{ setMinistries([]); setMinistryOptions([]) })
+    entitiesAPI.getCatalog().then(res=> setCatalog(res.data||{ epe:[], se:[] })).catch(()=> setCatalog({ epe:[], se:[] }))
   }, [])
 
   const readFileAsBase64 = (file) => new Promise((resolve, reject) => {
@@ -82,11 +84,18 @@ function EntityCreate() {
   return (
     <Card title="Inscription d'une entité">
       <Form form={form} layout="vertical">
-        <Form.Item label="Nom de l'entité">
-          <Input autoFocus placeholder="Ex: Société X" autoComplete="off" value={nameValue} onChange={(e)=>setNameValue(e.target.value)} />
-        </Form.Item>
         <Form.Item name="type" label="Type">
-          <Select allowClear placeholder="Choisir" options={[{ value: 'EPE', label: 'EPE' }, { value: 'SocieteEtat', label: "Société d'État" }]} />
+          <Select allowClear placeholder="Choisir" options={[{ value: 'EPE', label: 'EPE' }, { value: 'SocieteEtat', label: "Société d'État" }]} onChange={(v)=>{ if (v==='EPE' && catalog.epe[0]) setNameValue(catalog.epe[0]); if (v==='SocieteEtat' && catalog.se[0]) setNameValue(catalog.se[0]) }} />
+        </Form.Item>
+        <Form.Item label="Catalogue (EPE / Société d'État)">
+          <Input list="entity-catalog" placeholder="Choisir dans la liste" value={nameValue} onChange={(e)=>setNameValue(e.target.value)} />
+          <datalist id="entity-catalog">
+            {catalog.epe.map((n,idx)=>(<option key={`epe-${idx}`} value={n}>EPE</option>))}
+            {catalog.se.map((n,idx)=>(<option key={`se-${idx}`} value={n}>Société d'État</option>))}
+          </datalist>
+        </Form.Item>
+        <Form.Item label="Nom de l'entité">
+          <Input placeholder="Ex: Société X" autoComplete="off" value={nameValue} onChange={(e)=>setNameValue(e.target.value)} />
         </Form.Item>
         <Form.Item name="ministryId" label="Ministère">
           <Select
