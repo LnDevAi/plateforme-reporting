@@ -10,6 +10,8 @@ function EntitiesList() {
   const [ministryMap, setMinistryMap] = useState({})
   const [importOpen, setImportOpen] = useState(false)
   const [importText, setImportText] = useState('')
+  const [catalogOpen, setCatalogOpen] = useState(false)
+  const [catalogText, setCatalogText] = useState('')
   const exportJSON = () => {
     try {
       const raw = localStorage.getItem('entities') || '[]'
@@ -54,13 +56,22 @@ function EntitiesList() {
   ]
 
   return (
-    <Card title="Entités" extra={<Space><Button onClick={exportJSON}>Export JSON</Button><Button onClick={()=>setImportOpen(true)}>Import JSON</Button><Button type="primary" onClick={()=>navigate('/entities/create')}>Nouvelle entité</Button></Space>}>
+    <Card title="Entités" extra={<Space>
+      <Button onClick={exportJSON}>Export JSON</Button>
+      <Button onClick={()=>setImportOpen(true)}>Import JSON</Button>
+      <Button onClick={async()=>{ const { data } = await entitiesAPI.exportCatalog(); const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'}); const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='entities_catalog.json'; a.click(); URL.revokeObjectURL(url) }}>Export Catalogue</Button>
+      <Button onClick={()=>setCatalogOpen(true)}>Import Catalogue</Button>
+      <Button type="primary" onClick={()=>navigate('/entities/create')}>Nouvelle entité</Button>
+    </Space>}>
       <Table loading={loading} dataSource={data} columns={columns} rowKey={(r)=>r.id} />
       <Modal title="Import JSON des entités" open={importOpen} onCancel={()=>setImportOpen(false)} onOk={async()=>{ try { const arr = JSON.parse(importText||'[]'); await entitiesAPI.bulkImport(arr); message.success('Importé'); setImportText(''); setImportOpen(false); load() } catch { message.error('JSON invalide') } }} okText="Importer">
         <Input.TextArea rows={8} value={importText} onChange={e=>setImportText(e.target.value)} placeholder='[
   {"name":"EPE Démo 1","type":"EPE"},
   {"name":"EPE Démo 2","type":"SocieteEtat"}
 ]'/>
+      </Modal>
+      <Modal title="Import Catalogue (EPE / SE)" open={catalogOpen} onCancel={()=>setCatalogOpen(false)} onOk={async()=>{ try { const obj = JSON.parse(catalogText||'{}'); await entitiesAPI.importCatalog(obj); message.success('Catalogue importé'); setCatalogText(''); setCatalogOpen(false) } catch { message.error('JSON invalide') } }} okText="Importer">
+        <Input.TextArea rows={8} value={catalogText} onChange={e=>setCatalogText(e.target.value)} placeholder='{"epe":["EPE 1","EPE 2"],"se":["Société A","Société B"]}'/>
       </Modal>
     </Card>
   )

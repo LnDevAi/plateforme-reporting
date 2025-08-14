@@ -1120,9 +1120,25 @@ export const entitiesAPI = {
   getCatalog: async () => {
     await delay(20)
     const list = JSON.parse(localStorage.getItem('entities') || '[]')
-    const epe = list.filter(e => (e.type || 'EPE') === 'EPE').map(e => e.name).filter(Boolean)
-    const se = list.filter(e => (e.type || '') !== 'EPE').map(e => e.name).filter(Boolean)
-    return { success: true, data: { epe, se } }
+    const storedCatalog = JSON.parse(localStorage.getItem('entities_catalog') || '{"epe":[],"se":[]}')
+    const epeFromEntities = list.filter(e => (e.type || 'EPE') === 'EPE').map(e => e.name).filter(Boolean)
+    const seFromEntities = list.filter(e => (e.type || '') !== 'EPE').map(e => e.name).filter(Boolean)
+    const uniq = (arr) => Array.from(new Set(arr.filter(Boolean)))
+    const catalog = { epe: uniq([...(storedCatalog.epe||[]), ...epeFromEntities]), se: uniq([...(storedCatalog.se||[]), ...seFromEntities]) }
+    return { success: true, data: catalog }
+  },
+  importCatalog: async (catalog) => {
+    await delay(20)
+    const current = JSON.parse(localStorage.getItem('entities_catalog') || '{"epe":[],"se":[]}')
+    const merge = (a=[], b=[]) => Array.from(new Set([...(a||[]), ...(b||[])]))
+    const next = { epe: merge(current.epe, catalog?.epe), se: merge(current.se, catalog?.se) }
+    localStorage.setItem('entities_catalog', JSON.stringify(next))
+    return { success: true, data: next }
+  },
+  exportCatalog: async () => {
+    await delay(10)
+    const stored = JSON.parse(localStorage.getItem('entities_catalog') || '{"epe":[],"se":[]}')
+    return { success: true, data: stored }
   },
   bulkImport: async (items=[]) => {
     if (!Array.isArray(items)) return { success:false }
