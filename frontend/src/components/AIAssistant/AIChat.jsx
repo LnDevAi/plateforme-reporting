@@ -31,6 +31,7 @@ import {
 } from 'antd';
 import { motion, AnimatePresence } from 'framer-motion';
 import './AIChat.css';
+import { templatesAPI } from '../../services/api';
 
 const { TextArea } = Input;
 const { Text, Paragraph } = Typography;
@@ -45,6 +46,7 @@ const AIChat = ({ mode = 'reports' }) => {
   const [showRating, setShowRating] = useState(null);
   const [ratingValue, setRatingValue] = useState(0);
   const [feedback, setFeedback] = useState('');
+  const [templateSuggestions, setTemplateSuggestions] = useState([]);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -53,6 +55,21 @@ const AIChat = ({ mode = 'reports' }) => {
     loadSuggestions();
     loadUsageStats();
   }, [mode]);
+
+  // Charger des suggestions basées sur les modèles déposés
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await templatesAPI.getAll();
+        const list = res?.data || [];
+        const top = list
+          .filter(t => t.session === 'budgetaire' && t.phase === 'elaboration')
+          .slice(0, 6)
+          .map(t => ({ text: `Analyse ce modèle: ${t.name} (${t.type})`, category: 'modèles', url: t.url }));
+        setTemplateSuggestions(top);
+      } catch {}
+    })();
+  }, []);
 
   // Auto-scroll vers le bas
   useEffect(() => {
@@ -324,6 +341,25 @@ const AIChat = ({ mode = 'reports' }) => {
                 <Text>{suggestion.text}</Text>
                 <Tag color="blue" size="small" className="category-tag">
                   {suggestion.category}
+                </Tag>
+              </Card>
+            </motion.div>
+          ))}
+          {templateSuggestions.map((template, index) => (
+            <motion.div
+              key={`tpl-${index}`}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Card
+                size="small"
+                hoverable
+                className="suggestion-card templates"
+                onClick={() => handleSuggestionClick(template)}
+              >
+                <Text>{template.text}</Text>
+                <Tag color="geekblue" size="small" className="category-tag">
+                  Modèles
                 </Tag>
               </Card>
             </motion.div>

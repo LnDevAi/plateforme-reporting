@@ -484,12 +484,22 @@ export const templatesAPI = {
   getAll: async () => {
     if (DEMO_MODE) {
       await delay(120)
-      return { success: true, data: [
-        { id: 1, name: "Rapport d'activités", type: "Activités", sections: ["Contexte","Réalisation","Difficultés","Perspectives"] },
-        { id: 2, name: "Rapport budgétaire", type: "Budget", sections: ["Prévisions","Exécution","Écarts","Justifications"] },
-        { id: 3, name: "Passation des marchés", type: "PM", sections: ["Procédures","Contrats","Délais","Conformité"] },
-        { id: 4, name: "Bilan social / RH", type: "Social", sections: ["Effectifs","Recrutements","Formation","Climat social"] },
-      ]}
+      const manifest = [
+        { id: 'sb-elo-ptA', name: 'PTA 2021 - PROJET.xlsx', type: 'PTA', session: 'budgetaire', phase: 'elaboration', url: '/templates/session-budgetaire/elaboration/PTA 2021 - PROJET.xlsx' },
+        { id: 'sb-elo-ppmdoc', name: 'RAPPORT AU CA PPM.docx', type: 'PPM', session: 'budgetaire', phase: 'elaboration', url: '/templates/session-budgetaire/elaboration/RAPPORT AU CA PPM.docx' },
+        { id: 'sb-elo-ppm', name: 'projet ppm 2021.xlsx', type: 'PPM', session: 'budgetaire', phase: 'elaboration', url: '/templates/session-budgetaire/elaboration/projet ppm 2021.xlsx' },
+        { id: 'sb-elo-budget', name: 'budget objet 03 12 2020.xlsx', type: 'Budget', session: 'budgetaire', phase: 'elaboration', url: '/templates/session-budgetaire/elaboration/budget objet 03 12 2020.xlsx' },
+        { id: 'sb-elo-pres-budget', name: 'presentation Budget 2021.docx', type: 'Budget', session: 'budgetaire', phase: 'elaboration', url: '/templates/session-budgetaire/elaboration/presentation Budget 2021.docx' },
+        { id: 'sb-elo-pres-pa', name: 'Presentation_programme 2021.docx', type: "Programme d'Activités", session: 'budgetaire', phase: 'elaboration', url: '/templates/session-budgetaire/elaboration/Presentation_programme 2021.docx' },
+      ]
+      // Ajouter des gabarits génériques existants
+      const generics = [
+        { id: 'g-act', name: "Rapport d'activités (gabarit)", type: 'Activités', session: 'generique', phase: 'n/a', url: null, sections: ["Contexte","Réalisation","Difficultés","Perspectives"] },
+        { id: 'g-bud', name: 'Rapport budgétaire (gabarit)', type: 'Budget', session: 'generique', phase: 'n/a', url: null, sections: ["Prévisions","Exécution","Écarts","Justifications"] },
+        { id: 'g-ppm', name: 'PPM (gabarit)', type: 'PPM', session: 'generique', phase: 'n/a', url: null, sections: ["Procédures","Contrats","Délais","Conformité"] },
+        { id: 'g-rh', name: 'Bilan social / RH (gabarit)', type: 'Social', session: 'generique', phase: 'n/a', url: null, sections: ["Effectifs","Recrutements","Formation","Climat social"] },
+      ]
+      return { success: true, data: [...manifest, ...generics] }
     }
     return api.get('/templates')
   },
