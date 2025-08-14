@@ -237,6 +237,31 @@ export const dashboardAPI = {
     }
     return api.get('/dashboard/execution-charts', { params })
   },
+  getKpis: async (params = {}) => {
+    if (DEMO_MODE) {
+      await delay(200)
+      const { scope = 'ensemble', ministryId, entityId } = params || {}
+      let scale = 1
+      if (scope === 'ministere' && ministryId) scale = 0.65
+      if (scope === 'entite' && entityId) scale = 0.35
+      const clamp = (v, min, max) => Math.min(max, Math.max(min, v))
+      const rnd = (base, delta = 5) => base + Math.round((Math.random() - 0.5) * delta)
+      const pct = (v) => clamp(Math.round(v), 0, 100)
+      const money = (v) => Math.max(0, Math.round(v))
+      const kpis = [
+        { category: 'Budget', name: 'Taux d\'engagement', value: pct(rnd(72 * scale, 12)), unit: '%', note: 'Ligne budgétaire engagée / prévue' },
+        { category: 'Budget', name: 'Taux d\'exécution', value: pct(rnd(58 * scale, 10)), unit: '%', note: 'Dépenses réalisées / crédits ouverts' },
+        { category: 'PPM', name: 'Taux de passation', value: pct(rnd(64 * scale, 15)), unit: '%', note: 'Marchés attribués / prévus' },
+        { category: 'PPM', name: 'Délai moyen de passation', value: clamp(rnd(62 * (1/scale + 0.2), 12), 15, 120), unit: 'jours', note: 'Avis à attribution' },
+        { category: 'RH', name: 'Effectif', value: money(rnd(820 * scale * (scope==='entite'?1:10), 50)), unit: 'ETP', note: 'Effectif équivalent temps plein' },
+        { category: 'Trésorerie', name: 'Jours de trésorerie', value: clamp(rnd(45 * scale, 8), 5, 120), unit: 'jours', note: 'Cash / dépenses quotidiennes' },
+        { category: 'Gouvernance', name: 'Conformité CA/AG', value: pct(rnd(80 * scale, 10)), unit: '%', note: 'Tenue CA/AG et PV signés' },
+        { category: 'Audit', name: 'Recommandations en cours', value: money(rnd(24 * scale, 6)), unit: 'actions', note: 'Recommandations non clôturées' },
+      ]
+      return { success: true, data: kpis }
+    }
+    return api.get('/dashboard/kpis', { params })
+  },
   getPerformanceMetrics: async () => {
     if (DEMO_MODE) {
       await delay(200)

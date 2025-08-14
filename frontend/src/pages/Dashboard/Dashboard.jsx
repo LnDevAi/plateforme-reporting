@@ -30,6 +30,7 @@ import { useQuery } from '@tanstack/react-query'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts'
 import { dashboardAPI } from '../../services/api'
 import { useAuth } from '../../hooks/useAuth'
+import * as XLSX from 'xlsx'
 
 const { Title, Text } = Typography
 const { Option } = Select
@@ -85,6 +86,35 @@ function Dashboard() {
     ['dashboard-alerts'],
     dashboardAPI.getAlerts
   )
+
+  const { data: kpisData, isLoading: kpisLoading } = useQuery([
+    'dashboard-kpis', scope, selectedMinistry, selectedEntity
+  ], () => dashboardAPI.getKpis({ scope, ministryId: selectedMinistry, entityId: selectedEntity }))
+
+  const exportKpisJSON = () => {
+    const data = kpisData?.data || []
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `kpis_${scope}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const exportKpisExcel = () => {
+    const rows = (kpisData?.data || []).map(k => ({
+      Categorie: k.category,
+      Indicateur: k.name,
+      Valeur: k.value,
+      Unite: k.unit,
+      Note: k.note,
+    }))
+    const ws = XLSX.utils.json_to_sheet(rows)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'KPIs')
+    XLSX.writeFile(wb, `kpis_${scope}.xlsx`)
+  }
 
   // Couleurs pour les graphiques
   const colors = ['#1890ff', '#52c41a', '#faad14', '#ff4d4f', '#722ed1']
@@ -292,6 +322,27 @@ function Dashboard() {
           </Card>
         </Col>
       </Row>
+
+      {/* KPIs métiers */}
+      <Card style={{ marginTop: 16 }} title={`KPIs (${scope})`} extra={
+        <Space>
+          <Button onClick={exportKpisJSON}>Export JSON</Button>
+          <Button onClick={exportKpisExcel}>Export Excel</Button>
+        </Space>
+      }>
+        <Table
+          loading={kpisLoading}
+          dataSource={(kpisData?.data || []).map((k, idx) => ({ key: idx, ...k }))}
+          columns={[
+            { title: 'Catégorie', dataIndex: 'category' },
+            { title: 'Indicateur', dataIndex: 'name' },
+            { title: 'Valeur', dataIndex: 'value' },
+            { title: 'Unité', dataIndex: 'unit' },
+            { title: 'Note', dataIndex: 'note' },
+          ]}
+          pagination={{ pageSize: 8 }}
+        />
+      </Card>
 
       {/* Exécutions récentes */}
       <Card style={{ marginTop: 16 }} title="Exécutions récentes">
