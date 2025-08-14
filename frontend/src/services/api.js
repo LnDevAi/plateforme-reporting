@@ -1752,6 +1752,24 @@ export function bootDemoSeed() {
       localStorage.setItem('entities', JSON.stringify([entity]))
     }
   } catch {}
+  try {
+    const raw = localStorage.getItem('entities_catalog') || ''
+    const current = raw ? JSON.parse(raw) : null
+    const isEmpty = !current || ((current.epe || []).length === 0 && (current.se || []).length === 0)
+    if (isEmpty) {
+      const defaultCatalog = {
+        epe: [
+          "Office National de l'Eau et de l'Assainissement (ONEA)",
+          "Société Nationale d'Electricité du Burkina (SONABEL)",
+        ],
+        se: [
+          "Société Nationale Burkinabè d'Hydrocarbures (SONABHY)",
+          "Loterie Nationale Burkinabè (LONAB)",
+        ],
+      }
+      localStorage.setItem('entities_catalog', JSON.stringify(defaultCatalog))
+    }
+  } catch {}
 }
 
 export default api
