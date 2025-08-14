@@ -51,7 +51,8 @@ function Dashboard() {
       const raw = localStorage.getItem('entities')
       const list = raw ? JSON.parse(raw) : []
       setEntities(list)
-      const mins = Array.from(new Set(list.map(e => (e?.tutelle?.technique || '').trim()).filter(Boolean)))
+      const minsRaw = localStorage.getItem('ministries')
+      const mins = minsRaw ? JSON.parse(minsRaw) : []
       setMinistries(mins)
     } catch {
       setEntities([]); setMinistries([])
@@ -59,31 +60,26 @@ function Dashboard() {
   }, [])
 
   // Requêtes pour récupérer les données du tableau de bord
-  const { data: stats, isLoading: statsLoading } = useQuery(
-    ['dashboard-stats'],
-    dashboardAPI.getStats,
-    {
-      refetchInterval: 30000,
-    }
-  )
+  const { data: stats, isLoading: statsLoading } = useQuery([
+    'dashboard-stats', scope, selectedMinistry, selectedEntity
+  ], () => dashboardAPI.getStats({ scope, ministryId: selectedMinistry, entityId: selectedEntity }), {
+    refetchInterval: 30000,
+  })
 
-  const { data: recentExecutions, isLoading: executionsLoading } = useQuery(
-    ['dashboard-recent-executions'],
-    () => dashboardAPI.getRecentExecutions({ limit: 10 })
-  )
+  const { data: recentExecutions, isLoading: executionsLoading } = useQuery([
+    'dashboard-recent-executions', scope, selectedMinistry, selectedEntity
+  ], () => dashboardAPI.getRecentExecutions({ limit: 10, scope, ministryId: selectedMinistry, entityId: selectedEntity }))
 
   const { data: popularReports, isLoading: reportsLoading } = useQuery(
     ['dashboard-popular-reports'],
     () => dashboardAPI.getPopularReports({ limit: 5 })
   )
 
-  const { data: charts, isLoading: chartsLoading } = useQuery(
-    ['dashboard-charts', period],
-    () => dashboardAPI.getExecutionCharts({ period }),
-    {
-      enabled: !!period,
-    }
-  )
+  const { data: charts, isLoading: chartsLoading } = useQuery([
+    'dashboard-charts', period, scope, selectedMinistry, selectedEntity
+  ], () => dashboardAPI.getExecutionCharts({ period, scope, ministryId: selectedMinistry, entityId: selectedEntity }), {
+    enabled: !!period,
+  })
 
   const { data: alerts } = useQuery(
     ['dashboard-alerts'],
@@ -171,7 +167,7 @@ function Dashboard() {
           style={{ minWidth: 260 }}
           value={selectedMinistry}
           onChange={setSelectedMinistry}
-          options={ministries.map(m => ({ value: m, label: m }))}
+          options={ministries.map(m => ({ value: m.id, label: m.name }))}
         />
       )}
       {scope === 'entite' && (

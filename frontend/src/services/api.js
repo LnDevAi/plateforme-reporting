@@ -186,24 +186,33 @@ export const reportsAPI = {
 
 // Services pour le tableau de bord
 export const dashboardAPI = {
-  getStats: async () => {
+  getStats: async (params = {}) => {
     if (DEMO_MODE) {
       await delay(200)
+      const { scope = 'ensemble', ministryId, entityId } = params || {}
+      // Base démo
+      let multiplier = 1
+      if (scope === 'ministere' && ministryId) multiplier = 0.6
+      if (scope === 'entite' && entityId) multiplier = 0.25
+      const round = (n) => Math.max(0, Math.round(n))
+      const totalReports = round(demoReports.length * multiplier)
       return { success: true, data: {
-        total_reports: demoReports.length,
-        active_reports: demoReports.length - 1,
-        executions_today: 12,
-        total_executions: 256,
-        users_count: 5,
-        failed_executions: 1,
+        total_reports: totalReports,
+        active_reports: Math.max(0, totalReports - 1),
+        executions_today: round(12 * multiplier + Math.random()*3),
+        total_executions: round(256 * multiplier),
+        users_count: round(5 * (scope === 'ensemble' ? 1 : 0.5)),
+        failed_executions: round(1 * multiplier),
       } }
     }
-    return api.get('/dashboard/stats')
+    return api.get('/dashboard/stats', { params })
   },
   getRecentExecutions: async (params = {}) => {
     if (DEMO_MODE) {
       await delay(200)
-      return { success: true, data: demoExecutions }
+      const { scope = 'ensemble' } = params || {}
+      const slice = scope === 'ensemble' ? 10 : scope === 'ministere' ? 6 : 4
+      return { success: true, data: demoExecutions.slice(0, slice) }
     }
     return api.get('/dashboard/recent-executions', { params })
   },
@@ -217,10 +226,12 @@ export const dashboardAPI = {
   getExecutionCharts: async (params = {}) => {
     if (DEMO_MODE) {
       await delay(200)
+      const { scope = 'ensemble' } = params || {}
+      const scale = scope === 'ensemble' ? 1 : scope === 'ministere' ? 0.6 : 0.3
       const now = Date.now()
       const data = Array.from({ length: 7 }).map((_, i) => ({
         date: new Date(now - (6 - i) * 86400000).toLocaleDateString('fr-FR'),
-        executions: Math.floor(Math.random() * 20) + 5,
+        executions: Math.max(1, Math.floor((Math.random() * 20 + 5) * scale)),
       }))
       return { success: true, data }
     }
