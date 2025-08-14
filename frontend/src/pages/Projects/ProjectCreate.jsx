@@ -20,6 +20,10 @@ function ProjectCreate() {
     await projectsAPI.create(values)
     navigate('/projects')
   }
+  const onEntityChange = (eid) => {
+    const e = (entities||[]).find(x=> String(x.id)===String(eid))
+    if (e?.ministryId) form.setFieldsValue({ ministryId: e.ministryId })
+  }
 
   return (
     <Card title="Nouveau projet / entité">
@@ -31,7 +35,7 @@ function ProjectCreate() {
           <Select allowClear placeholder="Sélectionner" options={(ministries||[]).map(m=>({ value:m.id, label:`${m.name}${m.code?` (${m.code})`:''}` }))} />
         </Form.Item>
         <Form.Item label="Entité (EPE / Société d'État)" name="entityId">
-          <Select allowClear placeholder="Sélectionner" options={(entities||[]).map(e=>({ value:e.id, label:`${e.name} — ${e.type||'EPE'}` }))} />
+          <Select allowClear placeholder="Sélectionner" options={(entities||[]).map(e=>({ value:e.id, label:`${e.name} — ${e.type||'EPE'}` }))} onChange={onEntityChange} />
         </Form.Item>
         <Form.Item label="Responsable" name="ownerName">
           <Input placeholder="Nom du responsable" />

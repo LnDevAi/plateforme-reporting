@@ -10,6 +10,18 @@ function EntitiesList() {
   const [ministryMap, setMinistryMap] = useState({})
   const [importOpen, setImportOpen] = useState(false)
   const [importText, setImportText] = useState('')
+  const exportJSON = () => {
+    try {
+      const raw = localStorage.getItem('entities') || '[]'
+      const blob = new Blob([raw], { type: 'application/json;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'entities.json'
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {}
+  }
   const navigate = useNavigate()
 
   const load = async () => {
@@ -42,7 +54,7 @@ function EntitiesList() {
   ]
 
   return (
-    <Card title="Entités" extra={<Space><Button onClick={()=>setImportOpen(true)}>Import JSON</Button><Button type="primary" onClick={()=>navigate('/entities/create')}>Nouvelle entité</Button></Space>}>
+    <Card title="Entités" extra={<Space><Button onClick={exportJSON}>Export JSON</Button><Button onClick={()=>setImportOpen(true)}>Import JSON</Button><Button type="primary" onClick={()=>navigate('/entities/create')}>Nouvelle entité</Button></Space>}>
       <Table loading={loading} dataSource={data} columns={columns} rowKey={(r)=>r.id} />
       <Modal title="Import JSON des entités" open={importOpen} onCancel={()=>setImportOpen(false)} onOk={async()=>{ try { const arr = JSON.parse(importText||'[]'); await entitiesAPI.bulkImport(arr); message.success('Importé'); setImportText(''); setImportOpen(false); load() } catch { message.error('JSON invalide') } }} okText="Importer">
         <Input.TextArea rows={8} value={importText} onChange={e=>setImportText(e.target.value)} placeholder='[

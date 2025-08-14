@@ -89,7 +89,7 @@ export default function MinistriesList() {
   ]
 
   return (
-    <Card title="Ministères" extra={<Space><Button icon={<CloudUploadOutlined />} onClick={()=>setImportOpen(true)}>Import JSON</Button><Button type="primary" icon={<PlusOutlined />} onClick={onCreate}>Nouveau</Button></Space>}>
+    <Card title="Ministères" extra={<Space><Button onClick={()=>{ const raw = localStorage.getItem('ministries')||'[]'; const blob = new Blob([raw], {type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='ministries.json'; a.click(); URL.revokeObjectURL(url) }}>Export JSON</Button><Button icon={<CloudUploadOutlined />} onClick={()=>setImportOpen(true)}>Import JSON</Button><Button type="primary" icon={<PlusOutlined />} onClick={onCreate}>Nouveau</Button></Space>}>
       <Table rowKey="id" loading={loading} columns={columns} dataSource={data} pagination={{ pageSize: 8 }} />
 
       <Modal
