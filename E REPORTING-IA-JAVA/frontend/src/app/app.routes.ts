@@ -7,6 +7,9 @@ import { EntitiesPage } from './pages/entities/entities.page';
 import { LoginPage } from './pages/login/login.page';
 import { ELearningPage } from './pages/elearning/elearning.page';
 import { AIPage } from './pages/ai/ai.page';
+import { ProjectsPage } from './pages/projects/projects.page';
+import { SessionsPage } from './pages/sessions/sessions.page';
+import { DocumentsPage } from './pages/documents/documents.page';
 
 export const routes: Routes = [
 	{ path: '', redirectTo: 'dashboard', pathMatch: 'full' },
@@ -16,6 +19,9 @@ export const routes: Routes = [
 	{ path: 'templates/:id', component: TemplateViewerPage },
 	{ path: 'ministries', component: MinistriesPage },
 	{ path: 'entities', component: EntitiesPage },
+	{ path: 'projects', component: ProjectsPage },
+	{ path: 'sessions', component: SessionsPage },
+	{ path: 'documents', component: DocumentsPage },
 	{ path: 'elearning', component: ELearningPage },
 	{ path: 'ai', component: AIPage },
 ];
