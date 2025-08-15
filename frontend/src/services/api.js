@@ -484,13 +484,14 @@ export const templatesAPI = {
   getAll: async () => {
     if (DEMO_MODE) {
       await delay(120)
+      // Modèles génériques (Plateforme) — pas de fichiers exposés, références internes uniquement
       const manifest = [
-        { id: 'sb-elo-ptA', name: 'PTA 2021 - PROJET.xlsx', type: 'PTA', session: 'budgetaire', phase: 'elaboration', url: null, isPrivate: true },
-        { id: 'sb-elo-ppmdoc', name: 'RAPPORT AU CA PPM.docx', type: 'PPM', session: 'budgetaire', phase: 'elaboration', url: null, isPrivate: true },
-        { id: 'sb-elo-ppm', name: 'projet ppm 2021.xlsx', type: 'PPM', session: 'budgetaire', phase: 'elaboration', url: null, isPrivate: true },
-        { id: 'sb-elo-budget', name: 'budget objet 03 12 2020.xlsx', type: 'Budget', session: 'budgetaire', phase: 'elaboration', url: null, isPrivate: true },
-        { id: 'sb-elo-pres-budget', name: 'presentation Budget 2021.docx', type: 'Budget', session: 'budgetaire', phase: 'elaboration', url: null, isPrivate: true },
-        { id: 'sb-elo-pres-pa', name: 'Presentation_programme 2021.docx', type: "Programme d'Activités", session: 'budgetaire', phase: 'elaboration', url: null, isPrivate: true },
+        { id: 'plat-bud-elab', name: 'Budget prévisionnel (Plateforme)', type: 'Budget', session: 'budgetaire', phase: 'elaboration', url: null, source: 'platform' },
+        { id: 'plat-pta-elab', name: "Programme d'Activités (Plateforme)", type: "Programme d'Activités", session: 'budgetaire', phase: 'elaboration', url: null, source: 'platform' },
+        { id: 'plat-ppm-elab', name: 'Plan de Passation des Marchés (Plateforme)', type: 'PPM', session: 'budgetaire', phase: 'elaboration', url: null, source: 'platform' },
+        { id: 'plat-bud-exec', name: 'Suivi exécution budgétaire (Plateforme)', type: 'Budget', session: 'budgetaire', phase: 'execution', url: null, source: 'platform' },
+        { id: 'plat-close-ca', name: "Ordre du jour - Session d'arrêt des comptes (Plateforme)", type: 'Clôture', session: 'cloture', phase: 'elaboration', url: null, source: 'platform' },
+        { id: 'plat-close-rg', name: 'Rapport de gestion (Plateforme)', type: 'Rapport', session: 'cloture', phase: 'elaboration', url: null, source: 'platform' },
       ]
       // Ajouter des gabarits génériques existants
       const generics = [

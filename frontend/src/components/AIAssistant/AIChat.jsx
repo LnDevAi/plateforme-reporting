@@ -63,7 +63,7 @@ const AIChat = ({ mode = 'reports' }) => {
         const res = await templatesAPI.getAll();
         const list = res?.data || [];
         const top = list
-          .filter(t => t.session === 'budgetaire' && t.phase === 'elaboration')
+          .filter(t => t.source === 'platform' && t.session === 'budgetaire' && t.phase === 'elaboration')
           .slice(0, 6)
           .map(t => ({ text: `Analyse ce modèle: ${t.name} (${t.type})`, category: 'modèles' }));
         setTemplateSuggestions(top);
