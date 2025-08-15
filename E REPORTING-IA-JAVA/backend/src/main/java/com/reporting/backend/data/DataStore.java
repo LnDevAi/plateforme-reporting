@@ -11,6 +11,7 @@ public class DataStore {
 	public static final Map<String, Map<String,Object>> sessions = new ConcurrentHashMap<>();
 	public static final List<String> catalogEpe = new ArrayList<>();
 	public static final List<String> catalogSe = new ArrayList<>();
+	public static final Map<String, Map<String,Object>> courses = new ConcurrentHashMap<>();
 
 	static {
 		seed();
@@ -55,6 +56,13 @@ public class DataStore {
 		catalogSe.addAll(List.of(
 			"Société d'État - Entreprise X",
 			"Société d'État - Société Y"
+		));
+		// Courses seed
+		String c1 = UUID.randomUUID().toString();
+		courses.put(c1, Map.of(
+			"id", c1,
+			"title", "Initiation au reporting budgétaire",
+			"level", "Débutant"
 		));
 	}
 }

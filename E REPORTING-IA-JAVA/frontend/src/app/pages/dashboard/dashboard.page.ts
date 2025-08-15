@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 @Component({
 	selector: 'app-dashboard',
@@ -15,7 +16,8 @@ import { Component, OnInit } from '@angular/core';
 			</ul>
 		</div>
 	`,
-	standalone: true
+	standalone: true,
+	imports: [CommonModule]
 })
 export class DashboardPage implements OnInit {
 	stats: any; kpis: any[] = [];

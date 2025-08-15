@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TemplatesService } from '../../services/templates.service';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 
 @Component({
 	selector: 'app-template-viewer',
@@ -11,7 +13,8 @@ import { TemplatesService } from '../../services/templates.service';
 			<pre style="white-space: pre-wrap">{{tpl?.content}}</pre>
 		</div>
 	`,
-	standalone: true
+	standalone: true,
+	imports: [CommonModule, RouterModule]
 })
 export class TemplateViewerPage implements OnInit {
 	tpl: any;

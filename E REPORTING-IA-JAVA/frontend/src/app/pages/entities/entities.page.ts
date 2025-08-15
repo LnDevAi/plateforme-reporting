@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 @Component({
 	selector: 'app-entities',
@@ -24,7 +25,8 @@ import { Component, OnInit } from '@angular/core';
 			</ul>
 		</div>
 	`,
-	standalone: true
+	standalone: true,
+	imports: [CommonModule]
 })
 export class EntitiesPage implements OnInit {
 	list: any[] = []; ministries: any[] = []; nameOptions: string[] = []; type: string = 'EPE';

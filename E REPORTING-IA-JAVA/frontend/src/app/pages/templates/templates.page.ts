@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { TemplatesService } from '../../services/templates.service';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 
 @Component({
 	selector: 'app-templates',
@@ -17,7 +19,8 @@ import { TemplatesService } from '../../services/templates.service';
 			</ul>
 		</div>
 	`,
-	standalone: true
+	standalone: true,
+	imports: [CommonModule, RouterModule]
 })
 export class TemplatesPage implements OnInit {
 	templates: any[] = [];

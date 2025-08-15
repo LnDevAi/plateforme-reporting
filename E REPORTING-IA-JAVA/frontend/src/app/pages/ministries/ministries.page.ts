@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 @Component({
 	selector: 'app-ministries',
@@ -16,7 +17,8 @@ import { Component, OnInit } from '@angular/core';
 			</ul>
 		</div>
 	`,
-	standalone: true
+	standalone: true,
+	imports: [CommonModule]
 })
 export class MinistriesPage implements OnInit {
 	list: any[] = [];
