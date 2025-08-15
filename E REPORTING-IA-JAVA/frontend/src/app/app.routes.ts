@@ -12,7 +12,9 @@ import { SessionsPage } from './pages/sessions/sessions.page';
 import { DocumentsPage } from './pages/documents/documents.page';
 import { UsersPage } from './pages/users/users.page';
 import { MeetingViewerPage } from './pages/sessions/meeting-viewer.page';
+import { DocumentEditorPage } from './pages/documents/document-editor.page';
 import { authGuard } from './guards/auth.guard';
+import { roleGuard } from './guards/role.guard';
 
 export const routes: Routes = [
 	{ path: '', redirectTo: 'dashboard', pathMatch: 'full' },
@@ -26,7 +28,8 @@ export const routes: Routes = [
 	{ path: 'sessions', component: SessionsPage, canActivate: [authGuard] },
 	{ path: 'sessions/meet/:room', component: MeetingViewerPage, canActivate: [authGuard] },
 	{ path: 'documents', component: DocumentsPage, canActivate: [authGuard] },
-	{ path: 'users', component: UsersPage, canActivate: [authGuard] },
+	{ path: 'documents/:id/edit', component: DocumentEditorPage, canActivate: [authGuard, roleGuard(['ADMIN','EDITEUR'])] },
+	{ path: 'users', component: UsersPage, canActivate: [authGuard, roleGuard(['ADMIN'])] },
 	{ path: 'elearning', component: ELearningPage, canActivate: [authGuard] },
 	{ path: 'ai', component: AIPage, canActivate: [authGuard] },
 ];

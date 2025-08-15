@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import jsPDF from 'jspdf';
+import { RouterModule } from '@angular/router';
 
 @Component({
 	selector: 'app-documents',
@@ -27,6 +28,7 @@ import jsPDF from 'jspdf';
 			<ul>
 				<li *ngFor="let d of list">
 					{{d.title}} [{{d.category}}]
+					<a [routerLink]="['/documents', d.id, 'edit']">Modifier</a>
 					<button (click)="sign(d)">Signer (mock)</button>
 					<button (click)="exportPdf(d)">PDF</button>
 					<span *ngIf="d.signature">Signé par {{d.signature.signedBy}} le {{d.signature.signedAt}}</span>
@@ -35,7 +37,7 @@ import jsPDF from 'jspdf';
 		</div>
 	`,
 	standalone: true,
-	imports: [CommonModule]
+	imports: [CommonModule, RouterModule]
 })
 export class DocumentsPage implements OnInit {
 	list: any[] = []; entities: any[] = []; sessions: any[] = [];
