@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import * as XLSX from 'xlsx';
 
 @Component({
 	selector: 'app-dashboard',
@@ -8,6 +9,7 @@ import { CommonModule } from '@angular/common';
 			<h2>Dashboard</h2>
 			<button (click)="load()">Recharger</button>
 			<button (click)="exportCsv()">Exporter KPIs (CSV)</button>
+			<button (click)="exportXlsx()">Exporter KPIs (Excel)</button>
 			<div *ngIf="stats">
 				<p>Complétés: {{stats.reportsCompleted}} - En attente: {{stats.reportsPending}}</p>
 			</div>
@@ -28,4 +30,10 @@ export class DashboardPage implements OnInit {
 		this.kpis = await fetch('/api/dashboard/kpis').then(r=>r.json());
 	}
 	exportCsv(){ window.open('/api/export/kpis.csv','_blank'); }
+	exportXlsx(){
+		const ws = XLSX.utils.json_to_sheet(this.kpis);
+		const wb = XLSX.utils.book_new();
+		XLSX.utils.book_append_sheet(wb, ws, 'KPIs');
+		XLSX.writeFile(wb, 'dashboard_kpis.xlsx');
+	}
 }

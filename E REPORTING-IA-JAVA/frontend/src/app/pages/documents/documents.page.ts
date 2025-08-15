@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import jsPDF from 'jspdf';
 
 @Component({
 	selector: 'app-documents',
@@ -27,6 +28,7 @@ import { CommonModule } from '@angular/common';
 				<li *ngFor="let d of list">
 					{{d.title}} [{{d.category}}]
 					<button (click)="sign(d)">Signer (mock)</button>
+					<button (click)="exportPdf(d)">PDF</button>
 					<span *ngIf="d.signature">Signé par {{d.signature.signedBy}} le {{d.signature.signedAt}}</span>
 				</li>
 			</ul>
@@ -60,5 +62,19 @@ export class DocumentsPage implements OnInit {
 	async sign(d: any){
 		await fetch('/api/signatures/mock',{method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({documentId: d.id, signedBy:'Admin Démo'})});
 		await this.refresh();
+	}
+	exportPdf(d: any){
+		const doc = new jsPDF();
+		doc.setFontSize(14);
+		doc.text(d.title || 'Document', 10, 10);
+		doc.setFontSize(11);
+		const content = (d.content || '').toString();
+		const lines = doc.splitTextToSize(content, 180);
+		doc.text(lines, 10, 20);
+		if (d.signature){
+			doc.setFontSize(10);
+			doc.text(`Signé par ${d.signature.signedBy} le ${d.signature.signedAt}`, 10, 280);
+		}
+		doc.save(`${(d.title||'document').replace(/\s+/g,'_')}.pdf`);
 	}
 }
