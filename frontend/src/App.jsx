@@ -17,6 +17,7 @@ import AIAssistantPage from './pages/AIAssistant/AIAssistantPage'
 import ProjectsList from './pages/Projects/ProjectsList'
 import ProjectCreate from './pages/Projects/ProjectCreate'
 import TemplatesList from './pages/Templates/TemplatesList'
+import TemplateViewer from './pages/Templates/TemplateViewer'
 import MinistriesList from './pages/Ministries/MinistriesList'
 import MinistryDetail from './pages/Ministries/MinistryDetail'
 import ReportsOthers from './pages/Documents/ReportsOthers'
@@ -88,6 +89,7 @@ function AppRoutes() {
         <Route path="entities/:id" element={<EntityDetail />} />
         <Route path="entities/:id/sessions" element={<EntitySessions />} />
         <Route path="templates" element={<TemplatesList />} />
+        <Route path="templates/:id" element={<TemplateViewer />} />
         <Route path="workflow" element={<ValidationWorkflow />} />
         <Route path="attachments" element={<AttachmentsManager />} />
         {/* E-Learning */}

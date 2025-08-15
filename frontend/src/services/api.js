@@ -504,6 +504,24 @@ export const templatesAPI = {
     }
     return api.get('/templates')
   },
+  getById: async (id) => {
+    if (DEMO_MODE) {
+      await delay(80)
+      const contents = {
+        'plat-close-ca': `# 📊 MODÈLES SESSION D'ARRÊT DES COMPTES\n## EPE et Sociétés d'État - Conseil d'Administration\n\n---\n\n# 📋 **1. ORDRE DU JOUR - SESSION D'ARRÊT DES COMPTES**\n\n## CONSEIL D'ADMINISTRATION\n### [NOM DE LA SOCIÉTÉ/EPE]\n**Session d'Arrêt des Comptes - Exercice [ANNÉE]**\n\n...`,
+        'plat-close-rg': `# 📋 RAPPORT DE GESTION - MODÈLE\n## Exercice clos le 31 décembre [ANNÉE]\n\n### I. PRÉSENTATION DE LA SOCIÉTÉ\n...`,
+        'plat-bud-elab': `# 💰 MODÈLE DE BUDGET PRÉVISIONNEL\n## Exercice [ANNÉE] - [NOM DE LA SOCIÉTÉ/EPE]\n\n### Synthèse budgétaire\n| Rubriques | Réalisé N-1 | Budget N | Variation | % |\n|---|---|---|---|---|\n...`,
+        "plat-pta-elab": `# 📅 PROGRAMME D'ACTIVITÉS - SESSION BUDGÉTAIRE\n## Conseil d'Administration\n\n### Planning prévisionnel\n- J-30 : Préparation\n- J-7 : Préparatifs finaux\n- Jour J : Déroulement\n\n### Documents à préparer\n- Note de synthèse\n- Budget détaillé\n- PPM\n...`,
+        'plat-ppm-elab': `# 📋 PLAN DE PASSATION DES MARCHÉS\n## Exercice [ANNÉE] - [NOM DE LA SOCIÉTÉ/EPE]\n\n### I. Présentation générale\n- Cadre juridique\n- Organes de passation\n\n### II. Marchés\n| N° | Désignation | Montant estimé | Mode | Calendrier |\n|---|---|---|---|---|\n...`,
+        'plat-bud-exec': `# 📊 SUIVI D'EXÉCUTION BUDGÉTAIRE\n## Exercice [ANNÉE]\n\n### Tableaux de suivi\n| Rubrique | Budget | Réalisé | Écart | % |\n|---|---|---|---|---|\n...`
+      }
+      const catalog = (await templatesAPI.getAll()).data
+      const item = catalog.find(t => t.id === id)
+      if (!item) return { success: false, message: 'Modèle introuvable' }
+      return { success: true, data: { ...item, format: 'markdown', content: contents[id] || '# Modèle (à compléter)\n' } }
+    }
+    return api.get(`/templates/${id}`)
+  },
 }
 
 // === Workflow de validation ===
