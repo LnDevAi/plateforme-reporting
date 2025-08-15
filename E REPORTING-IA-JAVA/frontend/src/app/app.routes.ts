@@ -11,6 +11,7 @@ import { ProjectsPage } from './pages/projects/projects.page';
 import { SessionsPage } from './pages/sessions/sessions.page';
 import { DocumentsPage } from './pages/documents/documents.page';
 import { UsersPage } from './pages/users/users.page';
+import { MeetingViewerPage } from './pages/sessions/meeting-viewer.page';
 import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
@@ -23,6 +24,7 @@ export const routes: Routes = [
 	{ path: 'entities', component: EntitiesPage, canActivate: [authGuard] },
 	{ path: 'projects', component: ProjectsPage, canActivate: [authGuard] },
 	{ path: 'sessions', component: SessionsPage, canActivate: [authGuard] },
+	{ path: 'sessions/meet/:room', component: MeetingViewerPage, canActivate: [authGuard] },
 	{ path: 'documents', component: DocumentsPage, canActivate: [authGuard] },
 	{ path: 'users', component: UsersPage, canActivate: [authGuard] },
 	{ path: 'elearning', component: ELearningPage, canActivate: [authGuard] },
