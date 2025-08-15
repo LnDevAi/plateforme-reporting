@@ -485,12 +485,12 @@ export const templatesAPI = {
     if (DEMO_MODE) {
       await delay(120)
       const manifest = [
-        { id: 'sb-elo-ptA', name: 'PTA 2021 - PROJET.xlsx', type: 'PTA', session: 'budgetaire', phase: 'elaboration', url: '/templates/session-budgetaire/elaboration/PTA 2021 - PROJET.xlsx' },
-        { id: 'sb-elo-ppmdoc', name: 'RAPPORT AU CA PPM.docx', type: 'PPM', session: 'budgetaire', phase: 'elaboration', url: '/templates/session-budgetaire/elaboration/RAPPORT AU CA PPM.docx' },
-        { id: 'sb-elo-ppm', name: 'projet ppm 2021.xlsx', type: 'PPM', session: 'budgetaire', phase: 'elaboration', url: '/templates/session-budgetaire/elaboration/projet ppm 2021.xlsx' },
-        { id: 'sb-elo-budget', name: 'budget objet 03 12 2020.xlsx', type: 'Budget', session: 'budgetaire', phase: 'elaboration', url: '/templates/session-budgetaire/elaboration/budget objet 03 12 2020.xlsx' },
-        { id: 'sb-elo-pres-budget', name: 'presentation Budget 2021.docx', type: 'Budget', session: 'budgetaire', phase: 'elaboration', url: '/templates/session-budgetaire/elaboration/presentation Budget 2021.docx' },
-        { id: 'sb-elo-pres-pa', name: 'Presentation_programme 2021.docx', type: "Programme d'Activités", session: 'budgetaire', phase: 'elaboration', url: '/templates/session-budgetaire/elaboration/Presentation_programme 2021.docx' },
+        { id: 'sb-elo-ptA', name: 'PTA 2021 - PROJET.xlsx', type: 'PTA', session: 'budgetaire', phase: 'elaboration', url: null, isPrivate: true },
+        { id: 'sb-elo-ppmdoc', name: 'RAPPORT AU CA PPM.docx', type: 'PPM', session: 'budgetaire', phase: 'elaboration', url: null, isPrivate: true },
+        { id: 'sb-elo-ppm', name: 'projet ppm 2021.xlsx', type: 'PPM', session: 'budgetaire', phase: 'elaboration', url: null, isPrivate: true },
+        { id: 'sb-elo-budget', name: 'budget objet 03 12 2020.xlsx', type: 'Budget', session: 'budgetaire', phase: 'elaboration', url: null, isPrivate: true },
+        { id: 'sb-elo-pres-budget', name: 'presentation Budget 2021.docx', type: 'Budget', session: 'budgetaire', phase: 'elaboration', url: null, isPrivate: true },
+        { id: 'sb-elo-pres-pa', name: 'Presentation_programme 2021.docx', type: "Programme d'Activités", session: 'budgetaire', phase: 'elaboration', url: null, isPrivate: true },
       ]
       // Ajouter des gabarits génériques existants
       const generics = [

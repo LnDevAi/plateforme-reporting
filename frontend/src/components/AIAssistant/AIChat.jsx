@@ -65,7 +65,7 @@ const AIChat = ({ mode = 'reports' }) => {
         const top = list
           .filter(t => t.session === 'budgetaire' && t.phase === 'elaboration')
           .slice(0, 6)
-          .map(t => ({ text: `Analyse ce modèle: ${t.name} (${t.type})`, category: 'modèles', url: t.url }));
+          .map(t => ({ text: `Analyse ce modèle: ${t.name} (${t.type})`, category: 'modèles' }));
         setTemplateSuggestions(top);
       } catch {}
     })();
