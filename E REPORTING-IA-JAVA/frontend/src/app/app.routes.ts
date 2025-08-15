@@ -10,6 +10,7 @@ import { AIPage } from './pages/ai/ai.page';
 import { ProjectsPage } from './pages/projects/projects.page';
 import { SessionsPage } from './pages/sessions/sessions.page';
 import { DocumentsPage } from './pages/documents/documents.page';
+import { UsersPage } from './pages/users/users.page';
 import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
@@ -23,6 +24,7 @@ export const routes: Routes = [
 	{ path: 'projects', component: ProjectsPage, canActivate: [authGuard] },
 	{ path: 'sessions', component: SessionsPage, canActivate: [authGuard] },
 	{ path: 'documents', component: DocumentsPage, canActivate: [authGuard] },
+	{ path: 'users', component: UsersPage, canActivate: [authGuard] },
 	{ path: 'elearning', component: ELearningPage, canActivate: [authGuard] },
 	{ path: 'ai', component: AIPage, canActivate: [authGuard] },
 ];

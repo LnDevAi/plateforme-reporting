@@ -16,6 +16,7 @@ import { RouterModule } from '@angular/router';
 			<a routerLink="/templates">Modèles</a>
 			<a routerLink="/elearning">E-Learning</a>
 			<a routerLink="/ai">IA</a>
+			<a routerLink="/users">Utilisateurs</a>
 			<a routerLink="/login" style="margin-left:auto">Connexion</a>
 		</nav>
 		<router-outlet />
