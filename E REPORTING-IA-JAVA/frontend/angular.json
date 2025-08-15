@@ -1,0 +1,30 @@
+{
+	"version": 1,
+	"projects": {
+		"reporting-frontend": {
+			"projectType": "application",
+			"root": "",
+			"sourceRoot": "src",
+			"architect": {
+				"build": {
+					"builder": "@angular-devkit/build-angular:application",
+					"options": {
+						"outputPath": "dist/reporting-frontend",
+						"index": "src/index.html",
+						"browser": "src/main.ts",
+						"polyfills": [],
+						"assets": [],
+						"styles": [],
+						"scripts": []
+					}
+				},
+				"serve": {
+					"builder": "@angular-devkit/build-angular:dev-server",
+					"options": {
+						"browserTarget": "reporting-frontend:build"
+					}
+				}
+			}
+		}
+	}
+}

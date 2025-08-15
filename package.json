@@ -1,14 +1,28 @@
 {
-  "name": "plateforme-epe",
-  "version": "1.0.0",
-  "description": "Plateforme de Reporting pour EPE",
-  "private": true,
+  "name": "reporting-frontend",
+  "version": "0.0.1",
   "scripts": {
-    "build": "cd frontend && npm run build",
-    "start": "cd frontend && npm run dev"
+    "start": "ng serve --proxy-config proxy.conf.json",
+    "build": "ng build"
   },
-  "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=8.0.0"
+  "private": true,
+  "dependencies": {
+    "@angular/animations": "17.3.8",
+    "@angular/common": "17.3.8",
+    "@angular/compiler": "17.3.8",
+    "@angular/core": "17.3.8",
+    "@angular/forms": "17.3.8",
+    "@angular/platform-browser": "17.3.8",
+    "@angular/platform-browser-dynamic": "17.3.8",
+    "@angular/router": "17.3.8",
+    "rxjs": "7.8.1",
+    "tslib": "2.6.2",
+    "zone.js": "0.14.4"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "17.3.8",
+    "@angular/cli": "17.3.8",
+    "@angular/compiler-cli": "17.3.8",
+    "typescript": "5.4.5"
   }
 }
