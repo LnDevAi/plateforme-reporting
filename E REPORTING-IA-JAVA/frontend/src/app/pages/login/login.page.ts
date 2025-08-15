@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
 	selector: 'app-login',
@@ -7,24 +9,21 @@ import { Router } from '@angular/router';
 		<div style="padding:16px">
 			<h2>Connexion</h2>
 			<form (submit)="login($event)">
-				<input name="email" placeholder="Email"/>
-				<input name="password" placeholder="Mot de passe" type="password"/>
+				<input name="email" placeholder="Email" [(ngModel)]="email"/>
+				<input name="password" placeholder="Mot de passe" type="password" [(ngModel)]="password"/>
 				<button type="submit">Se connecter</button>
 			</form>
 		</div>
 	`,
-	standalone: true
+	standalone: true,
+	imports: [FormsModule]
 })
 export class LoginPage {
-	constructor(private router: Router) {}
+	email = ''; password = '';
+	constructor(private router: Router, private auth: AuthService) {}
 	async login(e: Event){
 		e.preventDefault();
-		const form = e.target as HTMLFormElement;
-		const body = {
-			email: (form.elements.namedItem('email') as HTMLInputElement).value,
-			password: (form.elements.namedItem('password') as HTMLInputElement).value,
-		};
-		await fetch('/api/auth/login',{method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+		await this.auth.login(this.email, this.password);
 		this.router.navigate(['/dashboard']);
 	}
 }

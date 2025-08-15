@@ -29,7 +29,7 @@ import { CommonModule } from '@angular/common';
 				</div>
 				<div>
 					<h4>Réunions</h4>
-					<ul><li *ngFor="let m of s.meetings">{{m.provider}}: {{m.room}}</li></ul>
+					<ul><li *ngFor="let m of s.meetings">{{m.provider}}: <a [href]="jitsiUrl(m)" target="_blank">{{m.room}}</a></li></ul>
 				</div>
 			</div>
 		</div>
@@ -44,6 +44,7 @@ export class SessionsPage implements OnInit {
 		this.entities = await fetch('/api/entities').then(r=>r.json());
 	}
 	entityName(id: string){ return this.entities.find((e:any)=>e.id===id)?.name || id; }
+	jitsiUrl(m: any){ return `https://meet.jit.si/${encodeURIComponent(m.room)}`; }
 	async refresh(){ this.list = await fetch('/api/sessions').then(r=>r.json()); }
 	async create(e: Event){
 		e.preventDefault();
