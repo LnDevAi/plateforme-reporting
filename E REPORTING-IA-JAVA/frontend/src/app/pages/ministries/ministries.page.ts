@@ -12,6 +12,9 @@ import { CommonModule } from '@angular/common';
 				<input placeholder="Ministre" name="minister"/>
 				<button type="submit">Créer</button>
 			</form>
+			<div style="margin:8px 0">
+				<button (click)="prefill()">Pré-remplir depuis le catalogue</button>
+			</div>
 			<ul>
 				<li *ngFor="let m of list">{{m.sigle}} - {{m.name}} ({{m.minister}})</li>
 			</ul>
@@ -34,6 +37,13 @@ export class MinistriesPage implements OnInit {
 		};
 		await fetch('/api/ministries',{method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
 		form.reset();
+		await this.refresh();
+	}
+	async prefill(){
+		const catalog = await fetch('/api/ministries/catalog').then(r=>r.json());
+		for (const c of catalog){
+			await fetch('/api/ministries',{method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(c)});
+		}
 		await this.refresh();
 	}
 }

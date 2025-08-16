@@ -33,4 +33,13 @@ public class MinistriesController {
 
 	@DeleteMapping("/{id}")
 	public void delete(@PathVariable String id){ DataStore.ministries.remove(id); }
+
+	@GetMapping("/catalog")
+	public List<Map<String,String>> catalog(){
+		return List.of(
+			Map.of("sigle","MF","name","Ministère des Finances","minister","Ministre des Finances"),
+			Map.of("sigle","MEF","name","Ministère de l'Économie et des Finances","minister","Ministre de l'Économie et des Finances"),
+			Map.of("sigle","MPT","name","Ministère des Postes et Télécommunications","minister","Ministre des PT")
+		);
+	}
 }
