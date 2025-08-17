@@ -22,12 +22,13 @@ Frontend
 
 Docker (prod-like)
 - Prérequis: Docker + docker-compose
+- Ports configurables via .env (BACKEND_PORT, FRONTEND_PORT). Exemple: BACKEND_PORT=9090
 - Lancer:
   ```bash
   docker compose up -d --build
   ```
-  - Backend: http://localhost:8080
-  - Frontend: http://localhost:8081 (proxy nginx statique)
+  - Backend: http://localhost:${BACKEND_PORT:-8080}
+  - Frontend: http://localhost:${FRONTEND_PORT:-8081}
 
 Dev proxy
 - /api requests from Angular dev server are proxied to http://localhost:8080

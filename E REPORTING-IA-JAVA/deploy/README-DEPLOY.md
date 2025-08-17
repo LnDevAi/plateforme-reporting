@@ -2,6 +2,10 @@
 
 Cible: VPS Linux (Ubuntu/Debian), Nginx pour le frontend, Spring Boot (Java 17) pour le backend via systemd.
 
+Nota: ports configurables
+- Backend Spring Boot lit `SERVER_PORT` (par défaut 8080)
+- Nginx écoute 80 (modifiable dans le conf)
+
 ## 1) Prérequis serveur
 - OS: Ubuntu 22.04+/Debian 12+
 - Accès sudo
@@ -30,15 +34,15 @@ mvn -q -DskipTests clean package
 # Jar attendu: target/backend-0.0.1-SNAPSHOT.jar
 ```
 
-Créer un service systemd:
+Créer un service systemd (adapter le port si 8080 occupé):
 ```bash
 sudo cp /opt/plateforme-reporting/E\ REPORTING-IA-JAVA/deploy/reporting-backend.service /etc/systemd/system/reporting-backend.service
+# Option: éditer /etc/systemd/system/reporting-backend.service et ajouter
+# Environment=SERVER_PORT=9090
 sudo systemctl daemon-reload
 sudo systemctl enable --now reporting-backend
 sudo systemctl status reporting-backend --no-pager
 ```
-
-Le backend écoute sur 8080 (modifiable dans `backend/src/main/resources/application.properties`).
 
 ## 4) Build frontend (Angular)
 ```bash
@@ -48,13 +52,16 @@ npm run build
 # Artéfacts: dist/reporting-frontend
 ```
 
-Publier le frontend via Nginx:
+Publier le frontend via Nginx (adapter listen/server_name si besoin):
 ```bash
 sudo mkdir -p /var/www/reporting-ia
 sudo rsync -a dist/reporting-frontend/ /var/www/reporting-ia/
 
 sudo cp /opt/plateforme-reporting/E\ REPORTING-IA-JAVA/deploy/nginx-site.conf /etc/nginx/sites-available/reporting-ia.conf
-# Éditer server_name dans /etc/nginx/sites-available/reporting-ia.conf si besoin
+sudo nano /etc/nginx/sites-available/reporting-ia.conf
+# - changer server_name
+# - si backend sur 9090, changer proxy_pass en http://127.0.0.1:9090/
+
 sudo ln -sf /etc/nginx/sites-available/reporting-ia.conf /etc/nginx/sites-enabled/reporting-ia.conf
 sudo nginx -t && sudo systemctl reload nginx
 ```
