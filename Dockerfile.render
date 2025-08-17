@@ -2,7 +2,6 @@
 FROM node:20-alpine AS fe
 WORKDIR /fe
 COPY ["E REPORTING-IA-JAVA/frontend/package.json", "./package.json"]
-COPY ["E REPORTING-IA-JAVA/frontend/package-lock.json", "./package-lock.json"]
 RUN npm install --no-audit --no-fund
 COPY ["E REPORTING-IA-JAVA/frontend/", "./"]
 RUN npm run build
