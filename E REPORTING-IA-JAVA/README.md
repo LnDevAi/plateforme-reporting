@@ -20,9 +20,21 @@ Frontend
   - npm run start
   - App: http://localhost:4200
 
+Docker (prod-like)
+- Prérequis: Docker + docker-compose
+- Lancer:
+  ```bash
+  docker compose up -d --build
+  ```
+  - Backend: http://localhost:8080
+  - Frontend: http://localhost:8081 (proxy nginx statique)
+
 Dev proxy
 - /api requests from Angular dev server are proxied to http://localhost:8080
 
 Build
 - Backend: mvn clean package
 - Frontend: npm run build (artifacts in dist/)
+
+Monorepo
+- Ce code vit dans le repo racine; utilisez docker-compose à la racine pour lancer les services sans IP serveur.

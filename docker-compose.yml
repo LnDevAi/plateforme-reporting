@@ -1,157 +1,25 @@
-version: '3.8'
-
+version: '3.9'
 services:
-  # Base de données MySQL
-  mysql:
-    image: mysql:8.0
-    container_name: reporting_mysql
-    restart: unless-stopped
-    environment:
-      MYSQL_DATABASE: reporting_platform
-      MYSQL_ROOT_PASSWORD: root_password
-      MYSQL_USER: reporting_user
-      MYSQL_PASSWORD: reporting_password
-    ports:
-      - "3306:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
-    networks:
-      - reporting_network
-
-  # Redis pour les queues (optionnel)
-  redis:
-    image: redis:7-alpine
-    container_name: reporting_redis
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
-    networks:
-      - reporting_network
-
-  # Backend Laravel
   backend:
     build:
-      context: ./backend
+      context: ./E REPORTING-IA-JAVA/backend
       dockerfile: Dockerfile
-    container_name: reporting_backend
-    restart: unless-stopped
+    container_name: reporting-backend
     ports:
-      - "8000:8000"
-    environment:
-      - APP_NAME=Plateforme de Reporting
-      - APP_ENV=production
-      - APP_KEY=base64:${APP_KEY:-}
-      - APP_DEBUG=false
-      - APP_URL=http://localhost:8000
-      
-      - DB_CONNECTION=mysql
-      - DB_HOST=mysql
-      - DB_PORT=3306
-      - DB_DATABASE=reporting_platform
-      - DB_USERNAME=reporting_user
-      - DB_PASSWORD=reporting_password
-      
-      - CACHE_DRIVER=redis
-      - QUEUE_CONNECTION=redis
-      - SESSION_DRIVER=redis
-      - REDIS_HOST=redis
-      - REDIS_PASSWORD=null
-      - REDIS_PORT=6379
-      
-      - SANCTUM_STATEFUL_DOMAINS=localhost:3000
-      
-      - MAIL_MAILER=smtp
-      - MAIL_HOST=smtp.mailtrap.io
-      - MAIL_PORT=2525
-      - MAIL_USERNAME=null
-      - MAIL_PASSWORD=null
-      - MAIL_ENCRYPTION=tls
-      - MAIL_FROM_ADDRESS=notifications@reporting.local
-      - MAIL_FROM_NAME="Plateforme de Reporting"
-    depends_on:
-      - mysql
-      - redis
-    volumes:
-      - ./backend:/var/www/html
-      - backend_storage:/var/www/html/storage
+      - "8080:8080"
     networks:
-      - reporting_network
-
-  # Worker pour les queues Laravel
-  queue_worker:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: reporting_queue_worker
-    restart: unless-stopped
-    command: php artisan queue:work --verbose --tries=3 --timeout=90
-    environment:
-      - APP_NAME=Plateforme de Reporting
-      - APP_ENV=production
-      - APP_KEY=base64:${APP_KEY:-}
-      - APP_DEBUG=false
-      
-      - DB_CONNECTION=mysql
-      - DB_HOST=mysql
-      - DB_PORT=3306
-      - DB_DATABASE=reporting_platform
-      - DB_USERNAME=reporting_user
-      - DB_PASSWORD=reporting_password
-      
-      - CACHE_DRIVER=redis
-      - QUEUE_CONNECTION=redis
-      - REDIS_HOST=redis
-      - REDIS_PASSWORD=null
-      - REDIS_PORT=6379
-    depends_on:
-      - mysql
-      - redis
-      - backend
-    volumes:
-      - ./backend:/var/www/html
-      - backend_storage:/var/www/html/storage
-    networks:
-      - reporting_network
-
-  # Frontend React
+      - reporting_net
   frontend:
     build:
-      context: ./frontend
+      context: ./E REPORTING-IA-JAVA/frontend
       dockerfile: Dockerfile
-    container_name: reporting_frontend
-    restart: unless-stopped
+    container_name: reporting-frontend
     ports:
-      - "3000:3000"
-    environment:
-      - VITE_API_URL=http://localhost:8000/api
+      - "8081:80"
     depends_on:
       - backend
     networks:
-      - reporting_network
-
-  # Nginx pour servir les fichiers statiques (optionnel)
-  nginx:
-    image: nginx:alpine
-    container_name: reporting_nginx
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-      - ./backend/public:/var/www/html/public
-    depends_on:
-      - backend
-      - frontend
-    networks:
-      - reporting_network
-
-volumes:
-  mysql_data:
-    driver: local
-  backend_storage:
-    driver: local
-
+      - reporting_net
 networks:
-  reporting_network:
+  reporting_net:
     driver: bridge
