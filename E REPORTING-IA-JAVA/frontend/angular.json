@@ -1,5 +1,6 @@
 {
 	"version": 1,
+	"defaultProject": "reporting-frontend",
 	"projects": {
 		"reporting-frontend": {
 			"projectType": "application",
@@ -7,11 +8,11 @@
 			"sourceRoot": "src",
 			"architect": {
 				"build": {
-					"builder": "@angular-devkit/build-angular:application",
+					"builder": "@angular-devkit/build-angular:browser",
 					"options": {
 						"outputPath": "dist/reporting-frontend",
 						"index": "src/index.html",
-						"browser": "src/main.ts",
+						"main": "src/main.ts",
 						"tsConfig": "tsconfig.app.json",
 						"polyfills": [],
 						"assets": ["src/favicon.ico", "src/assets"],
