@@ -1,17 +1,18 @@
 # Stage 1: build frontend
 FROM node:20-alpine AS fe
 WORKDIR /fe
-COPY E REPORTING-IA-JAVA/frontend/package*.json ./
+COPY ["E REPORTING-IA-JAVA/frontend/package.json", "./package.json"]
+COPY ["E REPORTING-IA-JAVA/frontend/package-lock.json", "./package-lock.json"]
 RUN npm install --no-audit --no-fund
-COPY E REPORTING-IA-JAVA/frontend/ ./
+COPY ["E REPORTING-IA-JAVA/frontend/", "./"]
 RUN npm run build
 
 # Stage 2: build backend
 FROM maven:3.9-eclipse-temurin-17 AS be
 WORKDIR /be
-COPY E REPORTING-IA-JAVA/backend/pom.xml ./
+COPY ["E REPORTING-IA-JAVA/backend/pom.xml", "./pom.xml"]
 RUN mvn -q -DskipTests dependency:go-offline
-COPY E REPORTING-IA-JAVA/backend/src ./src
+COPY ["E REPORTING-IA-JAVA/backend/src", "./src"]
 RUN mvn -q -DskipTests clean package
 
 # Stage 3: runtime with nginx + java
@@ -24,15 +25,10 @@ COPY --from=fe /fe/dist/reporting-frontend /usr/share/nginx/html
 # Copy Spring Boot jar
 COPY --from=be /be/target/backend-0.0.1-SNAPSHOT.jar /app/app.jar
 
-# Nginx config: listen on $PORT and proxy /api to backend on 127.0.0.1:8081
-COPY E REPORTING-IA-JAVA/deploy/nginx-site.conf /etc/nginx/conf.d/default.conf
-RUN sed -i 's|proxy_pass http://127.0.0.1:8080/;|proxy_pass http://127.0.0.1:8081/;|' /etc/nginx/conf.d/default.conf \
- && sed -i 's|root /var/www/reporting-ia;|root /usr/share/nginx/html;|' /etc/nginx/conf.d/default.conf
-
-# Supervisor to run both nginx and java
-RUN mkdir -p /var/log/supervisor
-COPY E REPORTING-IA-JAVA/deploy/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-COPY E REPORTING-IA-JAVA/deploy/entrypoint.sh /entrypoint.sh
+# Nginx config (templated with ${PORT}) and supervisor
+COPY ["E REPORTING-IA-JAVA/deploy/nginx-site.conf", "/etc/nginx/conf.d/default.conf"]
+COPY ["E REPORTING-IA-JAVA/deploy/supervisord.conf", "/etc/supervisor/conf.d/supervisord.conf"]
+COPY ["E REPORTING-IA-JAVA/deploy/entrypoint.sh", "/entrypoint.sh"]
 RUN chmod +x /entrypoint.sh
 
 # Expose runtime port (Render injecte PORT)
