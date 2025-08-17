@@ -1,0 +1,13 @@
+[Unit]
+Description=Reporting IA Backend (Spring Boot)
+After=network.target
+
+[Service]
+User=www-data
+WorkingDirectory=/opt/plateforme-reporting/E REPORTING-IA-JAVA/backend
+ExecStart=/usr/bin/java -jar /opt/plateforme-reporting/E REPORTING-IA-JAVA/backend/target/backend-0.0.1-SNAPSHOT.jar
+Restart=always
+Environment=JAVA_OPTS=-Xms256m -Xmx512m
+
+[Install]
+WantedBy=multi-user.target
