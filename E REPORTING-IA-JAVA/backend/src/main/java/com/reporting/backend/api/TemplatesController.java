@@ -20,12 +20,16 @@ public class TemplatesController {
 
 	@GetMapping("/api/templates/{id}")
 	public Map<String,Object> detail(@PathVariable String id){
-		String content = switch (id) {
-			case "plat-bud-elab" -> "# Modèle Budget\n- Recettes\n- Dépenses\n- Hypothèses";
-			case "plat-pta-elab" -> "# Modèle PTA\n- Objectifs\n- Activités\n- Jalons";
-			case "plat-ppm-elab" -> "# Modèle PPM\n- Lignes d'achat\n- Procédures\n- Calendrier";
-			default -> "# Modèle " + id + "\nContenu à compléter";
-		};
+		String content;
+		if ("plat-bud-elab".equals(id)) {
+			content = "# Modèle Budget\n- Recettes\n- Dépenses\n- Hypothèses";
+		} else if ("plat-pta-elab".equals(id)) {
+			content = "# Modèle PTA\n- Objectifs\n- Activités\n- Jalons";
+		} else if ("plat-ppm-elab".equals(id)) {
+			content = "# Modèle PPM\n- Lignes d'achat\n- Procédures\n- Calendrier";
+		} else {
+			content = "# Modèle " + id + "\nContenu à compléter";
+		}
 		return Map.of(
 			"id", id,
 			"format", "markdown",
