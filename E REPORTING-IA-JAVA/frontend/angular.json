@@ -12,8 +12,9 @@
 						"outputPath": "dist/reporting-frontend",
 						"index": "src/index.html",
 						"browser": "src/main.ts",
+						"tsConfig": "tsconfig.app.json",
 						"polyfills": [],
-						"assets": [],
+						"assets": ["src/favicon.ico", "src/assets"],
 						"styles": [],
 						"scripts": []
 					}
