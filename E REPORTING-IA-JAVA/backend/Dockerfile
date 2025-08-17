@@ -4,7 +4,7 @@ WORKDIR /app
 COPY pom.xml .
 RUN mvn -q -DskipTests dependency:go-offline
 COPY src ./src
-RUN mvn -q -DskipTests clean package
+RUN mvn -q -DskipTests -Dmaven.compiler.release=17 -Dmaven.compiler.source=17 -Dmaven.compiler.target=17 clean package
 
 # Run stage
 FROM eclipse-temurin:17-jre
