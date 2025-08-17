@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 
 @Component({
 	selector: 'app-ai',
@@ -13,7 +14,7 @@ import { FormsModule } from '@angular/forms';
 		</div>
 	`,
 	standalone: true,
-	imports: [FormsModule]
+	imports: [FormsModule, CommonModule]
 })
 export class AIPage {
 	prompt = '';
