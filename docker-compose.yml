@@ -19,6 +19,8 @@ services:
       - "${FRONTEND_PORT:-8081}:80"
     depends_on:
       - backend
+    environment:
+      - DISABLE_AUTH=true
     networks:
       - reporting_net
 networks:
