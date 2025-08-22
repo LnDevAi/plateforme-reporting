@@ -9,10 +9,18 @@ import java.util.*;
 public class AuthController {
 	@PostMapping("/login")
 	public Map<String,Object> login(@RequestBody Map<String,Object> body){
-		String email = String.valueOf(body.getOrDefault("email","demo@local"));
-		String token = UUID.randomUUID().toString();
-		Map<String,Object> user = DataStore.users.values().stream().findFirst().orElse(Map.of());
-		return Map.of("token", token, "user", user);
+		String email = String.valueOf(body.getOrDefault("email","admin@demo.local"));
+		String password = String.valueOf(body.getOrDefault("password","admin123"));
+		
+		// Vérifier les identifiants admin
+		if ("admin@demo.local".equals(email) && "admin123".equals(password)) {
+			String token = UUID.randomUUID().toString();
+			Map<String,Object> user = DataStore.users.values().stream().findFirst().orElse(Map.of());
+			return Map.of("token", token, "user", user);
+		}
+		
+		// Authentification échouée
+		throw new RuntimeException("Identifiants invalides");
 	}
 
 	@GetMapping("/me")

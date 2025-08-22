@@ -17,13 +17,53 @@
 						"polyfills": [],
 						"assets": ["src/favicon.ico", "src/assets"],
 						"styles": [],
-						"scripts": []
+						"scripts": [],
+						"fileReplacements": [
+							{
+								"replace": "src/environments/environment.ts",
+								"with": "src/environments/environment.ts"
+							}
+						]
+					},
+					"configurations": {
+						"production": {
+							"fileReplacements": [
+								{
+									"replace": "src/environments/environment.ts",
+									"with": "src/environments/environment.prod.ts"
+								}
+							],
+							"budgets": [
+								{
+									"type": "initial",
+									"maximumWarning": "500kb",
+									"maximumError": "1mb"
+								},
+								{
+									"type": "anyComponentStyle",
+									"maximumWarning": "2kb",
+									"maximumError": "4kb"
+								}
+							],
+							"outputHashing": "all",
+							"optimization": true,
+							"sourceMap": false,
+							"namedChunks": false,
+							"extractLicenses": true,
+							"vendorChunk": false,
+							"buildOptimizer": true
+						}
 					}
 				},
 				"serve": {
 					"builder": "@angular-devkit/build-angular:dev-server",
 					"options": {
 						"browserTarget": "reporting-frontend:build"
+					},
+					"configurations": {
+						"production": {
+							"browserTarget": "reporting-frontend:build:production"
+						}
 					}
 				}
 			}
